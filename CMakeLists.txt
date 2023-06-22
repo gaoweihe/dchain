@@ -9,9 +9,24 @@ project(tomchain)
 # conan_basic_setup()
 
 include_directories(include)
+include_directories(include/entity)
 include_directories(src)
 include_directories(src/client)
 include_directories(src/server)
 
-add_subdirectory(third_party/evmc)
+include_directories(third_party/evmc/include)
 
+add_library(tc-entity 
+    src/entity/transaction.cpp 
+    src/entity/block.cpp
+    )
+
+add_executable(tc-client 
+    src/client/tc-client.cpp
+    )
+target_link_libraries(tc-client tc-entity)
+
+add_executable(tc-server 
+    src/server/tc-server.cpp
+    )
+target_link_libraries(tc-server tc-entity)

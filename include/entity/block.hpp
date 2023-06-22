@@ -1,3 +1,7 @@
+#include <vector>
+
+#include "transaction.hpp"
+
 namespace tomchain {
 
 /**
@@ -8,6 +12,9 @@ class Block {
 public: 
     Block();
     virtual ~Block(); 
+
+public: 
+    std::vector<Transaction> txVec; 
 };
 
 };

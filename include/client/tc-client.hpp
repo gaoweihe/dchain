@@ -1,0 +1,7 @@
+namespace tomchain {
+
+class TcClient {
+    
+};
+
+}
