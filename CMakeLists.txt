@@ -20,6 +20,12 @@ FetchContent_Declare(
   GIT_TAG        v1.11.0
 )
 FetchContent_MakeAvailable(spdlog)
+FetchContent_Declare(
+    argparse
+    GIT_REPOSITORY https://github.com/p-ranav/argparse.git
+    GIT_TAG        v2.9
+)
+FetchContent_MakeAvailable(argparse)
 
 include_directories(include)
 include_directories(include/entity)
@@ -60,6 +66,7 @@ add_executable(tc-client
 target_link_libraries(tc-client 
     tc-entity
     tc-grpc-server
+    argparse
     spdlog::spdlog_header_only
     )
 
@@ -70,5 +77,6 @@ target_link_libraries(tc-server
     tc-entity
     tc-grpc-server
     tc-grpc-server-peer 
+    argparse
     spdlog::spdlog_header_only
     )
