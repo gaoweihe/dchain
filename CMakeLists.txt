@@ -5,14 +5,42 @@ set( CMAKE_BUILD_TYPE "Debug" )
 
 project(tomchain)
 
-# include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-# conan_basic_setup()
+include(FetchContent)
+
+set(ABSL_ENABLE_INSTALL ON)
+FetchContent_Declare(
+  gRPC
+  GIT_REPOSITORY https://github.com/grpc/grpc
+  GIT_TAG        v1.55.0
+)
+set(FETCHCONTENT_QUIET OFF)
+FetchContent_MakeAvailable(gRPC)
 
 include_directories(include)
 include_directories(include/entity)
 include_directories(src)
 include_directories(src/client)
 include_directories(src/server)
+include_directories(grpc_proto)
+
+add_library(tc-grpc-server
+    grpc_proto/tc-server.grpc.pb.h
+    grpc_proto/tc-server.grpc.pb.cc
+    grpc_proto/tc-server.pb.h
+    grpc_proto/tc-server.pb.cc
+    )
+target_link_libraries(tc-grpc-server
+    grpc++
+    )
+add_library(tc-grpc-server-peer 
+    grpc_proto/tc-server-peer.grpc.pb.h
+    grpc_proto/tc-server-peer.grpc.pb.cc
+    grpc_proto/tc-server-peer.pb.h
+    grpc_proto/tc-server-peer.pb.cc
+    )
+target_link_libraries(tc-grpc-server-peer 
+    grpc++
+    )
 
 include_directories(third_party/evmc/include)
 
@@ -24,9 +52,16 @@ add_library(tc-entity
 add_executable(tc-client 
     src/client/tc-client.cpp
     )
-target_link_libraries(tc-client tc-entity)
+target_link_libraries(tc-client 
+    tc-entity
+    tc-grpc-server
+    )
 
 add_executable(tc-server 
     src/server/tc-server.cpp
     )
-target_link_libraries(tc-server tc-entity)
+target_link_libraries(tc-server 
+    tc-entity
+    tc-grpc-server
+    tc-grpc-server-peer 
+    )

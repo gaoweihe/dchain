@@ -2,7 +2,7 @@ rm -rf ./third_party
 mkdir third_party && cd third_party 
 
 # gRPC
-export gRPC_INSTALL_DIR=$HOME/bin/
+export gRPC_INSTALL_DIR=$HOME/bin/grpc/
 git clone --recurse-submodules -b v1.55.0 --depth 1 --shallow-submodules https://github.com/grpc/grpc
 cd grpc
 mkdir -p cmake/build

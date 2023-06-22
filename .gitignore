@@ -1,2 +1,5 @@
 build/
 third_party/ 
+
+grpc_proto/*.h
+grpc_proto/*.cc 

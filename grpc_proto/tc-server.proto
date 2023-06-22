@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package tomchain;
+
+service TcConsensus {
+    rpc Register (RegisterRequest) 
+        returns (RegisterResponse);
+}
+
+message RegisterRequest {
+    bytes addr = 1;
+}
+
+message RegisterResponse {
+    uint32 status = 1;
+    uint32 id = 2;
+}

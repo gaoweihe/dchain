@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/include",
-                "${workspaceFolder}/include/entity"
+                "${workspaceFolder}/include/entity",
+                "${workspaceFolder}/grpc_proto"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
