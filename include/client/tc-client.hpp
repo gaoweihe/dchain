@@ -11,6 +11,13 @@ public:
     TcClient(std::shared_ptr<grpc::Channel> channel)
         :stub_(TcConsensus::NewStub(channel)) {};
 
+public: 
+    void start(); 
+    void stop(); 
+
+public:
+    RegisterResponse Register(); 
+
 private: 
     std::unique_ptr<TcConsensus::Stub> stub_;
 };

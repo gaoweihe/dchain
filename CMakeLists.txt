@@ -1,20 +1,25 @@
 cmake_minimum_required( VERSION 3.26 )
 set( CMAKE_CXX_STANDARD 20 )
-set(CMAKE_CXX_STANDARD_REQUIRED ON) 
+set( CMAKE_CXX_STANDARD_REQUIRED ON ) 
 set( CMAKE_BUILD_TYPE "Debug" )
 
 project(tomchain)
 
 include(FetchContent)
-
 set(ABSL_ENABLE_INSTALL ON)
+set(FETCHCONTENT_QUIET OFF)
 FetchContent_Declare(
   gRPC
   GIT_REPOSITORY https://github.com/grpc/grpc
   GIT_TAG        v1.55.0
 )
-set(FETCHCONTENT_QUIET OFF)
 FetchContent_MakeAvailable(gRPC)
+FetchContent_Declare(
+  spdlog
+  GIT_REPOSITORY https://github.com/gabime/spdlog.git
+  GIT_TAG        v1.11.0
+)
+FetchContent_MakeAvailable(spdlog)
 
 include_directories(include)
 include_directories(include/entity)
@@ -55,6 +60,7 @@ add_executable(tc-client
 target_link_libraries(tc-client 
     tc-entity
     tc-grpc-server
+    spdlog::spdlog_header_only
     )
 
 add_executable(tc-server 
@@ -64,4 +70,5 @@ target_link_libraries(tc-server
     tc-entity
     tc-grpc-server
     tc-grpc-server-peer 
+    spdlog::spdlog_header_only
     )
