@@ -4,14 +4,22 @@
 namespace tomchain {
 
 class TcConsensusImpl final : public TcConsensus::Service {
+    /**
+     * @brief Client registers when it connects to server. 
+     * 
+     * @param context RPC context. 
+     * @param request RPC request. 
+     * @param response RPC response. 
+     * @return grpc::Status RPC status. 
+     */
     grpc::Status Register(
         grpc::ServerContext* context, 
         const RegisterRequest* request,
-        RegisterResponse* reply
+        RegisterResponse* response
     ) override
     {
-        reply->set_id(1);
-        reply->set_status(0); 
+        response->set_id(1);
+        response->set_status(0); 
         return grpc::Status::OK; 
     }
 };
@@ -19,6 +27,10 @@ class TcConsensusImpl final : public TcConsensus::Service {
 class TcServer {
 
 public: 
+    /**
+     * @brief Start the server. 
+     * 
+     */
     void start(); 
 
 private: 

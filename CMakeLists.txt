@@ -34,6 +34,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(argparse)
 
+# json
+FetchContent_Declare(
+    json 
+    URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz
+)
+FetchContent_MakeAvailable(json)
+
 include_directories(include)
 include_directories(include/entity)
 include_directories(src)
@@ -75,6 +82,7 @@ target_link_libraries(tc-client
     tc-grpc-server
     argparse
     spdlog::spdlog_header_only
+    nlohmann_json::nlohmann_json
     )
 
 add_executable(tc-server 
@@ -86,4 +94,5 @@ target_link_libraries(tc-server
     tc-grpc-server-peer 
     argparse
     spdlog::spdlog_header_only
+    nlohmann_json::nlohmann_json
     )

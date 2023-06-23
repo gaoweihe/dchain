@@ -1,6 +1,7 @@
 #include "server/tc-server.hpp"
 
 #include "spdlog/spdlog.h"
+#include "argparse/argparse.hpp"
 
 namespace tomchain {
 
@@ -21,8 +22,11 @@ void TcServer::start()
 
 int main(const int argc, const char* argv[])
 {
-    spdlog::info("hello"); 
-    
+    spdlog::info("TomChain Server Starts. "); 
+
+    argparse::ArgumentParser parser("tc-server");
+    parser.parse_args(argc, argv); 
+
     tomchain::TcServer server; 
     server.start(); 
 

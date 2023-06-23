@@ -12,10 +12,24 @@ public:
         :stub_(TcConsensus::NewStub(channel)) {};
 
 public: 
+    /**
+     * @brief Start the client. 
+     * 
+     */
     void start(); 
+
+    /**
+     * @brief Stop the client. 
+     * 
+     */
     void stop(); 
 
 public:
+    /**
+     * @brief Client registers when it connects to server. 
+     * 
+     * @return RegisterResponse Register status replied by server. 
+     */
     RegisterResponse Register(); 
 
 private: 
