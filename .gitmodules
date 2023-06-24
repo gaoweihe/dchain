@@ -1,3 +1,6 @@
 [submodule "third_party/libBLS"]
 	path = third_party/libBLS
 	url = https://github.com/skalenetwork/libBLS.git
+[submodule "third_party/evmc"]
+	path = third_party/evmc
+	url = https://github.com/ethereum/evmc.git
