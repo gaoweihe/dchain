@@ -9,7 +9,7 @@ project(tomchain)
 include(FetchContent)
 set(FETCHCONTENT_QUIET OFF)
 
-# gRPC and ProtoBuf
+# gRPC
 set(ABSL_ENABLE_INSTALL ON)
 set(protobuf_MODULE_COMPATIBLE ON CACHE BOOL "")
 FetchContent_Declare(
@@ -19,6 +19,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(gRPC)
 
+# ProtoBuf (cmake only)
 FetchContent_Declare(
     Protobuf
     GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
@@ -65,13 +66,6 @@ set_source_files_properties(${PROTO_GENERATED_FILES} PROPERTIES SKIP_UNITY_BUILD
 
 target_include_directories(grpc-proto-obj PUBLIC "$<BUILD_INTERFACE:${PROTO_BINARY_DIR}>")
 
-# set(PROTO_SRC_DIR ${CMAKE_CURRENT_BINARY_DIR}/grpc-proto-src)
-# file(MAKE_DIRECTORY ${PROTO_SRC_DIR})
-# include_directories(${PROTO_SRC_DIR})
-
-# protobuf_generate(PROTO_SRCS PROTO_HDRS ${PROTO_SRC_DIR} ${PROTOS})
-# grpc_generate_cpp(GRPC_SRCS GRPC_HDRS ${PROTO_SRC_DIR} ${PROTOS})
-
 # spdlog 
 FetchContent_Declare(
   spdlog
@@ -102,32 +96,15 @@ include_directories(src/client)
 include_directories(src/server)
 include_directories(grpc_proto)
 
-# add_library(tc-grpc-server
-#     ${PROTO_SRC_DIR}/tc-server.grpc.pb.h
-#     ${PROTO_SRC_DIR}/tc-server.grpc.pb.cc
-#     ${PROTO_SRC_DIR}/tc-server.pb.h
-#     ${PROTO_SRC_DIR}/tc-server.pb.cc
-#     )
-# target_link_libraries(tc-grpc-server
-#     grpc++
-#     )
-# add_library(tc-grpc-server-peer 
-#     ${PROTO_SRC_DIR}/tc-server-peer.grpc.pb.h
-#     ${PROTO_SRC_DIR}/tc-server-peer.grpc.pb.cc
-#     ${PROTO_SRC_DIR}/tc-server-peer.pb.h
-#     ${PROTO_SRC_DIR}/tc-server-peer.pb.cc
-#     )
-# target_link_libraries(tc-grpc-server-peer 
-#     grpc++
-#     )
-
 include_directories(third_party/evmc/include)
 
+# Data structures 
 add_library(tc-entity 
     src/entity/transaction.cpp 
     src/entity/block.cpp
     )
 
+# TomChain client 
 add_executable(tc-client 
     src/client/tc-client.cpp
     )
@@ -139,6 +116,7 @@ target_link_libraries(tc-client
     nlohmann_json::nlohmann_json
     )
 
+# TomChain server 
 add_executable(tc-server 
     src/server/tc-server.cpp
     )
