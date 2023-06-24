@@ -63,7 +63,6 @@ protobuf_generate(
     PLUGIN_OPTIONS "generate_mock_code=false"
     IMPORT_DIRS ${PROTO_IMPORT_DIRS}
     PROTOC_OUT_DIR "${PROTO_BINARY_DIR}")
-set_source_files_properties(${PROTO_GENERATED_FILES} PROPERTIES SKIP_UNITY_BUILD_INCLUSION on)
 
 target_include_directories(grpc-proto-obj PUBLIC "$<BUILD_INTERFACE:${PROTO_BINARY_DIR}>")
 

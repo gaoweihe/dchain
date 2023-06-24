@@ -16,7 +16,7 @@ TcClient::TcClient(std::shared_ptr<grpc::Channel> channel)
     this->init(); 
 };
 
-RegisterResponse TcClient::Register()
+void TcClient::Register()
 {
     RegisterRequest request; 
     const std::vector<uint8_t>& ser_pkey = this->pkey->get_pub_key_data();
@@ -53,12 +53,49 @@ RegisterResponse TcClient::Register()
         status.error_code(), 
         status.error_message()
     ); 
+}
 
-    return response;
+void TcClient::Heartbeat()
+{
+    HeartbeatRequest request; 
+    request.set_id(this->client_id); 
+    HeartbeatResponse response; 
+
+    grpc::ClientContext context;
+    std::mutex mu;
+    std::condition_variable cv;
+    bool done = false;
+
+    grpc::Status status;
+    stub_->async()->Heartbeat(
+        &context, 
+        &request, 
+        &response,
+        [&mu, &cv, &done, &status](grpc::Status s) 
+        {
+            status = std::move(s);
+            std::lock_guard<std::mutex> lock(mu);
+            done = true;
+            cv.notify_one();
+        }
+    );
+
+    std::unique_lock<std::mutex> lock(mu);
+    while (!done) {
+      cv.wait(lock);
+    }
+
+    response.set_status(status.ok());
+
+    spdlog::info("heartbeat: {}:{}", 
+        status.error_code(), 
+        status.error_message()
+    ); 
 }
 
 void TcClient::init()
 {
+    this->client_id = 0; 
     this->skey = std::make_shared<ecdsa::Key>(ecdsa::Key());
     this->pkey = std::make_shared<ecdsa::PubKey>(this->skey->CreatePubKey());
 }
@@ -76,7 +113,10 @@ void TcClient::schedule()
 
     t.setInterval([&]() {
         spdlog::info("test msg"); 
+        this->Heartbeat(); 
     }, 1000); 
+
+    while(true) { sleep(10); }
 }
 
 }

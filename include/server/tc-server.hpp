@@ -31,6 +31,28 @@ class TcConsensusImpl final : public TcConsensus::CallbackService {
         reactor->Finish(grpc::Status::OK);
         return reactor;
     }
+
+    /**
+     * @brief Client heartbeats. 
+     * 
+     * @param context RPC context. 
+     * @param request RPC request. 
+     * @param response RPC response. 
+     * @return grpc::Status RPC status. 
+     */
+    grpc::ServerUnaryReactor* Heartbeat(
+        grpc::CallbackServerContext* context, 
+        const HeartbeatRequest* request,
+        HeartbeatResponse* response
+    ) override
+    {
+        response->set_status(0); 
+        spdlog::info("heartbeat"); 
+
+        grpc::ServerUnaryReactor* reactor = context->DefaultReactor();
+        reactor->Finish(grpc::Status::OK);
+        return reactor;
+    }
 };
 
 class TcServer {

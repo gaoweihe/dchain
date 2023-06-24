@@ -37,13 +37,15 @@ public:
     /**
      * @brief Client registers when it connects to server. 
      * 
-     * @return RegisterResponse Register status replied by server. 
      */
-    RegisterResponse Register(); 
+    void Register(); 
+
+    void Heartbeat(); 
 
 public: 
     std::shared_ptr<ecdsa::Key> skey;
     std::shared_ptr<ecdsa::PubKey> pkey;
+    uint32_t client_id;
 
 private: 
     std::unique_ptr<TcConsensus::Stub> stub_;
