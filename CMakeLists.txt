@@ -60,7 +60,7 @@ protobuf_generate(
     LANGUAGE grpc
     GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc
     PLUGIN "protoc-gen-grpc=${CMAKE_CURRENT_BINARY_DIR}/_deps/grpc-build/grpc_cpp_plugin"
-    # PLUGIN_OPTIONS "generate_mock_code=true"
+    PLUGIN_OPTIONS "generate_mock_code=false"
     IMPORT_DIRS ${PROTO_IMPORT_DIRS}
     PROTOC_OUT_DIR "${PROTO_BINARY_DIR}")
 set_source_files_properties(${PROTO_GENERATED_FILES} PROPERTIES SKIP_UNITY_BUILD_INCLUSION on)
