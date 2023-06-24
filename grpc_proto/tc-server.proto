@@ -3,15 +3,25 @@ syntax = "proto3";
 package tomchain;
 
 service TcConsensus {
+    rpc Heartbeat (HeartbeatRequest)
+        returns (HeartbeatResponse); 
     rpc Register (RegisterRequest) 
         returns (RegisterResponse);
 }
 
 message RegisterRequest {
-    bytes addr = 1;
+    bytes pkey = 1;
 }
 
 message RegisterResponse {
     uint32 status = 1;
     uint32 id = 2;
+}
+
+message HeartbeatRequest {
+    uint32 id = 1;
+}
+
+message HeartbeatResponse {
+    uint32 status = 1;
 }

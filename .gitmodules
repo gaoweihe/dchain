@@ -4,3 +4,9 @@
 [submodule "third_party/evmc"]
 	path = third_party/evmc
 	url = https://github.com/ethereum/evmc.git
+[submodule "third_party/timercpp"]
+	path = third_party/timercpp
+	url = https://github.com/99x/timercpp.git
+[submodule "third_party/hashmap"]
+	path = third_party/hashmap
+	url = https://github.com/kshk123/hashMap.git

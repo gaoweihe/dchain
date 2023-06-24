@@ -37,9 +37,10 @@ set(PROTOS
     ${CMAKE_CURRENT_SOURCE_DIR}/grpc_proto/tc-server-peer.proto
 )
 
-add_library(grpc-proto-obj OBJECT "${CMAKE_CURRENT_SOURCE_DIR}/grpc_proto/tc-server.proto" "${CMAKE_CURRENT_SOURCE_DIR}/grpc_proto/tc-server-peer.proto")
+add_library(grpc-proto-obj SHARED 
+    OBJECT "${CMAKE_CURRENT_SOURCE_DIR}/grpc_proto/tc-server.proto" "${CMAKE_CURRENT_SOURCE_DIR}/grpc_proto/tc-server-peer.proto")
 target_link_libraries(grpc-proto-obj 
-    PUBLIC 
+    PUBLIC
     protobuf::libprotobuf 
     grpc++
     )
@@ -89,6 +90,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(json)
 
+# ecdsa_cxx
+FetchContent_Declare(
+    ecdsa_cxx
+    GIT_REPOSITORY https://github.com/gladosconn/ecdsa_cxx.git
+)
+FetchContent_MakeAvailable(ecdsa_cxx)
+
 include_directories(include)
 include_directories(include/entity)
 include_directories(src)
@@ -96,10 +104,13 @@ include_directories(src/client)
 include_directories(src/server)
 include_directories(grpc_proto)
 
+include_directories(third_party)
+include_directories(third_party/hashmap/inc)
 include_directories(third_party/evmc/include)
+include_directories(build/_deps/ecdsa_cxx-src/src)
 
 # Data structures 
-add_library(tc-entity 
+add_library(tc-entity SHARED
     src/entity/transaction.cpp 
     src/entity/block.cpp
     )
@@ -114,6 +125,7 @@ target_link_libraries(tc-client
     argparse
     spdlog::spdlog_header_only
     nlohmann_json::nlohmann_json
+    ecdsa++
     )
 
 # TomChain server 
@@ -126,4 +138,5 @@ target_link_libraries(tc-server
     argparse
     spdlog::spdlog_header_only
     nlohmann_json::nlohmann_json
+    ecdsa++
     )
