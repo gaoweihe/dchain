@@ -13,7 +13,7 @@ namespace tomchain {
  */
 class Block {
 public: 
-    Block(uint64_t id);
+    Block(uint64_t id, uint64_t base_id_);
     virtual ~Block(); 
 
 public: 
@@ -21,6 +21,7 @@ public:
 
 public: 
     uint64_t id_;
+    uint64_t base_id_;
     std::vector<Transaction> tx_vec_; 
 };
 
