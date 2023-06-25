@@ -109,6 +109,12 @@ public:
      */
     void start(const std::string addr); 
 
+    /**
+     * @brief Server scheduler. 
+     * 
+     */
+    void schedule(); 
+
 public: 
     CTSL::HashMap<uint32_t, uint32_t> clients;
 

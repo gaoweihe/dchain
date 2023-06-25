@@ -3,6 +3,7 @@
 
 #include "server/tc-server.hpp"
 
+#include "timercpp/timercpp.h"
 #include "spdlog/spdlog.h"
 #include "argparse/argparse.hpp"
 #include <nlohmann/json.hpp>
@@ -13,7 +14,7 @@ namespace tomchain {
 
 void TcServer::start(const std::string addr)
 {
-    std::thread t([&] {
+    std::thread grpc_thread([&]() {
         TcConsensusImpl consensus_service;
         grpc::ServerBuilder builder;
         builder.AddListeningPort(
@@ -22,10 +23,26 @@ void TcServer::start(const std::string addr)
         ); 
         builder.RegisterService(&consensus_service);
 
-        service_ = std::unique_ptr<grpc::Server>(builder.BuildAndStart());
+        service_ = builder.BuildAndStart();
         service_->Wait(); 
     });
-    t.detach();
+    grpc_thread.detach();
+
+    std::thread schedule_thread([&] {
+        this->schedule(); 
+    }); 
+    schedule_thread.detach();
+}
+
+void TcServer::schedule()
+{
+    Timer t;
+
+    t.setInterval([&]() {
+        // routines 
+    }, 1000); 
+
+    while(true) { sleep(INT_MAX); }
 }
 
 }
