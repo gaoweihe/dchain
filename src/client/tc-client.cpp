@@ -10,6 +10,8 @@
 #include "argparse/argparse.hpp"
 #include <nlohmann/json.hpp>
 
+std::shared_ptr<nlohmann::json> conf_data; 
+
 namespace tomchain {
 
 TcClient::TcClient(std::shared_ptr<grpc::Channel> channel)
@@ -189,7 +191,6 @@ void TcClient::schedule()
     Timer t;
 
     t.setInterval([&]() {
-        spdlog::info("test msg"); 
         this->Heartbeat(); 
     }, 1000); 
 
@@ -211,11 +212,11 @@ int main(const int argc, const char* argv[])
 
     std::string conf_file_path = parser.get<std::string>("--cf");
     std::ifstream fs(conf_file_path);
-    nlohmann::json conf_data = nlohmann::json::parse(fs);
+    conf_data = std::make_shared<nlohmann::json>(nlohmann::json::parse(fs));
 
     tomchain::TcClient tcClient(
         grpc::CreateChannel(
-            conf_data["grpc-server-addr"], 
+            (*conf_data)["grpc-server-addr"], 
             grpc::InsecureChannelCredentials()
         )
     );
