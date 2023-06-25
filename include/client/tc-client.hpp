@@ -10,6 +10,11 @@ namespace tomchain {
 class TcClient {
 
 public: 
+    /**
+     * @brief Construct a new TomChain Client object
+     * 
+     * @param channel gRPC channel
+     */
     TcClient(std::shared_ptr<grpc::Channel> channel);
 
 public: 
@@ -31,6 +36,10 @@ public:
      */
     void stop(); 
 
+    /**
+     * @brief Run timers and routines. Will not exit during the whole lifecycle. 
+     * 
+     */
     void schedule(); 
 
 public:
@@ -68,6 +77,10 @@ public:
     uint32_t client_id;
 
 private: 
+    /**
+     * @brief gRPC service stub. 
+     * 
+     */
     std::unique_ptr<TcConsensus::Stub> stub_;
 };
 
