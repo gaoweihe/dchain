@@ -37,10 +37,30 @@ public:
     /**
      * @brief Client registers when it connects to server. 
      * 
+     * @return grpc::Status RPC status. 
      */
-    void Register(); 
+    grpc::Status Register(); 
 
-    void Heartbeat(); 
+    /**
+     * @brief Client heartbeats. 
+     * 
+     * @return grpc::Status RPC status. 
+     */
+    grpc::Status Heartbeat(); 
+
+    /**
+     * @brief Client pull pending blocks. 
+     * 
+     * @return grpc::Status RPC status. 
+     */
+    grpc::Status PullPendingBlocks(); 
+
+    /**
+     * @brief Get the Blocks object
+     * 
+     * @return grpc::Status RPC status. 
+     */
+    grpc::Status GetBlocks(); 
 
 public: 
     std::shared_ptr<ecdsa::Key> skey;

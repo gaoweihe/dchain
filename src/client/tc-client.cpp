@@ -16,7 +16,7 @@ TcClient::TcClient(std::shared_ptr<grpc::Channel> channel)
     this->init(); 
 };
 
-void TcClient::Register()
+grpc::Status TcClient::Register()
 {
     RegisterRequest request; 
     const std::vector<uint8_t>& ser_pkey = this->pkey->get_pub_key_data();
@@ -47,15 +47,15 @@ void TcClient::Register()
       cv.wait(lock);
     }
 
-    response.set_status(status.ok());
-
     spdlog::info("register: {}:{}", 
         status.error_code(), 
         status.error_message()
     ); 
+
+    return status;
 }
 
-void TcClient::Heartbeat()
+grpc::Status TcClient::Heartbeat()
 {
     HeartbeatRequest request; 
     request.set_id(this->client_id); 
@@ -85,12 +85,87 @@ void TcClient::Heartbeat()
       cv.wait(lock);
     }
 
-    response.set_status(status.ok());
-
     spdlog::info("heartbeat: {}:{}", 
         status.error_code(), 
         status.error_message()
     ); 
+
+    return status;
+}
+
+grpc::Status TcClient::PullPendingBlocks()
+{
+    PullPendingBlocksRequest request; 
+    request.set_id(this->client_id); 
+    PullPendingBlocksResponse response; 
+
+    grpc::ClientContext context;
+    std::mutex mu;
+    std::condition_variable cv;
+    bool done = false;
+
+    grpc::Status status;
+    stub_->async()->PullPendingBlocks(
+        &context, 
+        &request, 
+        &response,
+        [&mu, &cv, &done, &status](grpc::Status s) 
+        {
+            status = std::move(s);
+            std::lock_guard<std::mutex> lock(mu);
+            done = true;
+            cv.notify_one();
+        }
+    );
+
+    std::unique_lock<std::mutex> lock(mu);
+    while (!done) {
+      cv.wait(lock);
+    }
+
+    spdlog::info("pull pending block headers: {}:{}", 
+        status.error_code(), 
+        status.error_message()
+    ); 
+
+    return status;
+}
+
+grpc::Status TcClient::GetBlocks()
+{
+    GetBlocksRequest request; 
+    GetBlocksResponse response; 
+
+    grpc::ClientContext context;
+    std::mutex mu;
+    std::condition_variable cv;
+    bool done = false;
+
+    grpc::Status status;
+    stub_->async()->GetBlocks(
+        &context, 
+        &request, 
+        &response,
+        [&mu, &cv, &done, &status](grpc::Status s) 
+        {
+            status = std::move(s);
+            std::lock_guard<std::mutex> lock(mu);
+            done = true;
+            cv.notify_one();
+        }
+    );
+
+    std::unique_lock<std::mutex> lock(mu);
+    while (!done) {
+      cv.wait(lock);
+    }
+
+    spdlog::info("get blocks: {}:{}", 
+        status.error_code(), 
+        status.error_message()
+    ); 
+
+    return status; 
 }
 
 void TcClient::init()
@@ -116,7 +191,7 @@ void TcClient::schedule()
         this->Heartbeat(); 
     }, 1000); 
 
-    while(true) { sleep(10); }
+    while(true) { sleep(INT_MAX); }
 }
 
 }

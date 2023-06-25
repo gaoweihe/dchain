@@ -7,6 +7,10 @@ service TcConsensus {
         returns (HeartbeatResponse); 
     rpc Register (RegisterRequest) 
         returns (RegisterResponse);
+    rpc PullPendingBlocks (PullPendingBlocksRequest)
+        returns (PullPendingBlocksResponse);
+    rpc GetBlocks (GetBlocksRequest)
+        returns (GetBlocksResponse);
 }
 
 message RegisterRequest {
@@ -24,4 +28,22 @@ message HeartbeatRequest {
 
 message HeartbeatResponse {
     uint32 status = 1;
+}
+
+message PullPendingBlocksRequest {
+    uint32 id = 1; 
+}
+
+message PullPendingBlocksResponse {
+    uint32 status = 1;
+    repeated bytes pb_hdrs = 2;
+}
+
+message GetBlocksRequest {
+    repeated bytes pb_hdrs = 1;
+}
+
+message GetBlocksResponse {
+    uint32 status = 1; 
+    repeated bytes pb = 2;
 }
