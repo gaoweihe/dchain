@@ -137,8 +137,8 @@ public:
 
 public: 
     CTSL::HashMap<uint32_t, ecdsa::PubKey> clients;
-    CTSL::HashMap<uint32_t, Block> pedning_blks; 
-    CTSL::HashMap<uint32_t, Transaction> pedning_txs; 
+    CTSL::HashMap<uint32_t, Block> pending_blks; 
+    CTSL::HashMap<uint32_t, Transaction> pending_txs; 
 
 private: 
     std::unique_ptr<grpc::Server> service_; 
