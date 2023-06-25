@@ -8,12 +8,13 @@ namespace tomchain {
  */
 class Transaction {
 public: 
-    Transaction(uint64_t sender, uint64_t receiver, uint64_t value);
+    Transaction(uint64_t id_, uint64_t sender, uint64_t receiver, uint64_t value);
     virtual ~Transaction();
 
 public: 
-    evmc::address sender; 
-    evmc::address receiver; 
-    uint64_t value;
+    uint64_t id_;
+    evmc::address sender_; 
+    evmc::address receiver_; 
+    uint64_t value_;
 };
 }

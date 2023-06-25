@@ -12,6 +12,16 @@ std::shared_ptr<nlohmann::json> conf_data;
 
 namespace tomchain {
 
+TcServer::TcServer() 
+{
+
+}
+
+TcServer::~TcServer() 
+{
+    
+}
+
 void TcServer::start(const std::string addr)
 {
     std::thread grpc_thread([&]() {

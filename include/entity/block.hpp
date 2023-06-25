@@ -10,11 +10,15 @@ namespace tomchain {
  */
 class Block {
 public: 
-    Block();
+    Block(uint64_t id);
     virtual ~Block(); 
 
 public: 
-    std::vector<Transaction> txVec; 
+    void insert(const Transaction tx);
+
+public: 
+    uint64_t id_;
+    std::vector<Transaction> tx_vec_; 
 };
 
 };

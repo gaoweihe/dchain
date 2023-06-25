@@ -102,6 +102,10 @@ class TcConsensusImpl final : public TcConsensus::CallbackService {
 class TcServer {
 
 public: 
+    TcServer(); 
+    virtual ~TcServer(); 
+
+public: 
     /**
      * @brief Starts the server. 
      * 

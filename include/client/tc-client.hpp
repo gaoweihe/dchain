@@ -16,6 +16,7 @@ public:
      * @param channel gRPC channel
      */
     TcClient(std::shared_ptr<grpc::Channel> channel);
+    virtual ~TcClient(); 
 
 public: 
     /**

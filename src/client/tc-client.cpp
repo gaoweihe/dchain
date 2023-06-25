@@ -18,7 +18,12 @@ TcClient::TcClient(std::shared_ptr<grpc::Channel> channel)
     :stub_(TcConsensus::NewStub(channel)) 
 {
     this->init(); 
-};
+}
+
+TcClient::~TcClient() 
+{
+
+}
 
 grpc::Status TcClient::Register()
 {
