@@ -1,5 +1,7 @@
 #include <memory>
 
+#include "HashMap.h"
+
 #include <grpcpp/grpcpp.h>
 #include "tc-server.grpc.pb.h"
 
@@ -76,6 +78,7 @@ public:
     std::shared_ptr<ecdsa::Key> skey;
     std::shared_ptr<ecdsa::PubKey> pkey;
     uint32_t client_id;
+    CTSL::HashMap<uint32_t, uint64_t> accounts;
 
 private: 
     /**

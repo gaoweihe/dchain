@@ -1,3 +1,6 @@
+#ifndef TC_BLOCK_HDR
+#define TC_BLOCK_HDR
+
 #include <vector>
 
 #include "transaction.hpp"
@@ -22,3 +25,5 @@ public:
 };
 
 };
+
+#endif /* TC_BLOCK_HDR */

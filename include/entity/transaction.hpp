@@ -1,3 +1,6 @@
+#ifndef TC_TRNASACTION_HDR
+#define TC_TRNASACTION_HDR
+
 #include <evmc/evmc.hpp>
 
 namespace tomchain {
@@ -18,3 +21,5 @@ public:
     uint64_t value_;
 };
 }
+
+#endif /* TC_TRNASACTION_HDR */

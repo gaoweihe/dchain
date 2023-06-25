@@ -2,13 +2,24 @@
 
 #include "spdlog/spdlog.h"
 #include "HashMap.h"
+#include "key.h"
 
 #include <grpcpp/grpcpp.h>
 #include "tc-server.grpc.pb.h"
 
+#include "block.hpp" 
+#include "transaction.hpp" 
+
 namespace tomchain {
 
 class TcConsensusImpl final : public TcConsensus::CallbackService {
+
+public:
+    // TcConsensusImpl::TcConsensusImpl() 
+    // {
+
+    // }
+
     /**
      * @brief Client registers when it connects to server. 
      * 
@@ -23,6 +34,11 @@ class TcConsensusImpl final : public TcConsensus::CallbackService {
         RegisterResponse* response
     ) override
     {
+        std::string pkey_str = request->pkey();
+        std::vector<uint8_t> pkey_data_vec(pkey_str.begin(), pkey_str.end());
+        ecdsa::PubKey pkey(pkey_data_vec);  
+        // tc_server->clients.insert(pkey, 1); 
+
         response->set_id(1);
         response->set_status(0); 
         spdlog::info("register"); 
@@ -33,7 +49,7 @@ class TcConsensusImpl final : public TcConsensus::CallbackService {
     }
 
     /**
-     * @brief Client heartbeats. 
+     * @brief Client heartbeats by a given interval. 
      * 
      * @param context RPC context. 
      * @param request RPC request. 
@@ -55,7 +71,7 @@ class TcConsensusImpl final : public TcConsensus::CallbackService {
     }
 
     /**
-     * @brief Client pull pending blocks. 
+     * @brief Client pulls pending blocks. 
      * 
      * @param context RPC context. 
      * @param request RPC request. 
@@ -77,7 +93,7 @@ class TcConsensusImpl final : public TcConsensus::CallbackService {
     }
 
     /**
-     * @brief Client get blocks. 
+     * @brief Client gets blocks. 
      * 
      * @param context RPC context. 
      * @param request RPC request. 
@@ -120,7 +136,9 @@ public:
     void schedule(); 
 
 public: 
-    CTSL::HashMap<uint32_t, uint32_t> clients;
+    CTSL::HashMap<uint32_t, ecdsa::PubKey> clients;
+    CTSL::HashMap<uint32_t, Block> pedning_blks; 
+    CTSL::HashMap<uint32_t, Transaction> pedning_txs; 
 
 private: 
     std::unique_ptr<grpc::Server> service_; 

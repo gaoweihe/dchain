@@ -73,6 +73,7 @@ int main(const int argc, const char* argv[])
     conf_data = std::make_shared<nlohmann::json>(nlohmann::json::parse(fs));
 
     tomchain::TcServer server; 
+    // tc_server = std::make_shared<tomchain::TcServer>(server); 
     server.start((*conf_data)["grpc-listen-addr"]); 
 
     while(true) { 
