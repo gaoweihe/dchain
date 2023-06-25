@@ -103,10 +103,11 @@ class TcServer {
 
 public: 
     /**
-     * @brief Start the server. 
+     * @brief Starts the server. 
      * 
+     * @param addr Listen address. 
      */
-    void start(); 
+    void start(const std::string addr); 
 
 public: 
     CTSL::HashMap<uint32_t, uint32_t> clients;
