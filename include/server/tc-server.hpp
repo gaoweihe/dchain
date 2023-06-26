@@ -34,7 +34,7 @@ public:
     void schedule(); 
 
 public: 
-    CTSL::HashMap<uint32_t, ecdsa::PubKey> clients;
+    CTSL::HashMap<uint32_t, std::shared_ptr<ecdsa::PubKey>> clients;
     CTSL::HashMap<uint32_t, Block> pending_blks; 
     CTSL::HashMap<uint32_t, Transaction> pending_txs; 
 
@@ -47,7 +47,7 @@ class TcConsensusImpl final :
     public TcConsensus::CallbackService {
 
 public: 
-    std::weak_ptr<TcServer> tc_server_; 
+    std::shared_ptr<TcServer> tc_server_; 
 
 public:
     // TcConsensusImpl::TcConsensusImpl() 
@@ -71,8 +71,13 @@ public:
     {
         std::string pkey_str = request->pkey();
         std::vector<uint8_t> pkey_data_vec(pkey_str.begin(), pkey_str.end());
-        ecdsa::PubKey pkey(pkey_data_vec);  
-        // tc_server->clients.insert(pkey, 1); 
+        ecdsa::PubKey pkey(pkey_data_vec); 
+        tc_server_->clients.insert(
+            1, 
+            std::make_shared<ecdsa::PubKey>(
+                std::move(pkey)
+            )
+        ); 
 
         response->set_id(1);
         response->set_status(0); 
