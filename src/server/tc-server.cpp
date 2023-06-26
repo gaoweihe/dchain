@@ -55,6 +55,7 @@ void TcServer::schedule()
         // routines 
     }, 1000); 
 
+    // TODO: change to shutdown conditional variable 
     while(true) { sleep(INT_MAX); }
 }
 
@@ -73,11 +74,11 @@ int main(const int argc, const char* argv[])
     
     std::string conf_file_path = parser.get<std::string>("--cf");
     std::ifstream fs(conf_file_path);
-    conf_data = std::make_shared<nlohmann::json>(nlohmann::json::parse(fs));
+    ::conf_data = std::make_shared<nlohmann::json>(nlohmann::json::parse(fs));
 
     tomchain::TcServer server; 
     // tc_server = std::make_shared<tomchain::TcServer>(server); 
-    server.start((*conf_data)["grpc-listen-addr"]); 
+    server.start((*::conf_data)["grpc-listen-addr"]); 
 
     while(true) { 
         sleep(2);
