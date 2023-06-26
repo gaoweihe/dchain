@@ -12,7 +12,42 @@
 
 namespace tomchain {
 
-class TcConsensusImpl final : public TcConsensus::CallbackService {
+class TcServer : 
+    public std::enable_shared_from_this<TcServer> {
+
+public: 
+    TcServer(); 
+    virtual ~TcServer(); 
+
+public: 
+    /**
+     * @brief Starts the server. 
+     * 
+     * @param addr Listen address. 
+     */
+    void start(const std::string addr); 
+
+    /**
+     * @brief Server scheduler. 
+     * 
+     */
+    void schedule(); 
+
+public: 
+    CTSL::HashMap<uint32_t, ecdsa::PubKey> clients;
+    CTSL::HashMap<uint32_t, Block> pending_blks; 
+    CTSL::HashMap<uint32_t, Transaction> pending_txs; 
+
+private: 
+    std::unique_ptr<grpc::Server> grpc_server_; 
+
+};
+
+class TcConsensusImpl final : 
+    public TcConsensus::CallbackService {
+
+public: 
+    std::weak_ptr<TcServer> tc_server_; 
 
 public:
     // TcConsensusImpl::TcConsensusImpl() 
@@ -113,36 +148,9 @@ public:
         reactor->Finish(grpc::Status::OK);
         return reactor;
     }
-};
-
-class TcServer {
 
 public: 
-    TcServer(); 
-    virtual ~TcServer(); 
-
-public: 
-    /**
-     * @brief Starts the server. 
-     * 
-     * @param addr Listen address. 
-     */
-    void start(const std::string addr); 
-
-    /**
-     * @brief Server scheduler. 
-     * 
-     */
-    void schedule(); 
-
-public: 
-    CTSL::HashMap<uint32_t, ecdsa::PubKey> clients;
-    CTSL::HashMap<uint32_t, Block> pending_blks; 
-    CTSL::HashMap<uint32_t, Transaction> pending_txs; 
-
-private: 
-    std::unique_ptr<grpc::Server> service_; 
-
+    std::shared_ptr<TcConsensusImpl> consensus_;
 };
 
 }

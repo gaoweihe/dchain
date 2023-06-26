@@ -24,8 +24,11 @@ TcServer::~TcServer()
 
 void TcServer::start(const std::string addr)
 {
+    auto self(shared_from_this()); 
     std::thread grpc_thread([&]() {
         TcConsensusImpl consensus_service;
+        consensus_service.tc_server_ = self;
+
         grpc::ServerBuilder builder;
         builder.AddListeningPort(
             addr, 
@@ -33,8 +36,8 @@ void TcServer::start(const std::string addr)
         ); 
         builder.RegisterService(&consensus_service);
 
-        service_ = builder.BuildAndStart();
-        service_->Wait(); 
+        grpc_server_ = builder.BuildAndStart();
+        grpc_server_->Wait(); 
     });
     grpc_thread.detach();
 
