@@ -27,7 +27,6 @@ void TcServer::start(const std::string addr)
     auto self(shared_from_this()); 
     std::thread grpc_thread([&]() {
         TcConsensusImpl consensus_service; 
-        // register this as a weak pointer 
         consensus_service.tc_server_ = self;
 
         grpc::ServerBuilder builder;
