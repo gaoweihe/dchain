@@ -33,6 +33,10 @@ public:
      */
     void schedule(); 
 
+    void generate_tx(uint64_t num_tx); 
+
+    void pack_block(uint64_t num_tx, uint64_t num_block);
+
 public: 
     CTSL::HashMap<uint32_t, std::shared_ptr<ecdsa::PubKey>> clients;
     CTSL::HashMap<uint32_t, Block> pending_blks; 

@@ -1,5 +1,6 @@
 #include <thread>
 #include <fstream>
+#include <random>
 
 #include "server/tc-server.hpp"
 
@@ -8,7 +9,7 @@
 #include "argparse/argparse.hpp"
 #include <nlohmann/json.hpp>
 
-std::shared_ptr<nlohmann::json> conf_data; 
+static std::shared_ptr<nlohmann::json> conf_data; 
 
 namespace tomchain {
 
@@ -51,12 +52,42 @@ void TcServer::schedule()
 {
     Timer t;
 
+    // generate transactions
     t.setInterval([&]() {
-        // routines 
-    }, 1000); 
+        // number of generated transactions per second 
+        const uint64_t gen_tx_rate = (*::conf_data)["generate-tx-rate"]; 
+        this->generate_tx(gen_tx_rate);
+    }, (*::conf_data)["scheduler_freq"]); 
 
     // TODO: change to shutdown conditional variable 
     while(true) { sleep(INT_MAX); }
+}
+
+void TcServer::generate_tx(uint64_t num_tx)
+{
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<
+        std::mt19937::result_type
+    > distribution(1, INT_MAX);
+
+    for (size_t i = 0; i < num_tx; i++)
+    {
+        uint64_t tx_id = distribution(rng);
+        Transaction tx(
+            tx_id, 
+            0, 
+            0, 
+            0, 
+            0
+        ); 
+        pending_txs.insert(tx_id, tx);
+    }
+}
+
+void TcServer::generate_tx(uint64_t num_tx, uint64_t num_block)
+{
+    
 }
 
 }
