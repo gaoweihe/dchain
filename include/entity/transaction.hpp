@@ -50,6 +50,7 @@ public:
      */
     uint64_t fee_; 
 };
+
 }
 
 #endif /* TC_TRNASACTION_HDR */

@@ -81,7 +81,9 @@ void TcServer::generate_tx(uint64_t num_tx)
             0, 
             0
         ); 
-        pending_txs.insert(tx_id, tx);
+        oneapi::tbb::concurrent_hash_map<uint32_t, std::shared_ptr<Transaction>>::accessor accessor; 
+        pending_txs.insert(accessor, tx_id);
+        accessor->second = std::make_shared<Transaction>(tx);
     }
 }
 
