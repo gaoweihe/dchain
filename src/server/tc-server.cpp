@@ -85,7 +85,7 @@ void TcServer::generate_tx(uint64_t num_tx)
     }
 }
 
-void TcServer::generate_tx(uint64_t num_tx, uint64_t num_block)
+void TcServer::pack_block(uint64_t num_tx, uint64_t num_block)
 {
     
 }

@@ -96,6 +96,20 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(ecdsa_cxx)
 
+# ecdsa_cxx
+FetchContent_Declare(
+    ecdsa_cxx
+    GIT_REPOSITORY https://github.com/gladosconn/ecdsa_cxx.git
+)
+FetchContent_MakeAvailable(ecdsa_cxx)
+
+# oneTBB
+FetchContent_Declare(
+    oneTBB
+    GIT_REPOSITORY https://github.com/oneapi-src/oneTBB.git
+)
+FetchContent_MakeAvailable(oneTBB)
+
 include_directories(include)
 include_directories(include/entity)
 include_directories(src)
@@ -107,6 +121,9 @@ include_directories(third_party)
 include_directories(third_party/hashmap/inc)
 include_directories(third_party/evmc/include)
 include_directories(build/_deps/ecdsa_cxx-src/src)
+
+include_directories(deps/folly/include)
+link_directories(deps/folly/lib)
 
 # Data structures 
 add_library(tc-entity SHARED
@@ -125,6 +142,7 @@ target_link_libraries(tc-client
     spdlog::spdlog_header_only
     nlohmann_json::nlohmann_json
     ecdsa++
+    TBB::tbb
     )
 
 # TomChain server 
@@ -138,4 +156,5 @@ target_link_libraries(tc-server
     spdlog::spdlog_header_only
     nlohmann_json::nlohmann_json
     ecdsa++
+    TBB::tbb
     )
