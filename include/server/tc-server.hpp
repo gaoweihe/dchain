@@ -54,7 +54,7 @@ public:
     void pack_block(uint64_t num_tx, uint64_t num_block);
 
 public: 
-    CTSL::HashMap<uint32_t, std::shared_ptr<ecdsa::PubKey>> clients;
+    ClientCHM clients;
     BlockCHM pending_blks; 
     TransactionCHM pending_txs;
 
@@ -94,9 +94,11 @@ public:
         // lock weak pointer to get shared pointer 
         std::shared_ptr<TcServer> shared_tc_server = tc_server_.lock();
         shared_tc_server->clients.insert(
-            1, 
-            std::make_shared<ecdsa::PubKey>(
-                std::move(pkey)
+            std::make_pair(            
+                1, 
+                std::make_shared<ecdsa::PubKey>(
+                    std::move(pkey)
+                )
             )
         ); 
 
@@ -149,7 +151,7 @@ public:
         auto pb = tc_server_.lock()->pending_blks; 
         for (auto iter = pb.begin(); iter != pb.end(); iter++)
         {
-            
+
         }
         
         spdlog::info("pull pending blocks"); 
