@@ -1,5 +1,6 @@
 {
     "grpc-listen-addr": "0.0.0.0:2510", 
+    "peer-addr": [], 
     "scheduler_freq": 1000, 
     "generate-tx-rate": 1, 
     "tx-per-block": 1

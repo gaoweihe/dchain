@@ -1,5 +1,6 @@
 {
+    "client-id": 1, 
     "grpc-server-addr": "127.0.0.1:2510", 
-    "heartbeat-interval": "1000", 
-    "pull-pb-interval": "1000"
+    "heartbeat-interval": 1000, 
+    "pull-pb-interval": 1000
 }

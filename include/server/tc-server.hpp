@@ -151,7 +151,9 @@ public:
         auto pb = tc_server_.lock()->pending_blks; 
         for (auto iter = pb.begin(); iter != pb.end(); iter++)
         {
-
+            auto blk = iter->second; 
+            auto blk_hdr_str = blk->serialize_header(); 
+            response->add_pb_hdrs(blk_hdr_str);
         }
         
         spdlog::info("pull pending blocks"); 

@@ -132,6 +132,15 @@ grpc::Status TcClient::PullPendingBlocks()
       cv.wait(lock);
     }
 
+    // unpack response 
+    for (int i = 0; i < response.pb_hdrs_size(); i++) {
+        std::istringstream block_hdr_ss(
+            response.pb_hdrs(i)
+        ); 
+        const uint64_t block_hdr = Block::deserialize_header(block_hdr_ss);
+        spdlog::info("block: {}", block_hdr); 
+    }
+
     spdlog::info("pull pending block headers: {}:{}", 
         status.error_code(), 
         status.error_message()
@@ -197,7 +206,11 @@ void TcClient::schedule()
 
     t.setInterval([&]() {
         this->Heartbeat(); 
-    }, 1000); 
+    }, (*::conf_data)["heartbeat-interval"]); 
+
+    t.setInterval([&]() {
+        this->PullPendingBlocks(); 
+    }, (*::conf_data)["pull-pb-interval"]);
 
     while(true) { sleep(INT_MAX); }
 }

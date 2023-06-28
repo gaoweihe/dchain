@@ -3,11 +3,11 @@
 
 #include <memory>
 
-#include "HashMap.h"
+#include "entity/block.hpp"
 
+#include "HashMap.h"
 #include <grpcpp/grpcpp.h>
 #include "tc-server.grpc.pb.h"
-
 #include "key.h"
 
 namespace tomchain {

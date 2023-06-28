@@ -40,6 +40,29 @@ public:
         return (in);
     }
 
+    std::string serialize() const
+    {
+        std::stringstream ss;
+        ss << this;
+        std::string str = ss.str();
+        return str;
+    }
+
+    std::string serialize_header() const
+    {
+        std::stringstream ss;
+        ss << bits(id_); 
+        std::string str = ss.str();
+        return str;
+    }
+
+    static uint64_t deserialize_header(std::istream& is)
+    {
+        uint64_t id; 
+        is >> bits(id); 
+        return id; 
+    }
+
 public: 
     void insert(std::shared_ptr<Transaction> tx);
 
