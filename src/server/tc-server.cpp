@@ -25,17 +25,18 @@ TcServer::~TcServer()
 
 void TcServer::start(const std::string addr)
 {
-    auto self(shared_from_this()); 
     std::thread grpc_thread([&]() {
-        TcConsensusImpl consensus_service; 
-        consensus_service.tc_server_ = self;
+        std::shared_ptr<TcServer> shared_from_tc_server = shared_from_this(); 
+        std::shared_ptr<TcConsensusImpl> consensus_service = 
+            std::make_shared<TcConsensusImpl>(); 
+        consensus_service->tc_server_ = shared_from_tc_server;
 
         grpc::ServerBuilder builder;
         builder.AddListeningPort(
             addr, 
             grpc::InsecureServerCredentials()
         ); 
-        builder.RegisterService(&consensus_service);
+        builder.RegisterService(consensus_service.get());
 
         grpc_server_ = builder.BuildAndStart();
         grpc_server_->Wait(); 
@@ -57,6 +58,15 @@ void TcServer::schedule()
         // number of generated transactions per second 
         const uint64_t gen_tx_rate = (*::conf_data)["generate-tx-rate"]; 
         this->generate_tx(gen_tx_rate);
+        spdlog::info("pending transactions: {}", this->pending_txs.size()); 
+    }, (*::conf_data)["scheduler_freq"]); 
+
+    // pack blocks 
+    t.setInterval([&]() {
+        // number of generated transactions per second 
+        const uint64_t tx_per_block = (*::conf_data)["tx-per-block"]; 
+        this->pack_block(tx_per_block, INT_MAX); 
+        spdlog::info("pending blocks: {}", this->pending_blks.size()); 
     }, (*::conf_data)["scheduler_freq"]); 
 
     // TODO: change to shutdown conditional variable 
@@ -147,9 +157,9 @@ int main(const int argc, const char* argv[])
     std::ifstream fs(conf_file_path);
     ::conf_data = std::make_shared<nlohmann::json>(nlohmann::json::parse(fs));
 
-    tomchain::TcServer server; 
-    // tc_server = std::make_shared<tomchain::TcServer>(server); 
-    server.start((*::conf_data)["grpc-listen-addr"]); 
+    std::shared_ptr<tomchain::TcServer> server = 
+        std::make_shared<tomchain::TcServer>(); 
+    server->start((*::conf_data)["grpc-listen-addr"]); 
 
     while(true) { 
         sleep(2);

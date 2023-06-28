@@ -25,7 +25,7 @@ typedef oneapi::tbb::concurrent_hash_map<
 > BlockCHM; 
 
 class TcServer : 
-    public std::enable_shared_from_this<TcServer> {
+    virtual public std::enable_shared_from_this<TcServer> {
 
 public: 
     TcServer(); 
@@ -63,7 +63,7 @@ class TcConsensusImpl final :
     public TcConsensus::CallbackService {
 
 public: 
-    std::shared_ptr<TcServer> tc_server_; 
+    std::weak_ptr<TcServer> tc_server_; 
 
 public:
     // TcConsensusImpl::TcConsensusImpl() 
@@ -88,7 +88,9 @@ public:
         std::string pkey_str = request->pkey();
         std::vector<uint8_t> pkey_data_vec(pkey_str.begin(), pkey_str.end());
         ecdsa::PubKey pkey(pkey_data_vec); 
-        tc_server_->clients.insert(
+        // lock weak pointer to get shared pointer 
+        std::shared_ptr<TcServer> shared_tc_server = tc_server_.lock();
+        shared_tc_server->clients.insert(
             1, 
             std::make_shared<ecdsa::PubKey>(
                 std::move(pkey)
