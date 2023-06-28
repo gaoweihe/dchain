@@ -10,3 +10,6 @@
 [submodule "third_party/hashmap"]
 	path = third_party/hashmap
 	url = https://github.com/kshk123/hashMap.git
+[submodule "third_party/c-plus-plus-serializer"]
+	path = third_party/c-plus-plus-serializer
+	url = https://github.com/goblinhack/c-plus-plus-serializer.git

@@ -8,6 +8,7 @@
 #include "HashMap.h"
 #include "key.h"
 #include "oneapi/tbb/concurrent_hash_map.h"
+#include <alpaca/alpaca.h>
 
 #include <grpcpp/grpcpp.h>
 #include "tc-server.grpc.pb.h"
@@ -144,7 +145,13 @@ public:
         PullPendingBlocksResponse* response
     ) override
     {
-        response->set_status(0); 
+        response->set_status(0);  
+        auto pb = tc_server_.lock()->pending_blks; 
+        for (auto iter = pb.begin(); iter != pb.end(); iter++)
+        {
+            
+        }
+        
         spdlog::info("pull pending blocks"); 
 
         grpc::ServerUnaryReactor* reactor = context->DefaultReactor();

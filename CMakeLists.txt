@@ -128,6 +128,7 @@ include_directories(third_party)
 include_directories(third_party/hashmap/inc)
 include_directories(third_party/evmc/include)
 include_directories(build/_deps/ecdsa_cxx-src/src)
+include_directories(third_party/c-plus-plus-serializer)
 
 include_directories(deps/folly/include)
 link_directories(deps/folly/lib)
