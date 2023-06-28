@@ -14,6 +14,16 @@
 
 namespace tomchain {
 
+typedef oneapi::tbb::concurrent_hash_map<
+    uint64_t, std::shared_ptr<ecdsa::PubKey>
+> ClientCHM; 
+typedef oneapi::tbb::concurrent_hash_map<
+    uint64_t, std::shared_ptr<Transaction>
+> TransactionCHM; 
+typedef oneapi::tbb::concurrent_hash_map<
+    uint64_t, std::shared_ptr<Block>
+> BlockCHM; 
+
 class TcServer : 
     public std::enable_shared_from_this<TcServer> {
 
@@ -41,9 +51,8 @@ public:
 
 public: 
     CTSL::HashMap<uint32_t, std::shared_ptr<ecdsa::PubKey>> clients;
-    CTSL::HashMap<uint32_t, Block> pending_blks; 
-    // CTSL::HashMap<uint32_t, Transaction> pending_txs; 
-    oneapi::tbb::concurrent_hash_map<uint32_t, std::shared_ptr<Transaction>> pending_txs;
+    BlockCHM pending_blks; 
+    TransactionCHM pending_txs;
 
 private: 
     std::unique_ptr<grpc::Server> grpc_server_; 

@@ -2,6 +2,7 @@
 #define TC_BLOCK_HDR
 
 #include <vector>
+#include <memory> 
 
 #include "transaction.hpp"
 
@@ -17,12 +18,14 @@ public:
     virtual ~Block(); 
 
 public: 
-    void insert(const Transaction tx);
+    void insert(std::shared_ptr<Transaction> tx);
 
 public: 
     uint64_t id_;
     uint64_t base_id_;
-    std::vector<Transaction> tx_vec_; 
+    std::vector<
+        std::shared_ptr<Transaction>
+    > tx_vec_; 
 };
 
 };

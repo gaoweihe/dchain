@@ -81,15 +81,53 @@ void TcServer::generate_tx(uint64_t num_tx)
             0, 
             0
         ); 
-        oneapi::tbb::concurrent_hash_map<uint32_t, std::shared_ptr<Transaction>>::accessor accessor; 
-        pending_txs.insert(accessor, tx_id);
-        accessor->second = std::make_shared<Transaction>(tx);
+        pending_txs.insert(
+            std::make_pair(tx_id, std::make_shared<Transaction>(tx))
+        ); 
     }
 }
 
 void TcServer::pack_block(uint64_t num_tx, uint64_t num_block)
 {
-    
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<
+        std::mt19937::result_type
+    > distribution(1, INT_MAX);
+
+    for (size_t i = 0; i < num_block; i++)
+    {
+        std::size_t pending_txs_size = pending_txs.size(); 
+        if (pending_txs_size >= num_tx) 
+        {
+            std::vector<uint64_t> extracted_tx; 
+            TransactionCHM::iterator it; 
+
+            // Construct new block 
+            uint64_t block_id = distribution(rng);
+            // TODO: base id
+            Block new_block(block_id, 0);
+            for(it = pending_txs.begin(); it != pending_txs.end(); ++it)
+            {
+                extracted_tx.push_back(it->first); 
+                new_block.tx_vec_.push_back(it->second); 
+            }
+
+            // Insert new block 
+            pending_blks.insert(
+                std::make_pair(block_id, std::make_shared<Block>(new_block))
+            ); 
+
+            // remove extracted pending transactions 
+            for (auto iter = extracted_tx.begin(); iter < extracted_tx.end(); iter++)
+            {
+                pending_txs.erase(*iter); 
+            }
+        }
+        else {
+            break; 
+        }
+    }
 }
 
 }

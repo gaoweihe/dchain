@@ -5,7 +5,9 @@ namespace tomchain {
 Block::Block(uint64_t id, uint64_t base_id)
     :id_(id), base_id_(base_id)
 {
-    this->tx_vec_ = std::vector<Transaction>(); 
+    this->tx_vec_ = std::vector<
+        std::shared_ptr<Transaction>
+    >(); 
 }
 
 Block::~Block()
@@ -13,7 +15,7 @@ Block::~Block()
     
 }
 
-void Block::insert(const Transaction tx)
+void Block::insert(std::shared_ptr<Transaction> tx)
 {
     this->tx_vec_.push_back(tx); 
 }
