@@ -146,6 +146,7 @@ int main(const int argc, const char* argv[])
 {
     spdlog::info("TomChain server starts. "); 
 
+    // set CLI argument parser
     argparse::ArgumentParser parser("tc-server");
     parser.add_argument("--cf")
         .help("configuration file")
@@ -153,23 +154,24 @@ int main(const int argc, const char* argv[])
         .default_value(std::string{""}); 
     parser.parse_args(argc, argv); 
     
+    // parse json configuration
     std::string conf_file_path = parser.get<std::string>("--cf");
     std::ifstream fs(conf_file_path);
     ::conf_data = std::make_shared<nlohmann::json>(nlohmann::json::parse(fs));
 
-    if ((*::conf_data)["grpc-server-addr"] == "info") 
-    {
-        spdlog::set_level(spdlog::level::info);
-    }
-    else if ((*::conf_data)["grpc-server-addr"] == "debug")
-    {
-        spdlog::set_level(spdlog::level::debug);
-    }
+    // set log level
+    spdlog::set_level(
+        spdlog::level::from_str(
+            (*::conf_data)["log-level"]
+        )
+    );
 
+    // start server
     std::shared_ptr<tomchain::TcServer> server = 
         std::make_shared<tomchain::TcServer>(); 
     server->start((*::conf_data)["grpc-listen-addr"]); 
 
+    // watch dog
     while(true) { 
         sleep(2);
         spdlog::info("server watchdog");
