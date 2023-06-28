@@ -138,7 +138,7 @@ grpc::Status TcClient::PullPendingBlocks()
             response.pb_hdrs(i)
         ); 
         const uint64_t block_hdr = Block::deserialize_header(block_hdr_ss);
-        spdlog::info("block: {}", block_hdr); 
+        spdlog::info("block header: {}", block_hdr); 
     }
 
     spdlog::info("pull pending block headers: {}:{}", 
@@ -177,6 +177,17 @@ grpc::Status TcClient::GetBlocks()
     while (!done) {
       cv.wait(lock);
     }
+
+    auto resp_blk = response.pb();
+    for (auto iter = resp_blk.begin(); iter != resp_blk.end(); iter++)
+    {
+        std::istringstream iss(*iter);
+        Block block; 
+        iss >> bits(block);
+
+        spdlog::info("get block: {}, {}", block.id_, block.base_id_); 
+    }
+    
 
     spdlog::info("get blocks: {}:{}", 
         status.error_code(), 

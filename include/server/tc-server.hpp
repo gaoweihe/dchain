@@ -180,6 +180,23 @@ public:
         response->set_status(0); 
         spdlog::info("get blocks"); 
 
+        auto pb = tc_server_.lock()->pending_blks; 
+
+        response->set_status(0);
+        
+        auto req_blk = request->pb_hdrs(); 
+        for (auto iter = req_blk.begin(); iter != req_blk.end(); iter++)
+        {
+            std::istringstream iss(*iter);
+            uint64_t blk_id = Block::deserialize_header(iss);
+            BlockCHM::const_accessor accessor;
+            pb.find(accessor, blk_id); 
+            const std::shared_ptr<tomchain::Block> block = accessor->second; 
+
+            std::string ser_blk = block->serialize(); 
+            response->add_pb(ser_blk); 
+        }
+
         grpc::ServerUnaryReactor* reactor = context->DefaultReactor();
         reactor->Finish(grpc::Status::OK);
         return reactor;

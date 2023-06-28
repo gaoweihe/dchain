@@ -18,6 +18,7 @@ namespace tomchain {
  */
 class Block {
 public: 
+    Block(); 
     Block(uint64_t id, uint64_t base_id_);
     virtual ~Block(); 
 

@@ -2,6 +2,8 @@
 
 namespace tomchain {
 
+Block::Block() { }
+
 Block::Block(uint64_t id, uint64_t base_id)
     :id_(id), base_id_(base_id)
 {
