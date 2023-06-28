@@ -110,6 +110,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(oneTBB)
 
+# alpaca
+FetchContent_Declare(
+    alpaca
+    GIT_REPOSITORY https://github.com/p-ranav/alpaca.git
+)
+FetchContent_MakeAvailable(alpaca)
+
 include_directories(include)
 include_directories(include/entity)
 include_directories(src)
@@ -143,6 +150,7 @@ target_link_libraries(tc-client
     nlohmann_json::nlohmann_json
     ecdsa++
     TBB::tbb
+    alpaca
     )
 
 # TomChain server 
@@ -157,4 +165,5 @@ target_link_libraries(tc-server
     nlohmann_json::nlohmann_json
     ecdsa++
     TBB::tbb
+    alpaca
     )

@@ -1,3 +1,6 @@
+#ifndef TC_CLIENT_HDR
+#define TC_CLIENT_HDR
+
 #include <memory>
 
 #include "HashMap.h"
@@ -89,3 +92,5 @@ private:
 };
 
 }
+
+#endif /* TC_CLIENT_HDR */

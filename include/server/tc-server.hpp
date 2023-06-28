@@ -1,3 +1,6 @@
+#ifndef TC_SERVER_HDR
+#define TC_SERVER_HDR
+
 #include <map>
 #include <memory>
 
@@ -63,14 +66,13 @@ class TcConsensusImpl final :
     public TcConsensus::CallbackService {
 
 public: 
+    /**
+     * @brief Reference to TomChain server instance 
+     * 
+     */
     std::weak_ptr<TcServer> tc_server_; 
 
 public:
-    // TcConsensusImpl::TcConsensusImpl() 
-    // {
-
-    // }
-
     /**
      * @brief Client registers when it connects to server. 
      * 
@@ -177,3 +179,5 @@ public:
 };
 
 }
+
+#endif /* TC_SERVER_HDR */
