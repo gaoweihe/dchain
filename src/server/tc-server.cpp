@@ -157,6 +157,15 @@ int main(const int argc, const char* argv[])
     std::ifstream fs(conf_file_path);
     ::conf_data = std::make_shared<nlohmann::json>(nlohmann::json::parse(fs));
 
+    if ((*::conf_data)["grpc-server-addr"] == "info") 
+    {
+        spdlog::set_level(spdlog::level::info);
+    }
+    else if ((*::conf_data)["grpc-server-addr"] == "debug")
+    {
+        spdlog::set_level(spdlog::level::debug);
+    }
+
     std::shared_ptr<tomchain::TcServer> server = 
         std::make_shared<tomchain::TcServer>(); 
     server->start((*::conf_data)["grpc-listen-addr"]); 
