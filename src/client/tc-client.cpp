@@ -28,7 +28,8 @@ TcClient::~TcClient()
 grpc::Status TcClient::Register()
 {
     RegisterRequest request; 
-    const std::vector<uint8_t>& ser_pkey = this->pkey->get_pub_key_data();
+    request.set_id(this->client_id);
+    const std::vector<uint8_t>& ser_pkey = this->ecc_pkey->get_pub_key_data();
     request.set_pkey(ser_pkey.data(), ser_pkey.size());
     RegisterResponse response; 
 
@@ -55,6 +56,31 @@ grpc::Status TcClient::Register()
     while (!done) {
       cv.wait(lock);
     }
+
+    auto tss_sk_str = response.tss_sk();
+    BLSPrivateKeyShare skey_share(
+        tss_sk_str, 
+        (*::conf_data)["client-count"], 
+        (*::conf_data)["client-count"]
+    );
+    std::shared_ptr<libff::alt_bn128_Fr> skey_raw = skey_share.getPrivateKey(); 
+    BLSPublicKeyShare pkey_share(
+        *skey_raw, 
+        (*::conf_data)["client-count"], 
+        (*::conf_data)["client-count"]
+    ); 
+    this->tss_key = std::make_shared<std::pair<
+        std::shared_ptr<BLSPrivateKeyShare>, 
+        std::shared_ptr<BLSPublicKeyShare>
+    >>(
+        std::make_pair<
+            std::shared_ptr<BLSPrivateKeyShare>, 
+            std::shared_ptr<BLSPublicKeyShare>
+        >(
+            std::make_shared<BLSPrivateKeyShare>(skey_share), 
+            std::make_shared<BLSPublicKeyShare>(pkey_share)
+        )
+    );
 
     spdlog::info("gRPC(register): {}:{}", 
         status.error_code(), 
@@ -225,9 +251,11 @@ grpc::Status TcClient::GetBlocks()
 
 void TcClient::init()
 {
-    this->client_id = 0; 
-    this->skey = std::make_shared<ecdsa::Key>(ecdsa::Key());
-    this->pkey = std::make_shared<ecdsa::PubKey>(this->skey->CreatePubKey());
+    this->client_id = (*::conf_data)["client-id"]; 
+    this->ecc_skey = std::make_shared<ecdsa::Key>(ecdsa::Key());
+    this->ecc_pkey = std::make_shared<ecdsa::PubKey>(
+        this->ecc_skey->CreatePubKey()
+    );
 }
 
 void TcClient::start() 

@@ -101,6 +101,7 @@ public:
         RegisterResponse* response
     ) override
     {
+        uint32_t client_id = request->id();
         std::string pkey_str = request->pkey();
         std::vector<uint8_t> pkey_data_vec(pkey_str.begin(), pkey_str.end());
         ecdsa::PubKey pkey(pkey_data_vec); 
@@ -109,12 +110,13 @@ public:
 
         // update ecdsa pubic key
         ClientCHM::accessor accessor;
-        shared_tc_server->clients.find(accessor, 1);
+        shared_tc_server->clients.find(accessor, client_id);
         accessor->second->ecc_pkey = std::make_shared<ecdsa::PubKey>(
             std::move(pkey)
         ); 
 
-        response->set_id(1);
+        response->set_id(client_id);
+        response->set_tss_sk(*(accessor->second->tss_key->first->toString()));
         response->set_status(0); 
         spdlog::info("register"); 
 

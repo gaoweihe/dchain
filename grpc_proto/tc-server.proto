@@ -14,7 +14,8 @@ service TcConsensus {
 }
 
 message RegisterRequest {
-    bytes pkey = 1;
+    uint32 id = 1;
+    bytes pkey = 2;
 }
 
 message RegisterResponse {

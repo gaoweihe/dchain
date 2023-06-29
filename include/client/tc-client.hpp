@@ -11,6 +11,7 @@
 #include "tc-server.grpc.pb.h"
 #include "key.h"
 #include "oneapi/tbb/concurrent_hash_map.h"
+#include "libBLS/libBLS.h"
 
 namespace tomchain {
 
@@ -90,12 +91,16 @@ public:
     grpc::Status GetBlocks(); 
 
 public: 
-    std::shared_ptr<ecdsa::Key> skey;
-    std::shared_ptr<ecdsa::PubKey> pkey;
+    std::shared_ptr<ecdsa::Key> ecc_skey;
+    std::shared_ptr<ecdsa::PubKey> ecc_pkey;
     uint32_t client_id;
     AccountCHM accounts;
     BlockCHM pending_blks;
     BlockHeaderCHM pending_blkhdr;
+    std::shared_ptr<std::pair<
+        std::shared_ptr<BLSPrivateKeyShare>, 
+        std::shared_ptr<BLSPublicKeyShare>
+    >> tss_key;
 
 private: 
     /**
