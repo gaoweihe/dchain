@@ -56,7 +56,7 @@ grpc::Status TcClient::Register()
       cv.wait(lock);
     }
 
-    spdlog::info("register: {}:{}", 
+    spdlog::info("gRPC(register): {}:{}", 
         status.error_code(), 
         status.error_message()
     ); 
@@ -94,7 +94,7 @@ grpc::Status TcClient::Heartbeat()
       cv.wait(lock);
     }
 
-    spdlog::info("heartbeat: {}:{}", 
+    spdlog::info("gRPC(heartbeat): {}:{}", 
         status.error_code(), 
         status.error_message()
     ); 
@@ -140,10 +140,16 @@ grpc::Status TcClient::PullPendingBlocks()
 
         BlockHeader block_hdr;
         block_hdr_ss >> bits(block_hdr);
+        pending_blkhdr.insert(
+            std::make_pair(
+                block_hdr.id_, 
+                std::make_shared<BlockHeader>(block_hdr)
+            )
+        );
         spdlog::info("block id: {}", block_hdr.id_); 
     }
 
-    spdlog::info("pull pending block headers: {}:{}", 
+    spdlog::info("gRPC(pull pending block headers): {}:{}", 
         status.error_code(), 
         status.error_message()
     ); 
@@ -154,6 +160,14 @@ grpc::Status TcClient::PullPendingBlocks()
 grpc::Status TcClient::GetBlocks()
 {
     GetBlocksRequest request; 
+    for (auto iter = pending_blkhdr.begin(); iter != pending_blkhdr.end(); iter++)
+    {
+        std::stringstream ss; 
+        ss << bits(*(iter->second));
+        auto blk_hdr_str = ss.str();
+        request.add_pb_hdrs(blk_hdr_str);
+    }
+    
     GetBlocksResponse response; 
 
     grpc::ClientContext context;
@@ -187,11 +201,21 @@ grpc::Status TcClient::GetBlocks()
         Block block; 
         iss >> bits(block);
 
+        pending_blks.insert(
+            std::make_pair(
+                block.header_.id_, 
+                std::make_shared<Block>(block)
+            )
+        ); 
+
+        // remove block header from CHM
+        pending_blks.erase(block.header_.id_); 
+
         spdlog::info("get block: {}, {}", block.header_.id_, block.header_.base_id_); 
     }
     
 
-    spdlog::info("get blocks: {}:{}", 
+    spdlog::info("gRPC(get blocks): {}:{}", 
         status.error_code(), 
         status.error_message()
     ); 
@@ -223,6 +247,7 @@ void TcClient::schedule()
 
     t.setInterval([&]() {
         this->PullPendingBlocks(); 
+        this->GetBlocks(); 
     }, (*::conf_data)["pull-pb-interval"]);
 
     while(true) { sleep(INT_MAX); }

@@ -20,6 +20,9 @@ typedef oneapi::tbb::concurrent_hash_map<
 typedef oneapi::tbb::concurrent_hash_map<
     uint64_t, std::shared_ptr<Block>
 > BlockCHM; 
+typedef oneapi::tbb::concurrent_hash_map<
+    uint64_t, std::shared_ptr<BlockHeader>
+> BlockHeaderCHM; 
 
 class TcClient {
 
@@ -91,6 +94,8 @@ public:
     std::shared_ptr<ecdsa::PubKey> pkey;
     uint32_t client_id;
     AccountCHM accounts;
+    BlockCHM pending_blks;
+    BlockHeaderCHM pending_blkhdr;
 
 private: 
     /**

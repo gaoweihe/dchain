@@ -20,6 +20,7 @@ message RegisterRequest {
 message RegisterResponse {
     uint32 status = 1;
     uint32 id = 2;
+    optional bytes tss_sk = 3;
 }
 
 message HeartbeatRequest {

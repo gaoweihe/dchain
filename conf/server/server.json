@@ -1,8 +1,10 @@
 {
+    "server-id": 1, 
     "grpc-listen-addr": "0.0.0.0:2510", 
     "peer-addr": [], 
     "scheduler_freq": 1000, 
     "generate-tx-rate": 1, 
     "tx-per-block": 1, 
-    "log-level": "info"
+    "log-level": "info", 
+    "client-count": 1
 }

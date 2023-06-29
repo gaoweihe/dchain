@@ -186,8 +186,8 @@ public:
 
         response->set_status(0);
         
-        auto req_blk = request->pb_hdrs(); 
-        for (auto iter = req_blk.begin(); iter != req_blk.end(); iter++)
+        auto req_blk_hdr = request->pb_hdrs(); 
+        for (auto iter = req_blk_hdr.begin(); iter != req_blk_hdr.end(); iter++)
         {
             std::istringstream iss(*iter);
             BlockHeader blk_hdr;
