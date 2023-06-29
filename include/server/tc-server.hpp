@@ -9,6 +9,7 @@
 #include "key.h"
 #include "oneapi/tbb/concurrent_hash_map.h"
 #include <alpaca/alpaca.h>
+#include "libBLS/libBLS.h"
 
 #include <grpcpp/grpcpp.h>
 #include "tc-server.grpc.pb.h"
@@ -22,6 +23,10 @@ class ClientProfile {
 public: 
     uint64_t id;
     std::shared_ptr<ecdsa::PubKey> ecc_pkey;
+    std::shared_ptr<std::pair<
+        std::shared_ptr<BLSPrivateKeyShare>, 
+        std::shared_ptr<BLSPublicKeyShare>
+    >> tss_key;
 };
 
 typedef oneapi::tbb::concurrent_hash_map<
@@ -48,6 +53,8 @@ public:
      * @param addr Listen address. 
      */
     void start(const std::string addr); 
+
+    void init_client_profile(); 
 
     /**
      * @brief Server scheduler. 

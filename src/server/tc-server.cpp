@@ -25,20 +25,7 @@ TcServer::~TcServer()
 
 void TcServer::start(const std::string addr)
 {
-    auto client_count = (*::conf_data)["client-count"]; 
-
-    // client number starts from one
-    for (size_t i = 0; i < client_count; i++)
-    {
-        ClientProfile client_profile;
-        client_profile.id = i + 1;
-        clients.insert(
-            std::make_pair(
-                client_profile.id, 
-                std::make_shared<ClientProfile>(client_profile)
-            )
-        );
-    }
+    this->init_client_profile(); 
     
     std::thread grpc_thread([&]() {
         std::shared_ptr<TcServer> shared_from_tc_server = shared_from_this(); 
@@ -62,6 +49,44 @@ void TcServer::start(const std::string addr)
         this->schedule(); 
     }); 
     schedule_thread.detach();
+}
+
+void TcServer::init_client_profile()
+{
+    auto client_count = (*::conf_data)["client-count"]; 
+
+    DKGBLSWrapper dkg_obj(client_count, client_count);
+    std::shared_ptr<std::vector<libff::alt_bn128_Fr>> sshares = dkg_obj.createDKGSecretShares(); 
+
+    // client number starts from one
+    for (size_t i = 0; i < client_count; i++)
+    {
+        ClientProfile client_profile;
+        client_profile.id = i + 1;
+
+        // TSS keys 
+        BLSPrivateKeyShare skey_share(sshares->at(i), client_count, client_count);
+        BLSPublicKeyShare pkey_share(sshares->at(i), client_count, client_count); 
+        client_profile.tss_key = std::make_shared<std::pair<
+            std::shared_ptr<BLSPrivateKeyShare>, 
+            std::shared_ptr<BLSPublicKeyShare>
+        >>(
+            std::make_pair<
+                std::shared_ptr<BLSPrivateKeyShare>, 
+                std::shared_ptr<BLSPublicKeyShare>
+            >(
+                std::make_shared<BLSPrivateKeyShare>(skey_share), 
+                std::make_shared<BLSPublicKeyShare>(pkey_share)
+            )
+        );
+
+        clients.insert(
+            std::make_pair(
+                client_profile.id, 
+                std::make_shared<ClientProfile>(client_profile)
+            )
+        );
+    }
 }
 
 void TcServer::schedule()

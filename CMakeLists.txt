@@ -117,6 +117,23 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(alpaca)
 
+set(LIBBLS_SOURCES_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libBLS/deps)
+set(LIBBLS_INSTALL_ROOT ${LIBBLS_SOURCES_ROOT}/deps_inst/x86_or_x64)
+
+include_directories(
+    ${LIBBLS_INSTALL_ROOT}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libBLS 
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libBLS/threshold_encryption
+    )
+set(CMAKE_PREFIX_PATH ${LIBBLS_INSTALL_ROOT})
+
+find_library(BLS_LOC bls PATHS ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libBLS/build)
+find_library( GMP_LIBRARY NAMES "gmp" PATHS "${LIBBLS_INSTALL_ROOT}/lib" )
+find_library( GMPXX_LIBRARY NAMES "gmpxx" PATHS "${LIBBLS_INSTALL_ROOT}/lib" )
+find_library( SSL_LIB NAMES "ssl" PATHS "${LIBBLS_INSTALL_ROOT}/lib")
+find_library( CRYPTO_LIB NAMES "crypto"  PATHS "${LIBBLS_INSTALL_ROOT}/lib")
+find_library( FF_LIB NAMES NAMES "ff" PATHS "${LIBBLS_INSTALL_ROOT}/lib")
+
 include_directories(include)
 include_directories(include/entity)
 include_directories(src)
@@ -152,6 +169,7 @@ target_link_libraries(tc-client
     ecdsa++
     TBB::tbb
     alpaca
+    ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     )
 
 # TomChain server 
@@ -167,4 +185,5 @@ target_link_libraries(tc-server
     ecdsa++
     TBB::tbb
     alpaca
+    ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     )
