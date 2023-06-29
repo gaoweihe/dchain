@@ -11,6 +11,8 @@ service TcConsensus {
         returns (PullPendingBlocksResponse);
     rpc GetBlocks (GetBlocksRequest)
         returns (GetBlocksResponse);
+    rpc VoteBlocks(VoteBlocksRequest)
+        returns (VoteBlocksResponse); 
 }
 
 message RegisterRequest {
@@ -48,4 +50,13 @@ message GetBlocksRequest {
 message GetBlocksResponse {
     uint32 status = 1; 
     repeated bytes pb = 2;
+}
+
+message VoteBlocksRequest {
+    uint32 id = 1; 
+    repeated bytes votes = 2; 
+}
+
+message VoteBlocksResponse {
+    uint32 status = 1; 
 }

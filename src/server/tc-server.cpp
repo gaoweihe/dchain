@@ -9,7 +9,7 @@
 #include "argparse/argparse.hpp"
 #include <nlohmann/json.hpp>
 
-static std::shared_ptr<nlohmann::json> conf_data; 
+std::shared_ptr<nlohmann::json> conf_data; 
 
 namespace tomchain {
 

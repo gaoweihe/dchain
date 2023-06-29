@@ -155,6 +155,10 @@ add_library(tc-entity SHARED
     src/entity/transaction.cpp 
     src/entity/block.cpp
     )
+target_link_libraries(tc-entity 
+    nlohmann_json::nlohmann_json
+    ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
+    )
 
 # TomChain client 
 add_executable(tc-client 
