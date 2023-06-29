@@ -3,14 +3,23 @@
 
 #include <memory>
 
-#include "entity/block.hpp"
+#include "entity/block.hpp" 
+#include "entity/transaction.hpp" 
 
 #include "HashMap.h"
 #include <grpcpp/grpcpp.h>
 #include "tc-server.grpc.pb.h"
 #include "key.h"
+#include "oneapi/tbb/concurrent_hash_map.h"
 
 namespace tomchain {
+
+typedef oneapi::tbb::concurrent_hash_map<
+    uint32_t, uint64_t
+> AccountCHM; 
+typedef oneapi::tbb::concurrent_hash_map<
+    uint64_t, std::shared_ptr<Block>
+> BlockCHM; 
 
 class TcClient {
 
@@ -81,7 +90,7 @@ public:
     std::shared_ptr<ecdsa::Key> skey;
     std::shared_ptr<ecdsa::PubKey> pkey;
     uint32_t client_id;
-    CTSL::HashMap<uint32_t, uint64_t> accounts;
+    AccountCHM accounts;
 
 private: 
     /**

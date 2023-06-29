@@ -12,6 +12,15 @@
 
 namespace tomchain {
 
+class BlockHeader {
+public: 
+    uint64_t id_;
+    uint64_t base_id_;
+
+    friend std::ostream& operator<<(std::ostream &out, Bits<class BlockHeader & > obj); 
+    friend std::istream& operator>>(std::istream &in, Bits<class BlockHeader &> obj); 
+}; 
+
 /**
  * @brief Defines the block data structure in TomChain. 
  * 
@@ -19,57 +28,31 @@ namespace tomchain {
 class Block {
 public: 
     Block(); 
-    Block(uint64_t id, uint64_t base_id_);
+    Block(uint64_t id, uint64_t base_id);
     virtual ~Block(); 
 
 public: 
     friend std::ostream& operator<<(std::ostream &out, Bits<class Block & > obj)
     {
         out << 
-            bits(obj.t.id_) << 
-            bits(obj.t.base_id_) <<
+            bits(obj.t.header_) << 
             bits(obj.t.tx_vec_);
-        return (out);
+        return out;
     }
 
     friend std::istream& operator>>(std::istream &in, Bits<class Block &> obj)
     {
         in >> 
-            bits(obj.t.id_) >> 
-            bits(obj.t.base_id_) >>
+            bits(obj.t.header_) >> 
             bits(obj.t.tx_vec_);
-        return (in);
-    }
-
-    std::string serialize() const
-    {
-        std::stringstream ss;
-        ss << this;
-        std::string str = ss.str();
-        return str;
-    }
-
-    std::string serialize_header() const
-    {
-        std::stringstream ss;
-        ss << bits(id_); 
-        std::string str = ss.str();
-        return str;
-    }
-
-    static uint64_t deserialize_header(std::istream& is)
-    {
-        uint64_t id; 
-        is >> bits(id); 
-        return id; 
+        return in;
     }
 
 public: 
     void insert(std::shared_ptr<Transaction> tx);
 
 public: 
-    uint64_t id_;
-    uint64_t base_id_;
+    BlockHeader header_; 
     std::vector<
         std::shared_ptr<Transaction>
     > tx_vec_; 

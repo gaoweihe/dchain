@@ -152,7 +152,9 @@ public:
         for (auto iter = pb.begin(); iter != pb.end(); iter++)
         {
             auto blk = iter->second; 
-            auto blk_hdr_str = blk->serialize_header(); 
+            std::stringstream ss; 
+            ss << bits(blk->header_);
+            auto blk_hdr_str = ss.str(); 
             response->add_pb_hdrs(blk_hdr_str);
         }
         
@@ -188,12 +190,15 @@ public:
         for (auto iter = req_blk.begin(); iter != req_blk.end(); iter++)
         {
             std::istringstream iss(*iter);
-            uint64_t blk_id = Block::deserialize_header(iss);
+            BlockHeader blk_hdr;
+            iss >> bits(blk_hdr); 
             BlockCHM::const_accessor accessor;
-            pb.find(accessor, blk_id); 
+            pb.find(accessor, blk_hdr.id_); 
             const std::shared_ptr<tomchain::Block> block = accessor->second; 
 
-            std::string ser_blk = block->serialize(); 
+            std::stringstream ss; 
+            ss << block; 
+            std::string ser_blk = ss.str(); 
             response->add_pb(ser_blk); 
         }
 
