@@ -18,8 +18,14 @@
 
 namespace tomchain {
 
+class ClientProfile {
+public: 
+    uint64_t id;
+    std::shared_ptr<ecdsa::PubKey> ecc_pkey;
+};
+
 typedef oneapi::tbb::concurrent_hash_map<
-    uint64_t, std::shared_ptr<ecdsa::PubKey>
+    uint64_t, std::shared_ptr<ClientProfile>
 > ClientCHM; 
 typedef oneapi::tbb::concurrent_hash_map<
     uint64_t, std::shared_ptr<Transaction>
@@ -93,13 +99,12 @@ public:
         ecdsa::PubKey pkey(pkey_data_vec); 
         // lock weak pointer to get shared pointer 
         std::shared_ptr<TcServer> shared_tc_server = tc_server_.lock();
-        shared_tc_server->clients.insert(
-            std::make_pair(            
-                1, 
-                std::make_shared<ecdsa::PubKey>(
-                    std::move(pkey)
-                )
-            )
+
+        // update ecdsa pubic key
+        ClientCHM::accessor accessor;
+        shared_tc_server->clients.find(accessor, 1);
+        accessor->second->ecc_pkey = std::make_shared<ecdsa::PubKey>(
+            std::move(pkey)
         ); 
 
         response->set_id(1);

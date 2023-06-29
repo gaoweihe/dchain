@@ -25,6 +25,21 @@ TcServer::~TcServer()
 
 void TcServer::start(const std::string addr)
 {
+    auto client_count = (*::conf_data)["client-count"]; 
+
+    // client number starts from one
+    for (size_t i = 0; i < client_count; i++)
+    {
+        ClientProfile client_profile;
+        client_profile.id = i + 1;
+        clients.insert(
+            std::make_pair(
+                client_profile.id, 
+                std::make_shared<ClientProfile>(client_profile)
+            )
+        );
+    }
+    
     std::thread grpc_thread([&]() {
         std::shared_ptr<TcServer> shared_from_tc_server = shared_from_this(); 
         std::shared_ptr<TcConsensusImpl> consensus_service = 
