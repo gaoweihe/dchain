@@ -13,3 +13,6 @@
 [submodule "third_party/c-plus-plus-serializer"]
 	path = third_party/c-plus-plus-serializer
 	url = https://github.com/goblinhack/c-plus-plus-serializer.git
+[submodule "third_party/hash-library"]
+	path = third_party/hash-library
+	url = https://github.com/stbrumme/hash-library.git
