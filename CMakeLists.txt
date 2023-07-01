@@ -1,7 +1,7 @@
 cmake_minimum_required( VERSION 3.26 )
 set( CMAKE_CXX_STANDARD 20 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON ) 
-set( CMAKE_BUILD_TYPE "Release" )
+set( CMAKE_BUILD_TYPE "Debug" )
 
 project(tomchain)
 
@@ -96,12 +96,12 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(ecdsa_cxx)
 
-# ecdsa_cxx
+# PicoSHA2
 FetchContent_Declare(
-    ecdsa_cxx
-    GIT_REPOSITORY https://github.com/gladosconn/ecdsa_cxx.git
+    PicoSHA2
+    GIT_REPOSITORY https://github.com/okdshin/PicoSHA2.git
 )
-FetchContent_MakeAvailable(ecdsa_cxx)
+FetchContent_MakeAvailable(PicoSHA2)
 
 # oneTBB
 FetchContent_Declare(
@@ -116,6 +116,22 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/p-ranav/alpaca.git
 )
 FetchContent_MakeAvailable(alpaca)
+
+# msgpack
+FetchContent_Declare(
+    msgpack
+    GIT_REPOSITORY https://github.com/msgpack/msgpack-c.git
+    GIT_TAG cpp_master
+)
+FetchContent_MakeAvailable(msgpack)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/msgpack-src/include)
+
+# flatbuffers
+FetchContent_Declare(
+    flatbuffers
+    GIT_REPOSITORY https://github.com/google/flatbuffers.git
+)
+FetchContent_MakeAvailable(flatbuffers)
 
 set(LIBBLS_SOURCES_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libBLS/deps)
 set(LIBBLS_INSTALL_ROOT ${LIBBLS_SOURCES_ROOT}/deps_inst/x86_or_x64)
@@ -157,6 +173,8 @@ add_library(tc-entity SHARED
     )
 target_link_libraries(tc-entity 
     nlohmann_json::nlohmann_json
+    TBB::tbb
+    picosha2
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     )
 
@@ -173,6 +191,8 @@ target_link_libraries(tc-client
     ecdsa++
     TBB::tbb
     alpaca
+    picosha2
+    flatbuffers
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     )
 
@@ -189,5 +209,7 @@ target_link_libraries(tc-server
     ecdsa++
     TBB::tbb
     alpaca
+    picosha2
+    flatbuffers
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     )

@@ -90,6 +90,8 @@ public:
      */
     grpc::Status GetBlocks(); 
 
+    grpc::Status VoteBlocks(); 
+
 public: 
     std::shared_ptr<ecdsa::Key> ecc_skey;
     std::shared_ptr<ecdsa::PubKey> ecc_pkey;
@@ -101,6 +103,8 @@ public:
         std::shared_ptr<BLSPrivateKeyShare>, 
         std::shared_ptr<BLSPublicKeyShare>
     >> tss_key;
+    BlockCHM voted_blks; 
+    BlockCHM committed_blks; 
 
 private: 
     /**

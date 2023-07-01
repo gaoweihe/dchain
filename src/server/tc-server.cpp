@@ -7,7 +7,6 @@
 #include "timercpp/timercpp.h"
 #include "spdlog/spdlog.h"
 #include "argparse/argparse.hpp"
-#include <nlohmann/json.hpp>
 
 std::shared_ptr<nlohmann::json> conf_data; 
 
@@ -167,6 +166,7 @@ void TcServer::pack_block(uint64_t num_tx, uint64_t num_block)
             pending_blks.insert(
                 std::make_pair(block_id, std::make_shared<Block>(new_block))
             ); 
+            spdlog::info("gen block: {}", block_id); 
 
             // remove extracted pending transactions 
             for (auto iter = extracted_tx.begin(); iter < extracted_tx.end(); iter++)

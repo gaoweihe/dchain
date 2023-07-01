@@ -5,6 +5,7 @@
 #include <ostream>
 
 #include "c_plus_plus_serializer.h"
+#include "msgpack.hpp"
 #include <evmc/evmc.hpp>
 
 namespace tomchain {
@@ -15,6 +16,7 @@ namespace tomchain {
  */
 class Transaction {
 public: 
+    Transaction(); 
     Transaction(
         uint64_t id, 
         uint64_t sender, 
@@ -76,6 +78,14 @@ public:
      * 
      */
     uint64_t fee_; 
+
+    // MSGPACK_DEFINE(
+    //     id_, 
+    //     sender_, 
+    //     receiver_, 
+    //     value_, 
+    //     fee_
+    // ); 
 };
 
 }

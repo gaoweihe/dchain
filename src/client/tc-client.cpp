@@ -7,6 +7,7 @@
 
 #include "timercpp/timercpp.h"
 #include "spdlog/spdlog.h"
+#include "spdlog/fmt/bin_to_hex.h"
 #include "argparse/argparse.hpp"
 #include <nlohmann/json.hpp>
 
@@ -186,6 +187,7 @@ grpc::Status TcClient::PullPendingBlocks()
 grpc::Status TcClient::GetBlocks()
 {
     GetBlocksRequest request; 
+
     for (auto iter = pending_blkhdr.begin(); iter != pending_blkhdr.end(); iter++)
     {
         std::stringstream ss; 
@@ -220,28 +222,116 @@ grpc::Status TcClient::GetBlocks()
       cv.wait(lock);
     }
 
+    spdlog::info("stub1"); 
+
     auto resp_blk = response.pb();
     for (auto iter = resp_blk.begin(); iter != resp_blk.end(); iter++)
     {
+        spdlog::info("stub2");
+
         std::istringstream iss(*iter);
-        Block block; 
+        spdlog::info("stub21: {}", spdlog::to_hex(*iter));
+        tomchain::Block block; 
         iss >> bits(block);
+
+        spdlog::info("stub3"); 
 
         pending_blks.insert(
             std::make_pair(
                 block.header_.id_, 
-                std::make_shared<Block>(block)
+                std::make_shared<tomchain::Block>(block)
             )
         ); 
 
+        spdlog::info("stub4"); 
+
         // remove block header from CHM
-        pending_blks.erase(block.header_.id_); 
+        pending_blkhdr.erase(block.header_.id_); 
+
+        spdlog::info("stub5"); 
 
         spdlog::info("get block: {}, {}", block.header_.id_, block.header_.base_id_); 
     }
+
+    spdlog::info("stub6"); 
     
 
     spdlog::info("gRPC(get blocks): {}:{}", 
+        status.error_code(), 
+        status.error_message()
+    ); 
+
+    return status; 
+}
+
+grpc::Status TcClient::VoteBlocks()
+{
+    VoteBlocksRequest request; 
+    request.set_id(this->client_id); 
+    for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
+    {
+        auto block_hash_str = iter->second->get_sha256();
+
+        // client_id starts from 1, whereas signer_index starts from 0 
+        auto signer_index = this->client_id - 1;
+        std::shared_ptr<BLSSigShare> sig_share = 
+            this->tss_key->first->sign(block_hash_str, this->client_id); 
+        BlockVote bv;
+        bv.sig_share_ = sig_share;
+
+        const uint64_t block_id = iter->second->header_.id_; 
+        iter->second->votes_.insert(
+            std::make_pair(
+                block_id, 
+                std::make_shared<BlockVote>(bv)
+            )
+        );
+
+        std::stringstream ss; 
+        ss << bits(*(iter->second));
+        std::string block_ser = ss.str(); 
+        request.add_voted_blocks(block_ser); 
+    }
+    
+    VoteBlocksResponse response; 
+
+    grpc::ClientContext context;
+    std::mutex mu;
+    std::condition_variable cv;
+    bool done = false;
+
+    grpc::Status status;
+    stub_->async()->VoteBlocks(
+        &context, 
+        &request, 
+        &response,
+        [&mu, &cv, &done, &status](grpc::Status s) 
+        {
+            status = std::move(s);
+            std::lock_guard<std::mutex> lock(mu);
+            done = true;
+            cv.notify_one();
+        }
+    );
+
+    std::unique_lock<std::mutex> lock(mu);
+    while (!done) {
+      cv.wait(lock);
+    }
+
+    for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
+    {
+        voted_blks.insert(
+            std::make_pair(
+                iter->first, 
+                iter->second
+            )
+        ); 
+    }
+    pending_blks.clear(); 
+    
+
+    spdlog::info("gRPC(vote blocks): {}:{}", 
         status.error_code(), 
         status.error_message()
     ); 
@@ -260,7 +350,7 @@ void TcClient::init()
 
 void TcClient::start() 
 {
-    this->Register(); 
+    this->Register();
     this->schedule();
 }
 
@@ -276,6 +366,7 @@ void TcClient::schedule()
     t.setInterval([&]() {
         this->PullPendingBlocks(); 
         this->GetBlocks(); 
+        this->VoteBlocks(); 
     }, (*::conf_data)["pull-pb-interval"]);
 
     while(true) { sleep(INT_MAX); }
