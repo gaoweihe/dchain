@@ -73,6 +73,7 @@ FetchContent_Declare(
   GIT_TAG        v1.11.0
 )
 FetchContent_MakeAvailable(spdlog)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/spdlog-src/include)
 
 # argparse
 FetchContent_Declare(
@@ -102,6 +103,7 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/okdshin/PicoSHA2.git
 )
 FetchContent_MakeAvailable(PicoSHA2)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/picosha2-src)
 
 # oneTBB
 FetchContent_Declare(
@@ -109,6 +111,7 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/oneapi-src/oneTBB.git
 )
 FetchContent_MakeAvailable(oneTBB)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/onetbb-src/include)
 
 # alpaca
 FetchContent_Declare(
@@ -211,5 +214,13 @@ target_link_libraries(tc-server
     alpaca
     picosha2
     flatbuffers
+    ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
+    )
+
+# tests
+add_executable(test_msgpack
+    test/test_msgpack.cpp
+    )
+target_link_libraries(test_msgpack
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     )

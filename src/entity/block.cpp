@@ -7,21 +7,21 @@ extern std::shared_ptr<nlohmann::json> conf_data;
 
 namespace tomchain {
 
-std::ostream& operator<<(std::ostream &out, Bits<class BlockHeader&> obj)
-{
-    out << 
-        bits(obj.t.id_) << 
-        bits(obj.t.base_id_);
-    return out;
-}
+// std::ostream& operator<<(std::ostream &out, Bits<class BlockHeader&> obj)
+// {
+//     out << 
+//         bits(obj.t.id_) << 
+//         bits(obj.t.base_id_);
+//     return out;
+// }
 
-std::istream& operator>>(std::istream &in, Bits<class BlockHeader&> obj)
-{
-    in >>
-        bits(obj.t.id_) >> 
-        bits(obj.t.base_id_);
-    return in;
-}
+// std::istream& operator>>(std::istream &in, Bits<class BlockHeader&> obj)
+// {
+//     in >>
+//         bits(obj.t.id_) >> 
+//         bits(obj.t.base_id_);
+//     return in;
+// }
 
 Block::Block() { }
 
@@ -61,56 +61,56 @@ std::shared_ptr<std::array<uint8_t, picosha2::k_digest_size>> Block::get_sha256(
     return spHashArr;
 }
 
-std::ostream& operator<<(std::ostream &out, Bits<class Block&> obj)
-{
-    out << 
-        bits(obj.t.header_) << 
-        bits(obj.t.tx_vec_) << 
-        bits(obj.t.votes_);
-    return out;
-}
+// std::ostream& operator<<(std::ostream &out, Bits<class Block&> obj)
+// {
+//     out << 
+//         bits(obj.t.header_) << 
+//         bits(obj.t.tx_vec_) << 
+//         bits(obj.t.votes_);
+//     return out;
+// }
 
-std::istream& operator>>(std::istream &in, Bits<class Block&> obj)
-{
-    in >> 
-        bits(obj.t.header_) >> 
-        bits(obj.t.tx_vec_) >>
-        bits(obj.t.votes_);
-    return in;
-}
+// std::istream& operator>>(std::istream &in, Bits<class Block&> obj)
+// {
+//     in >> 
+//         bits(obj.t.header_) >> 
+//         bits(obj.t.tx_vec_) >>
+//         bits(obj.t.votes_);
+//     return in;
+// }
 
 BlockVote::BlockVote() { }
 
-std::ostream& operator<<(std::ostream &out, Bits<class BlockVote&> obj)
-{
-    out << 
-        bits((uint32_t)(obj.t.sig_share_->getSignerIndex())) <<
-        bits((uint32_t)(obj.t.sig_share_->getRequiredSigners())) <<
-        bits((uint32_t)(obj.t.sig_share_->getTotalSigners())) <<
-        bits(*(obj.t.sig_share_->toString()));
-    return out;
-}
+// std::ostream& operator<<(std::ostream &out, Bits<class BlockVote&> obj)
+// {
+//     out << 
+//         bits((uint32_t)(obj.t.sig_share_->getSignerIndex())) <<
+//         bits((uint32_t)(obj.t.sig_share_->getRequiredSigners())) <<
+//         bits((uint32_t)(obj.t.sig_share_->getTotalSigners())) <<
+//         bits(*(obj.t.sig_share_->toString()));
+//     return out;
+// }
 
-std::istream& operator>>(std::istream &in, Bits<class BlockVote&> obj)
-{
-    std::string sig_share_str;
-    uint32_t signer_index; 
-    uint32_t required_signers;
-    uint32_t total_signers; 
-    in >> 
-        bits(signer_index) >> 
-        bits(required_signers) >> 
-        bits(total_signers) >> 
-        bits(sig_share_str);
-    obj.t.sig_share_ = std::make_shared<BLSSigShare>(
-        BLSSigShare(
-            std::make_shared<std::string>(sig_share_str), 
-            (size_t)signer_index, 
-            (size_t)required_signers, 
-            (size_t)total_signers
-        )
-    );
-    return in;
-}
+// std::istream& operator>>(std::istream &in, Bits<class BlockVote&> obj)
+// {
+//     std::string sig_share_str;
+//     uint32_t signer_index; 
+//     uint32_t required_signers;
+//     uint32_t total_signers; 
+//     in >> 
+//         bits(signer_index) >> 
+//         bits(required_signers) >> 
+//         bits(total_signers) >> 
+//         bits(sig_share_str);
+//     obj.t.sig_share_ = std::make_shared<BLSSigShare>(
+//         BLSSigShare(
+//             std::make_shared<std::string>(sig_share_str), 
+//             (size_t)signer_index, 
+//             (size_t)required_signers, 
+//             (size_t)total_signers
+//         )
+//     );
+//     return in;
+// }
 
 }

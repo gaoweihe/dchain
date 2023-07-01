@@ -28,8 +28,8 @@ public:
     uint64_t id_;
     uint64_t base_id_;
 
-    friend std::ostream& operator<<(std::ostream &out, Bits<class BlockHeader&> obj); 
-    friend std::istream& operator>>(std::istream &in, Bits<class BlockHeader&> obj); 
+    // friend std::ostream& operator<<(std::ostream &out, Bits<class BlockHeader&> obj); 
+    // friend std::istream& operator>>(std::istream &in, Bits<class BlockHeader&> obj); 
 
     MSGPACK_DEFINE(
         id_,
@@ -48,8 +48,8 @@ public:
     std::shared_ptr<BLSSigShare> sig_share_; 
 
 public: 
-    friend std::ostream& operator<<(std::ostream &out, Bits<class BlockVote&> obj);
-    friend std::istream& operator>>(std::istream &in, Bits<class BlockVote&> obj);
+    // friend std::ostream& operator<<(std::ostream &out, Bits<class BlockVote&> obj);
+    // friend std::istream& operator>>(std::istream &in, Bits<class BlockVote&> obj);
 }; 
 
 // class BlockVoteSerde {
@@ -96,8 +96,8 @@ public:
     virtual ~Block(); 
 
 public: 
-    friend std::ostream& operator<<(std::ostream &out, Bits<class Block&> obj); 
-    friend std::istream& operator>>(std::istream &in, Bits<class Block&> obj); 
+    // friend std::ostream& operator<<(std::ostream &out, Bits<class Block&> obj); 
+    // friend std::istream& operator>>(std::istream &in, Bits<class Block&> obj); 
 
 public: 
     void insert(std::shared_ptr<Transaction> tx);

@@ -10,20 +10,34 @@ namespace adaptor {
 template <>
 struct pack<BLSSigShare> {
     template <typename Stream>
-    msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, BLSSigShare& v) const {
+    msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, BLSSigShare const& v) const {
         o.pack_map(4);
 
+        auto sig_share = v.getSigShare();
+        auto hint = v.getHint();
+        auto signer_index = v.getSignerIndex();
+        auto t = v.getRequiredSigners();
+        auto n = v.getTotalSigners();
+
+        BLSSigShare tmp_sig_share(
+            sig_share,
+            hint,
+            signer_index,
+            t,
+            n
+        ); 
+
         o.pack("sig_share_str");
-        o.pack(v.toString());
+        o.pack(tmp_sig_share.toString());
 
         o.pack("signer_index");
-        o.pack(v.getSignerIndex());
+        o.pack(tmp_sig_share.getSignerIndex());
 
         o.pack("t");
-        o.pack(v.getRequiredSigners());
+        o.pack(tmp_sig_share.getRequiredSigners());
 
         o.pack("n");
-        o.pack(v.getTotalSigners());
+        o.pack(tmp_sig_share.getTotalSigners());
 
         return o;
     }
