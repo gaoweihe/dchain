@@ -59,13 +59,13 @@ public:
      * @brief Transaction sender address
      * 
      */
-    evmc::address sender_; 
+    uint64_t sender_; 
 
     /**
      * @brief Transaction receiver address
      * 
      */
-    evmc::address receiver_; 
+    uint64_t receiver_; 
 
     /**
      * @brief Transaction value
@@ -79,13 +79,13 @@ public:
      */
     uint64_t fee_; 
 
-    // MSGPACK_DEFINE(
-    //     id_, 
-    //     sender_, 
-    //     receiver_, 
-    //     value_, 
-    //     fee_
-    // ); 
+    MSGPACK_DEFINE(
+        id_, 
+        sender_, 
+        receiver_, 
+        value_, 
+        fee_
+    ); 
 };
 
 }

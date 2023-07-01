@@ -9,8 +9,8 @@ Transaction::Transaction(
     uint64_t value, 
     uint64_t fee
 ) : id_(id), 
-    sender_(evmc::address(sender)), 
-    receiver_(evmc::address(receiver)), 
+    sender_(sender), 
+    receiver_(receiver), 
     value_(value), 
     fee_(fee) 
 {

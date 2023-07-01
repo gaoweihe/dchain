@@ -18,10 +18,7 @@
 
 namespace tomchain {
 
-class BlockVote;
-typedef oneapi::tbb::concurrent_hash_map<
-    uint64_t, std::shared_ptr<BlockVote>
-> BlockVoteCHM; 
+class BlockVote; 
 // typedef oneapi::tbb::concurrent_hash_map<
 //     uint64_t, std::shared_ptr<BlockVoteSerde>
 // > BlockVoteSerdeCHM; 
@@ -104,8 +101,6 @@ public:
 
 public: 
     void insert(std::shared_ptr<Transaction> tx);
-    std::shared_ptr<BlockVote> vote(
-        const std::shared_ptr<BLSPrivateKeyShare>& skey_share); 
     std::shared_ptr<std::array<uint8_t, picosha2::k_digest_size>> get_sha256(); 
 
 public: 

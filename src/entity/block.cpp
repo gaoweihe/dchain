@@ -43,12 +43,6 @@ void Block::insert(std::shared_ptr<Transaction> tx)
     this->tx_vec_.push_back(tx); 
 }
 
-std::shared_ptr<BlockVote> Block::vote(
-    const std::shared_ptr<BLSPrivateKeyShare>& skey_share)
-{
-
-}
-
 std::shared_ptr<std::array<uint8_t, picosha2::k_digest_size>> Block::get_sha256() 
 {
     std::vector<unsigned char> hash(picosha2::k_digest_size);
