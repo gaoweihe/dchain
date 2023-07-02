@@ -243,37 +243,6 @@ struct as<tomchain::Block> {
     }
 };
 
-// template <>
-// struct convert<evmc::address> {
-//     msgpack::object const& operator()(msgpack::object const& o, evmc::address& v) const {
-//         if (o.type != msgpack::type::MAP) throw msgpack::type_error();
-//         if (o.via.map.size != 1) throw msgpack::type_error();
-//         std::map<std::string, msgpack::object> m;
-//         o >> m;
-
-//         evmc::address addr;
-//         // copy bytes to addr 
-//         std::string bytes_str = m["addr_bytes"].as<std::string>();
-//         std::memcpy(addr.bytes, bytes_str.c_str(), sizeof(addr.bytes));
-//         v = addr;
-
-//         return o; 
-//     }
-// };
-
-// template <>
-// struct object<evmc::address> {
-//     void operator()(msgpack::object& o, evmc::address const& v) const {
-//         // your implementation
-//     }
-// };
-// template <>
-// struct object_with_zone<evmc::address> {
-//     void operator()(msgpack::object::with_zone& o, evmc::address const& v) const {
-//         // your implementation
-//     }
-// };
-
 
 } // namespace adaptor
 } // MSGPACK_API_VERSION_NAMESPACE(MSGPACK_DEFAULT_API_NS)

@@ -172,9 +172,7 @@ public:
         for (auto iter = pb.begin(); iter != pb.end(); iter++)
         {
             std::shared_ptr<Block> blk = iter->second; 
-            // std::stringstream ss; 
-            // ss << bits(blk->header_);
-            // auto blk_hdr_str = ss.str(); 
+
             msgpack::sbuffer b;
             msgpack::pack(b, blk->header_); 
             std::string blk_hdr_str = sbufferToString(b);
@@ -217,9 +215,6 @@ public:
             msgpack::sbuffer des_b = stringToSbuffer(*iter);
             auto oh = msgpack::unpack(des_b.data(), des_b.size());
             auto blk_hdr = oh->as<BlockHeader>();
-            // std::istringstream iss(*iter);
-            // BlockHeader blk_hdr;
-            // iss >> bits(blk_hdr); 
 
             // find local blocks 
             BlockCHM::accessor accessor;
@@ -231,11 +226,6 @@ public:
             msgpack::sbuffer b;
             msgpack::pack(b, block); 
             std::string ser_blk = sbufferToString(b);
-
-            // std::stringstream ss; 
-            // ss << bits(*block); 
-            // std::string ser_blk = ss.str(); 
-            spdlog::info("ser blk: {}", spdlog::to_hex(ser_blk)); 
 
             response->add_pb(ser_blk); 
         }
@@ -269,28 +259,18 @@ public:
         spdlog::info("vb count: {}", voted_blocks.size()); 
         for (auto iter = voted_blocks.begin(); iter != voted_blocks.end(); iter++)
         {
-            spdlog::info("stub1"); 
-
             // deserialize request 
             msgpack::sbuffer des_b = stringToSbuffer(*iter);
             auto oh = msgpack::unpack(des_b.data(), des_b.size());
             auto block = oh->as<std::shared_ptr<Block>>();
-            // std::istringstream iss(*iter); 
-            // Block block;
-            // iss >> bits(block); 
 
             // get block vote from request 
             auto vote = block->votes_.find(request->id()); 
 
-            spdlog::info("stub2: {}", block->header_.id_); 
-
             // find local block storage 
             BlockCHM::accessor blk_accessor;
-            spdlog::info("stub3"); 
             bool is_found = pb.find(blk_accessor, block->header_.id_); 
             assert(is_found); 
-            spdlog::info("stub4: {} {}", is_found, (size_t)&(blk_accessor->second)); 
-            spdlog::info("stub5"); 
 
             // insert received vote 
             blk_accessor->second->votes_.insert(
@@ -299,12 +279,6 @@ public:
                     vote->second
                 )
             );
-
-            spdlog::info("stub6"); 
-
-            // check if votes of current block enough 
-            spdlog::info("vote count: {}", blk_accessor->second->votes_.size()); 
-            spdlog::info("stub7"); 
 
             // if votes count enough
             if (blk_accessor->second->votes_.size() >= (*::conf_data)["client-count"])
@@ -315,31 +289,18 @@ public:
                     (*::conf_data)["client-count"]
                 ); 
 
-                spdlog::info("stub8"); 
-
                 for (auto vote_iter = blk_accessor->second->votes_.begin(); vote_iter != blk_accessor->second->votes_.end(); vote_iter++)
                 {
-                    spdlog::info("stub8-1: {}", blk_accessor->second->header_.id_); 
-
                     auto vote = vote_iter->second; 
-
-                    spdlog::info("stub8-2: {}", vote->block_id_); 
-
                     auto str = vote_iter->second->sig_share_->toString(); 
-
-                    spdlog::info("stub8-3:"); 
 
                     sig_share_set.addSigShare(
                         vote_iter->second->sig_share_
                     ); 
                 }
-
-                spdlog::info("stub9"); 
                 
                 // assert that signature should be enough 
                 assert(sig_share_set.isEnough()); 
-
-                spdlog::info("stub10"); 
 
                 if (sig_share_set.isEnough())
                 {
@@ -347,15 +308,11 @@ public:
                     std::shared_ptr<BLSSignature> tss_sig = sig_share_set.merge(); 
                     blk_accessor->second->tss_sig_ = tss_sig;
 
-                    spdlog::info("stub11"); 
-
                     // move block from pending to committed
                     cb.insert(
                         blk_accessor, 
                         block->header_.id_
                     ); 
-
-                    spdlog::info("stub12"); 
 
                     blk_accessor.release(); 
                     pb.erase(block->header_.id_); 

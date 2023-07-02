@@ -24,29 +24,6 @@ public:
         uint64_t fee);
     virtual ~Transaction();
 
-// public: 
-//     friend std::ostream& operator<<(std::ostream &out, Bits<class Transaction & > obj)
-//     {
-//         out << 
-//             bits(obj.t.id_) << 
-//             bits(obj.t.sender_) <<
-//             bits(obj.t.receiver_) <<
-//             bits(obj.t.value_) << 
-//             bits(obj.t.fee_);
-//         return (out);
-//     }
-
-//     friend std::istream& operator>>(std::istream &in, Bits<class Transaction &> obj)
-//     {
-//         in >> 
-//             bits(obj.t.id_) >> 
-//             bits(obj.t.sender_) >>
-//             bits(obj.t.receiver_) >>
-//             bits(obj.t.value_) >> 
-//             bits(obj.t.fee_);
-//         return (in);
-//     }
-
 public: 
     /**
      * @brief Transaction ID
