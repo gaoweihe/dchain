@@ -14,7 +14,12 @@ namespace tomchain {
 
 TcServer::TcServer() 
 {
-
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<
+        std::mt19937::result_type
+    > distribution(1, INT_MAX);
+    uuid = distribution(rng);
 }
 
 TcServer::~TcServer() 
@@ -108,6 +113,10 @@ void TcServer::schedule()
         spdlog::info("pending blocks: {}", this->pending_blks.size()); 
     }, (*::conf_data)["scheduler_freq"]); 
 
+    t.setInterval([&]() {
+        spdlog::info("pb count: {}", this->pending_blks.size());
+    }, 100); 
+
     // TODO: change to shutdown conditional variable 
     while(true) { sleep(INT_MAX); }
 }
@@ -154,6 +163,7 @@ void TcServer::pack_block(uint64_t num_tx, uint64_t num_block)
 
             // Construct new block 
             uint64_t block_id = distribution(rng);
+            block_id = block_id_count++;
             // TODO: base id
             Block new_block(block_id, 0xDEADBEEF);
             for(it = pending_txs.begin(); it != pending_txs.end(); ++it)
@@ -163,9 +173,14 @@ void TcServer::pack_block(uint64_t num_tx, uint64_t num_block)
             }
 
             // Insert new block 
+            // pending_blks.insert(
+            //     std::make_pair(block_id, std::make_shared<Block>(new_block))
+            // ); 
             pending_blks.insert(
-                std::make_pair(block_id, std::make_shared<Block>(new_block))
+                pb_accessor, 
+                block_id
             ); 
+            pb_accessor->second = std::make_shared<Block>(new_block); 
             spdlog::info("gen block: {}", block_id); 
 
             // remove extracted pending transactions 
