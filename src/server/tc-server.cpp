@@ -113,10 +113,6 @@ void TcServer::schedule()
         spdlog::info("pending blocks: {}", this->pending_blks.size()); 
     }, (*::conf_data)["scheduler_freq"]); 
 
-    t.setInterval([&]() {
-        spdlog::info("pb count: {}", this->pending_blks.size());
-    }, 100); 
-
     // TODO: change to shutdown conditional variable 
     while(true) { sleep(INT_MAX); }
 }
@@ -172,10 +168,6 @@ void TcServer::pack_block(uint64_t num_tx, uint64_t num_block)
                 new_block.tx_vec_.push_back(it->second); 
             }
 
-            // Insert new block 
-            // pending_blks.insert(
-            //     std::make_pair(block_id, std::make_shared<Block>(new_block))
-            // ); 
             pending_blks.insert(
                 pb_accessor, 
                 block_id

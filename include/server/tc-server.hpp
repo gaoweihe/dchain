@@ -175,7 +175,7 @@ public:
         uint64_t tmp_id = 0;
 
         response->set_status(0);  
-        // auto pb = tc_server_->pending_blks; 
+
         for (auto iter = tc_server_->pending_blks.begin(); iter != tc_server_->pending_blks.end(); iter++)
         {
             std::shared_ptr<Block> blk = iter->second; 
@@ -190,10 +190,6 @@ public:
         }
         
         spdlog::info("pull pending blocks"); 
-
-        // tc_server_->pending_blks.erase(tmp_id); 
-
-        spdlog::info("pb count: {}@{}@{}", tc_server_->pending_blks.size(), tc_server_->uuid, (uint64_t)(tc_server_.get()));
 
         grpc::ServerUnaryReactor* reactor = context->DefaultReactor();
         reactor->Finish(grpc::Status::OK);
@@ -217,8 +213,6 @@ public:
         spdlog::info("get blocks"); 
 
         response->set_status(0);
-
-        // auto pb = tc_server_->pending_blks; 
 
         auto req_blk_hdr = request->pb_hdrs(); 
         for (auto iter = req_blk_hdr.begin(); iter != req_blk_hdr.end(); iter++)
@@ -265,9 +259,6 @@ public:
         spdlog::info("vote blocks"); 
         response->set_status(0);
 
-        // auto pb = tc_server_->pending_blks; 
-        auto cb = tc_server_->committed_blks;
-
         auto voted_blocks = request->voted_blocks(); 
         spdlog::info("vb count: {}", voted_blocks.size()); 
         for (auto iter = voted_blocks.begin(); iter != voted_blocks.end(); iter++)
@@ -277,70 +268,60 @@ public:
             auto oh = msgpack::unpack(des_b.data(), des_b.size());
             auto block = oh->as<std::shared_ptr<Block>>();
 
-            /* Additional testing code */
-            auto block_id = block->header_.id_;
-            tc_server_->pending_blks.find(tc_server_->pb_accessor, block_id);
-            tc_server_->pending_blks.erase(tc_server_->pb_accessor);
-            spdlog::info("erase: {}", block_id); 
+            // get block vote from request 
+            auto vote = block->votes_.find(request->id()); 
 
-            // // get block vote from request 
-            // auto vote = block->votes_.find(request->id()); 
+            // find local block storage 
+            tc_server_->pending_blks.find(tc_server_->pb_accessor, block->header_.id_); 
 
-            // // find local block storage 
-            // // BlockCHM::accessor blk_accessor;
-            // pb.find(tc_server_->pb_accessor, block->header_.id_); 
+            // insert received vote 
+            tc_server_->pb_accessor->second->votes_.insert(
+                std::make_pair(
+                    request->id(), 
+                    vote->second
+                )
+            );
 
-            // // insert received vote 
-            // tc_server_->pb_accessor->second->votes_.insert(
-            //     std::make_pair(
-            //         request->id(), 
-            //         vote->second
-            //     )
-            // );
+            // if votes count enough
+            if (tc_server_->pb_accessor->second->votes_.size() >= (*::conf_data)["client-count"])
+            {
+                // populate signature set 
+                BLSSigShareSet sig_share_set(
+                    (*::conf_data)["client-count"],
+                    (*::conf_data)["client-count"]
+                ); 
 
-            // // if votes count enough
-            // if (tc_server_->pb_accessor->second->votes_.size() >= (*::conf_data)["client-count"])
-            // {
-            //     // populate signature set 
-            //     BLSSigShareSet sig_share_set(
-            //         (*::conf_data)["client-count"],
-            //         (*::conf_data)["client-count"]
-            //     ); 
+                for (auto vote_iter = tc_server_->pb_accessor->second->votes_.begin(); vote_iter != tc_server_->pb_accessor->second->votes_.end(); vote_iter++)
+                {
+                    auto vote = vote_iter->second; 
+                    auto str = vote_iter->second->sig_share_->toString(); 
 
-            //     for (auto vote_iter = tc_server_->pb_accessor->second->votes_.begin(); vote_iter != tc_server_->pb_accessor->second->votes_.end(); vote_iter++)
-            //     {
-            //         auto vote = vote_iter->second; 
-            //         auto str = vote_iter->second->sig_share_->toString(); 
-
-            //         sig_share_set.addSigShare(
-            //             vote_iter->second->sig_share_
-            //         ); 
-            //     }
+                    sig_share_set.addSigShare(
+                        vote_iter->second->sig_share_
+                    ); 
+                }
                 
-            //     // assert that signature should be enough 
-            //     assert(sig_share_set.isEnough()); 
+                // assert that signature should be enough 
+                assert(sig_share_set.isEnough()); 
 
-            //     if (sig_share_set.isEnough())
-            //     {
-            //         // merge signature
-            //         std::shared_ptr<BLSSignature> tss_sig = sig_share_set.merge(); 
-            //         tc_server_->pb_accessor->second->tss_sig_ = tss_sig;
+                if (sig_share_set.isEnough())
+                {
+                    // merge signature
+                    std::shared_ptr<BLSSignature> tss_sig = sig_share_set.merge(); 
+                    tc_server_->pb_accessor->second->tss_sig_ = tss_sig;
 
-            //         // move block from pending to committed
-            //         // cb.insert(
-            //         //     blk_accessor, 
-            //         //     block->header_.id_
-            //         // ); 
+                    // move block from pending to committed
+                    tc_server_->committed_blks.insert(
+                        tc_server_->pb_accessor, 
+                        block->header_.id_
+                    ); 
 
-            //         // pb.erase(block->header_.id_); 
-            //         pb.erase(tc_server_->pb_accessor); 
-            //     }
-            // }
+                    tc_server_->pending_blks.erase(block->header_.id_); 
+                }
+            }
 
-            // tc_server_->pb_accessor.release();             
+            tc_server_->pb_accessor.release();             
         }
-
-        spdlog::info("pb count: {}@{}@{}", tc_server_->pending_blks.size(), tc_server_->uuid, (uint64_t)(tc_server_.get()));
 
         grpc::ServerUnaryReactor* reactor = context->DefaultReactor();
         reactor->Finish(grpc::Status::OK);
