@@ -222,5 +222,6 @@ add_executable(test_msgpack
     test/test_msgpack.cpp
     )
 target_link_libraries(test_msgpack
+    tc-entity
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     )

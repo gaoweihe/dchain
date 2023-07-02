@@ -1,7 +1,6 @@
 #ifndef TC_BLOCK_HDR
 #define TC_BLOCK_HDR
 
-#include "c_plus_plus_serializer.h"
 #include "libBLS/libBLS.h"
 #include "libBLS/bls/BLSSigShare.h"
 #include "oneapi/tbb/concurrent_hash_map.h"

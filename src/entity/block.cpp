@@ -47,9 +47,12 @@ std::shared_ptr<std::array<uint8_t, picosha2::k_digest_size>> Block::get_sha256(
 {
     std::vector<unsigned char> hash(picosha2::k_digest_size);
 
-    std::stringstream ss; 
-    ss << bits(*this); 
-    std::string ss_str = ss.str(); 
+    msgpack::sbuffer b;
+    msgpack::pack(b, *this); 
+    std::string ss_str = sbufferToString(b);
+    // std::stringstream ss; 
+    // ss << bits(*this); 
+    // std::string ss_str = ss.str(); 
 
     picosha2::hash256(ss_str.begin(), ss_str.end(), hash.begin(), hash.end()); 
 

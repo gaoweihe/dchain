@@ -10,6 +10,7 @@
 #include "spdlog/fmt/bin_to_hex.h"
 #include "argparse/argparse.hpp"
 #include <nlohmann/json.hpp>
+#include "msgpack_packer.hpp"
 
 std::shared_ptr<nlohmann::json> conf_data; 
 
@@ -161,12 +162,16 @@ grpc::Status TcClient::PullPendingBlocks()
 
     // unpack response 
     for (int i = 0; i < response.pb_hdrs_size(); i++) {
-        std::istringstream block_hdr_ss(
-            response.pb_hdrs(i)
-        ); 
+        // std::istringstream block_hdr_ss(
+        //     response.pb_hdrs(i)
+        // ); 
 
-        BlockHeader block_hdr;
-        block_hdr_ss >> bits(block_hdr);
+        // BlockHeader block_hdr;
+        // block_hdr_ss >> bits(block_hdr);
+        msgpack::sbuffer des_b = stringToSbuffer(response.pb_hdrs(i));
+        auto oh = msgpack::unpack(des_b.data(), des_b.size());
+        auto block_hdr = oh->as<BlockHeader>();
+
         pending_blkhdr.insert(
             std::make_pair(
                 block_hdr.id_, 
@@ -190,9 +195,13 @@ grpc::Status TcClient::GetBlocks()
 
     for (auto iter = pending_blkhdr.begin(); iter != pending_blkhdr.end(); iter++)
     {
-        std::stringstream ss; 
-        ss << bits(*(iter->second));
-        auto blk_hdr_str = ss.str();
+        // std::stringstream ss; 
+        // ss << bits(*(iter->second));
+        // auto blk_hdr_str = ss.str();
+        msgpack::sbuffer b;
+        msgpack::pack(b, iter->second); 
+        std::string blk_hdr_str = sbufferToString(b);
+
         request.add_pb_hdrs(blk_hdr_str);
     }
     
@@ -229,10 +238,13 @@ grpc::Status TcClient::GetBlocks()
     {
         spdlog::info("stub2");
 
-        std::istringstream iss(*iter);
-        spdlog::info("stub21: {}", spdlog::to_hex(*iter));
-        tomchain::Block block; 
-        iss >> bits(block);
+        // std::istringstream iss(*iter);
+        // spdlog::info("stub21: {}", spdlog::to_hex(*iter));
+        // tomchain::Block block; 
+        // iss >> bits(block);
+        msgpack::sbuffer des_b = stringToSbuffer(*iter);
+        auto oh = msgpack::unpack(des_b.data(), des_b.size());
+        auto block = oh->as<Block>();
 
         spdlog::info("stub3"); 
 
@@ -266,30 +278,50 @@ grpc::Status TcClient::GetBlocks()
 
 grpc::Status TcClient::VoteBlocks()
 {
+    spdlog::info("stub1"); 
+
     VoteBlocksRequest request; 
     request.set_id(this->client_id); 
     for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
     {
         auto block_hash_str = iter->second->get_sha256();
 
-        // client_id starts from 1, whereas signer_index starts from 0 
-        auto signer_index = this->client_id - 1;
+        spdlog::info("stub2"); 
+
+        // client_id starts from 1, so does signer_index 
+        auto signer_index = this->client_id;
         std::shared_ptr<BLSSigShare> sig_share = 
             this->tss_key->first->sign(block_hash_str, this->client_id); 
         BlockVote bv;
         bv.sig_share_ = sig_share;
 
+        spdlog::info("stub3"); 
+
         const uint64_t block_id = iter->second->header_.id_; 
         iter->second->votes_.insert(
             std::make_pair(
-                block_id, 
+                this->client_id, 
                 std::make_shared<BlockVote>(bv)
             )
         );
 
-        std::stringstream ss; 
-        ss << bits(*(iter->second));
-        std::string block_ser = ss.str(); 
+        spdlog::info("stub4: {}", iter->second->votes_.find(this->client_id)->second->block_id_); 
+
+        // std::stringstream ss; 
+        // ss << bits(iter->second);
+        // std::string block_ser = ss.str(); 
+        msgpack::sbuffer b;
+        msgpack::pack(b, iter->second); 
+        std::string block_ser = sbufferToString(b);
+
+        spdlog::info("stub5"); 
+
+        /* Additional test code */
+        msgpack::sbuffer des_b = stringToSbuffer(block_ser);
+        auto oh = msgpack::unpack(des_b.data(), des_b.size());
+        auto test_block = oh->as<std::shared_ptr<Block>>();
+        spdlog::info("test stub 1: {}", test_block->votes_.find(this->client_id)->second->block_id_); 
+        
         request.add_voted_blocks(block_ser); 
     }
     

@@ -1,6 +1,24 @@
 #include "block.hpp"
 #include "libBLS.h"
 #include <evmc/evmc.hpp>
+#include "spdlog/spdlog.h"
+
+namespace tomchain {
+
+std::string sbufferToString(const msgpack::sbuffer& sbuf) {
+    std::string str(sbuf.data(), sbuf.size());
+    return str;
+}
+
+msgpack::sbuffer stringToSbuffer(const std::string& str) {
+    msgpack::object_handle oh;
+    msgpack::unpack(oh, str.data(), str.size());
+    msgpack::sbuffer sbuf;
+    msgpack::pack(sbuf, oh.get());
+    return sbuf;
+}
+
+};
 
 namespace msgpack {
 MSGPACK_API_VERSION_NAMESPACE(MSGPACK_DEFAULT_API_NS) {
@@ -66,17 +84,28 @@ struct as<BLSSigShare> {
 template <>
 struct pack<BLSSignature> {
     template <typename Stream>
-    msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, BLSSigShare& v) const {
+    msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, const BLSSignature& v) const {
         o.pack_map(3);
 
+        auto sig = v.getSig();
+        auto hint = v.getHint();
+        auto t = v.getRequiredSigners();
+        auto n = v.getTotalSigners();
+        BLSSignature tmp_sig(
+            sig,
+            hint,
+            t,
+            n
+        );
+
         o.pack("sig_str");
-        o.pack(v.toString());
+        o.pack(tmp_sig.toString());
 
         o.pack("t");
-        o.pack(v.getRequiredSigners());
+        o.pack(tmp_sig.getRequiredSigners());
 
         o.pack("n");
-        o.pack(v.getTotalSigners());
+        o.pack(tmp_sig.getTotalSigners());
 
         return o;
     }
@@ -163,9 +192,7 @@ struct as<tomchain::BlockVote> {
         o >> m;
 
         bv.block_id_ = m["block_id"].as<uint64_t>();
-        bv.sig_share_ = std::make_shared<BLSSigShare>(
-            m["sig_share"].as<BLSSigShare>()
-        );
+        bv.sig_share_ = m["sig_share"].as<std::shared_ptr<BLSSigShare>>(); 
 
         return bv; 
     }

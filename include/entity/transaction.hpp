@@ -4,7 +4,6 @@
 #include <istream>
 #include <ostream>
 
-#include "c_plus_plus_serializer.h"
 #include "msgpack.hpp"
 #include <evmc/evmc.hpp>
 

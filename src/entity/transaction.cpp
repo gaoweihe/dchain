@@ -17,6 +17,11 @@ Transaction::Transaction(
 
 }
 
+Transaction::Transaction()
+{
+    
+}
+
 Transaction::~Transaction()
 {
     
