@@ -102,7 +102,6 @@ void TcServer::schedule()
         // number of generated transactions per second 
         const uint64_t gen_tx_rate = (*::conf_data)["generate-tx-rate"]; 
         this->generate_tx(gen_tx_rate);
-        spdlog::info("pending transactions: {}", this->pending_txs.size()); 
     }, (*::conf_data)["scheduler_freq"]); 
 
     // pack blocks 
@@ -110,7 +109,15 @@ void TcServer::schedule()
         // number of generated transactions per second 
         const uint64_t tx_per_block = (*::conf_data)["tx-per-block"]; 
         this->pack_block(tx_per_block, INT_MAX); 
-        spdlog::info("pending blocks: {}", this->pending_blks.size()); 
+    }, (*::conf_data)["scheduler_freq"]); 
+
+    // count blocks
+    t.setInterval([&]() {
+        spdlog::info("tx:{} | pb:{} | cb:{}", 
+            pending_txs.size(), 
+            pending_blks.size(), 
+            committed_blks.size()
+        );
     }, (*::conf_data)["scheduler_freq"]); 
 
     // TODO: change to shutdown conditional variable 

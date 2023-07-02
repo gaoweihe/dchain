@@ -377,12 +377,22 @@ int main(const int argc, const char* argv[])
         .help("configuration file")
         .required()
         .default_value(std::string{""}); 
+    parser.add_argument("--id")
+        .help("client id")
+        .scan<'u', uint32_t>()
+        .default_value(1); 
     parser.parse_args(argc, argv); 
 
     // parse json configuration
     std::string conf_file_path = parser.get<std::string>("--cf");
     std::ifstream fs(conf_file_path);
     ::conf_data = std::make_shared<nlohmann::json>(nlohmann::json::parse(fs));
+
+    uint64_t conf_client_id = parser.get<uint32_t>("--id");
+    if (conf_client_id != 0)
+    {
+        (*::conf_data)["client-id"] = conf_client_id;
+    }
 
     // set log level
     spdlog::set_level(
