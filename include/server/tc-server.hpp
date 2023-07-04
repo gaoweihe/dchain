@@ -114,6 +114,7 @@ public:
         std::string pkey_str = request->pkey();
         std::vector<uint8_t> pkey_data_vec(pkey_str.begin(), pkey_str.end());
         ecdsa::PubKey pkey(pkey_data_vec); 
+
         // lock weak pointer to get shared pointer 
         std::shared_ptr<TcServer> shared_tc_server = tc_server_;
 
@@ -230,20 +231,24 @@ public:
         for (auto iter = req_blk_hdr.begin(); iter != req_blk_hdr.end(); iter++)
         {
             // deserialize requested block headers 
+            spdlog::trace("deserialize requested block headers");
             msgpack::sbuffer des_b = stringToSbuffer(*iter);
             auto oh = msgpack::unpack(des_b.data(), des_b.size());
             auto blk_hdr = oh->as<BlockHeader>();
 
             // find local blocks 
-            // BlockCHM::accessor accessor;
+            spdlog::trace("find local blocks"); 
             tc_server_->pending_blks.find(tc_server_->pb_accessor, blk_hdr.id_); 
             std::shared_ptr<Block> block = tc_server_->pb_accessor->second; 
 
             // serialize block 
+            spdlog::trace("serialize block"); 
             msgpack::sbuffer b;
             msgpack::pack(b, block); 
             std::string ser_blk = sbufferToString(b);
 
+            // add serialized block to response
+            spdlog::trace("add serialized block to response"); 
             response->add_pb(ser_blk); 
 
             tc_server_->pb_accessor.release(); 
@@ -279,11 +284,13 @@ public:
         for (auto iter = voted_blocks.begin(); iter != voted_blocks.end(); iter++)
         {
             // deserialize request 
+            spdlog::trace("deserialize request");
             msgpack::sbuffer des_b = stringToSbuffer(*iter);
             auto oh = msgpack::unpack(des_b.data(), des_b.size());
             auto block = oh->as<std::shared_ptr<Block>>();
 
             // get block vote from request 
+            spdlog::trace("get block vote from request"); 
             auto vote = block->votes_.find(request->id()); 
             if (vote == block->votes_.end())
             {
@@ -292,6 +299,7 @@ public:
             }
 
             // find local block storage 
+            spdlog::trace("find local block storage"); 
             bool block_is_found = tc_server_->pending_blks.find(tc_server_->pb_accessor, block->header_.id_); 
             if (!block_is_found)
             {
@@ -300,6 +308,7 @@ public:
             }
 
             // insert received vote 
+            spdlog::trace("insert received vote"); 
             tc_server_->pb_accessor->second->votes_.insert(
                 std::make_pair(
                     request->id(), 
@@ -307,13 +316,8 @@ public:
                 )
             );
 
-            // log current block id and vote count 
-            spdlog::debug("vote: block id={}, vote count={}", 
-                block->header_.id_, 
-                tc_server_->pb_accessor->second->votes_.size()
-            );
-
             // if votes count enough
+            spdlog::trace("check if votes count enough");
             if (tc_server_->pb_accessor->second->votes_.size() >= (*::conf_data)["client-count"])
             {
                 // populate signature set 
@@ -329,26 +333,33 @@ public:
                     vote_iter != tc_server_->pb_accessor->second->votes_.end(); 
                     vote_iter++
                 ) {
+                    spdlog::trace("serialize signature share"); 
                     auto vote = vote_iter->second; 
                     auto str = vote_iter->second->sig_share_->toString(); 
 
+                    spdlog::trace("add signature share");
                     sig_share_set.addSigShare(
                         vote_iter->second->sig_share_
                     ); 
                 }
 
+                spdlog::trace("check if enough votes");
                 if (sig_share_set.isEnough())
                 {
                     // merge signature
+                    spdlog::trace("merge signature"); 
                     std::shared_ptr<BLSSignature> tss_sig = sig_share_set.merge(); 
                     tc_server_->pb_accessor->second->tss_sig_ = tss_sig;
 
-                    // move block from pending to committed
+                    // insert block to committed
+                    spdlog::trace("insert block to committed");
                     tc_server_->committed_blks.insert(
                         tc_server_->pb_accessor, 
                         block->header_.id_
                     ); 
 
+                    // remove block from pending 
+                    spdlog::trace("remove block from pending"); 
                     tc_server_->pending_blks.erase(block->header_.id_); 
                 }
                 else 
