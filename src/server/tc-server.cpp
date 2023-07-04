@@ -14,12 +14,7 @@ namespace tomchain {
 
 TcServer::TcServer() 
 {
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<
-        std::mt19937::result_type
-    > distribution(1, INT_MAX);
-    uuid = distribution(rng);
+
 }
 
 TcServer::~TcServer() 
@@ -27,8 +22,14 @@ TcServer::~TcServer()
     
 }
 
+void TcServer::init_server()
+{
+    this->server_id = (*::conf_data)["server-id"]; 
+}
+
 void TcServer::start(const std::string addr)
 {
+    this->init_server(); 
     this->init_client_profile(); 
     
     std::thread grpc_thread([&]() {
@@ -206,12 +207,26 @@ int main(const int argc, const char* argv[])
         .help("configuration file")
         .required()
         .default_value(std::string{""}); 
+    parser.add_argument("--id")
+        .help("server id")
+        .scan<'u', uint32_t>()
+        .default_value(1); 
     parser.parse_args(argc, argv); 
     
     // parse json configuration
-    std::string conf_file_path = parser.get<std::string>("--cf");
+    std::string conf_file_path = parser.get<std::string>(
+        "--cf"
+    );
     std::ifstream fs(conf_file_path);
-    ::conf_data = std::make_shared<nlohmann::json>(nlohmann::json::parse(fs));
+    ::conf_data = std::make_shared<nlohmann::json>(
+        nlohmann::json::parse(fs)
+    );
+
+    uint64_t conf_server_id = parser.get<uint32_t>("--id");
+    if (conf_server_id != 0)
+    {
+        (*::conf_data)["server-id"] = conf_server_id;
+    }
 
     // set log level
     spdlog::set_level(

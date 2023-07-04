@@ -59,6 +59,7 @@ public:
      */
     void start(const std::string addr); 
 
+    void init_server(); 
     void init_client_profile(); 
 
     /**
@@ -72,7 +73,7 @@ public:
     void pack_block(uint64_t num_tx, uint64_t num_block);
 
 public: 
-    uint64_t uuid; 
+    uint64_t server_id;
     ClientCHM clients;
     BlockCHM pending_blks; 
     BlockCHM committed_blks; 

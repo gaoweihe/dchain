@@ -1,3 +1,3 @@
-killall tc-server
-./build/tc-server \
-    --cf ./conf/server/server.json
+../build/tc-server \
+    --cf ../conf/server/server.json \
+    --id $1

@@ -4,5 +4,5 @@
     "heartbeat-interval": 1000, 
     "pull-pb-interval": 1000, 
     "log-level": "info", 
-    "client-count": 1
+    "client-count": 2
 }

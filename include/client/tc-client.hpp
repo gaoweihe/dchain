@@ -95,7 +95,7 @@ public:
 public: 
     std::shared_ptr<ecdsa::Key> ecc_skey;
     std::shared_ptr<ecdsa::PubKey> ecc_pkey;
-    uint32_t client_id;
+    uint64_t client_id;
     AccountCHM accounts;
     BlockCHM pending_blks;
     BlockHeaderCHM pending_blkhdr;

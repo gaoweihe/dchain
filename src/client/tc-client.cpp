@@ -384,9 +384,13 @@ int main(const int argc, const char* argv[])
     parser.parse_args(argc, argv); 
 
     // parse json configuration
-    std::string conf_file_path = parser.get<std::string>("--cf");
+    std::string conf_file_path = parser.get<std::string>(
+        "--cf"
+    );
     std::ifstream fs(conf_file_path);
-    ::conf_data = std::make_shared<nlohmann::json>(nlohmann::json::parse(fs));
+    ::conf_data = std::make_shared<nlohmann::json>(
+        nlohmann::json::parse(fs)
+    );
 
     uint64_t conf_client_id = parser.get<uint32_t>("--id");
     if (conf_client_id != 0)

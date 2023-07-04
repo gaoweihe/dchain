@@ -3,3 +3,7 @@ third_party/
 
 grpc_proto/*.h
 grpc_proto/*.cc 
+
+log/
+*.log
+*.out
