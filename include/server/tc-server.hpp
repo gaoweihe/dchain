@@ -277,6 +277,7 @@ public:
         spdlog::info("vote blocks"); 
         response->set_status(0);
 
+        auto client_id = request->id();
         auto voted_blocks = request->voted_blocks(); 
         spdlog::info("vb count: {}", voted_blocks.size()); 
 
@@ -285,31 +286,31 @@ public:
         for (auto iter = voted_blocks.begin(); iter != voted_blocks.end(); iter++)
         {
             // deserialize request 
-            spdlog::trace("deserialize request");
+            spdlog::trace("{}:deserialize request", client_id);
             msgpack::sbuffer des_b = stringToSbuffer(*iter);
             auto oh = msgpack::unpack(des_b.data(), des_b.size());
             auto block = oh->as<std::shared_ptr<Block>>();
 
             // get block vote from request 
-            spdlog::trace("get block vote from request"); 
+            spdlog::trace("{}:get block vote from request", client_id); 
             auto vote = block->votes_.find(request->id()); 
             if (vote == block->votes_.end())
             {
-                spdlog::error("vote not found"); 
+                spdlog::error("{}:vote not found", client_id); 
                 continue;
             }
 
             // find local block storage 
-            spdlog::trace("find local block storage"); 
+            spdlog::trace("{}:find local block storage", client_id); 
             bool block_is_found = tc_server_->pending_blks.find(tc_server_->pb_accessor, block->header_.id_); 
             if (!block_is_found)
             {
-                spdlog::error("block not found"); 
+                spdlog::error("{}:block not found", client_id); 
                 continue;
             }
 
             // insert received vote 
-            spdlog::trace("insert received vote"); 
+            spdlog::trace("{}:insert received vote", client_id); 
             tc_server_->pb_accessor->second->votes_.insert(
                 std::make_pair(
                     request->id(), 
@@ -318,10 +319,11 @@ public:
             );
 
             // if votes count enough
-            spdlog::trace("check if votes count enough");
+            spdlog::trace("{}:check if votes count enough", client_id);
             if (tc_server_->pb_accessor->second->votes_.size() >= (*::conf_data)["client-count"])
             {
                 // populate signature set 
+                spdlog::trace("{}:populate signature set", client_id);
                 BLSSigShareSet sig_share_set(
                     (*::conf_data)["client-count"],
                     (*::conf_data)["client-count"]
@@ -334,33 +336,33 @@ public:
                     vote_iter != tc_server_->pb_accessor->second->votes_.end(); 
                     vote_iter++
                 ) {
-                    spdlog::trace("serialize signature share"); 
+                    spdlog::trace("{}:serialize signature share", client_id); 
                     auto vote = vote_iter->second; 
                     auto str = vote_iter->second->sig_share_->toString(); 
 
-                    spdlog::trace("add signature share");
+                    spdlog::trace("{}:add signature share", client_id);
                     sig_share_set.addSigShare(
                         vote_iter->second->sig_share_
                     ); 
                 }
 
-                spdlog::trace("check if enough votes");
+                spdlog::trace("{}:check if enough votes", client_id);
                 if (sig_share_set.isEnough())
                 {
                     // merge signature
-                    spdlog::trace("merge signature"); 
+                    spdlog::trace("{}:merge signature", client_id); 
                     std::shared_ptr<BLSSignature> tss_sig = sig_share_set.merge(); 
                     tc_server_->pb_accessor->second->tss_sig_ = tss_sig;
 
                     // insert block to committed
-                    spdlog::trace("insert block to committed");
+                    spdlog::trace("{}:insert block to committed", client_id);
                     tc_server_->committed_blks.insert(
                         tc_server_->pb_accessor, 
                         block->header_.id_
                     ); 
 
                     // remove block from pending 
-                    spdlog::trace("remove block from pending"); 
+                    spdlog::trace("{}:remove block from pending", client_id); 
                     tc_server_->pending_blks.erase(block->header_.id_); 
                 }
                 else 
