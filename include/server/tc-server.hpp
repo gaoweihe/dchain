@@ -173,6 +173,7 @@ public:
         PullPendingBlocksResponse* response
     ) override
     {
+        spdlog::debug("gRPC(PullPendingBlocks) starts"); 
         response->set_status(0);  
 
         // unsafe iterations on concurrent hash map 
@@ -199,7 +200,7 @@ public:
             }
         }
         
-        spdlog::info("pull pending blocks"); 
+        spdlog::debug("gRPC(PullPendingBlocks) ends"); 
 
         grpc::ServerUnaryReactor* reactor = context->DefaultReactor();
         reactor->Finish(grpc::Status::OK);
