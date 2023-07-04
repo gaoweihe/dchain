@@ -164,6 +164,7 @@ void TcServer::pack_block(uint64_t num_tx, uint64_t num_block)
         {
             std::vector<uint64_t> extracted_tx; 
             TransactionCHM::iterator it; 
+            BlockCHM::accessor accessor;
 
             // Construct new block 
             uint64_t block_id = distribution(rng);
@@ -176,10 +177,10 @@ void TcServer::pack_block(uint64_t num_tx, uint64_t num_block)
             }
 
             pending_blks.insert(
-                pb_accessor, 
+                accessor, 
                 block_id
             ); 
-            pb_accessor->second = std::make_shared<Block>(new_block); 
+            accessor->second = std::make_shared<Block>(new_block); 
             spdlog::info("gen block: {}", block_id); 
 
             // remove extracted pending transactions 

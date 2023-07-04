@@ -78,7 +78,7 @@ public:
     BlockCHM pending_blks; 
     BlockCHM committed_blks; 
     TransactionCHM pending_txs;
-    BlockCHM::accessor pb_accessor; 
+    // BlockCHM::accessor pb_accessor; 
 
 private: 
     std::unique_ptr<grpc::Server> grpc_server_; 
@@ -176,12 +176,14 @@ public:
         spdlog::debug("gRPC(PullPendingBlocks) starts"); 
         response->set_status(0);  
 
+        BlockCHM::accessor accessor;
+
         // unsafe iterations on concurrent hash map 
         for (auto iter = tc_server_->pending_blks.begin(); iter != tc_server_->pending_blks.end(); iter++)
         {
             bool is_found = false; 
             try {
-                is_found = tc_server_->pending_blks.find(tc_server_->pb_accessor, iter->first);
+                is_found = tc_server_->pending_blks.find(accessor, iter->first);
 
                 if (is_found)
                 {
@@ -195,7 +197,7 @@ public:
                 }
             }
             catch (std::exception& e) {
-                tc_server_->pb_accessor.release(); 
+                accessor.release(); 
                 continue; 
             }
         }
@@ -226,6 +228,7 @@ public:
         response->set_status(0);
 
         auto req_blk_hdr = request->pb_hdrs(); 
+        BlockCHM::accessor accessor;
 
         // unsafe interations on concurrent hash map 
         // but it is serial
@@ -239,8 +242,8 @@ public:
 
             // find local blocks 
             spdlog::trace("find local blocks"); 
-            tc_server_->pending_blks.find(tc_server_->pb_accessor, blk_hdr.id_); 
-            std::shared_ptr<Block> block = tc_server_->pb_accessor->second; 
+            tc_server_->pending_blks.find(accessor, blk_hdr.id_); 
+            std::shared_ptr<Block> block = accessor->second; 
 
             // serialize block 
             spdlog::trace("serialize block"); 
@@ -251,8 +254,6 @@ public:
             // add serialized block to response
             spdlog::trace("add serialized block to response"); 
             response->add_pb(ser_blk); 
-
-            tc_server_->pb_accessor.release(); 
         }
 
         grpc::ServerUnaryReactor* reactor = context->DefaultReactor();
@@ -274,7 +275,8 @@ public:
         VoteBlocksResponse* response
     ) override
     {
-        spdlog::info("vote blocks"); 
+        spdlog::debug("gRPC(VoteBlocks) starts");
+
         response->set_status(0);
 
         auto client_id = request->id();
@@ -283,6 +285,7 @@ public:
 
         // unsafe interations on concurrent hash map 
         // but it is serial
+        BlockCHM::accessor accessor;
         for (auto iter = voted_blocks.begin(); iter != voted_blocks.end(); iter++)
         {
             // deserialize request 
@@ -302,7 +305,7 @@ public:
 
             // find local block storage 
             spdlog::trace("{}:find local block storage", client_id); 
-            bool block_is_found = tc_server_->pending_blks.find(tc_server_->pb_accessor, block->header_.id_); 
+            bool block_is_found = tc_server_->pending_blks.find(accessor, block->header_.id_); 
             if (!block_is_found)
             {
                 spdlog::error("{}:block not found", client_id); 
@@ -311,7 +314,7 @@ public:
 
             // insert received vote 
             spdlog::trace("{}:insert received vote", client_id); 
-            tc_server_->pb_accessor->second->votes_.insert(
+            accessor->second->votes_.insert(
                 std::make_pair(
                     request->id(), 
                     vote->second
@@ -320,7 +323,7 @@ public:
 
             // if votes count enough
             spdlog::trace("{}:check if votes count enough", client_id);
-            if (tc_server_->pb_accessor->second->votes_.size() >= (*::conf_data)["client-count"])
+            if (accessor->second->votes_.size() >= (*::conf_data)["client-count"])
             {
                 // populate signature set 
                 spdlog::trace("{}:populate signature set", client_id);
@@ -332,8 +335,8 @@ public:
                 // unsafe interations on concurrent hash map 
                 // but it is locked by pb_accessor
                 for (
-                    auto vote_iter = tc_server_->pb_accessor->second->votes_.begin(); 
-                    vote_iter != tc_server_->pb_accessor->second->votes_.end(); 
+                    auto vote_iter = accessor->second->votes_.begin(); 
+                    vote_iter != accessor->second->votes_.end(); 
                     vote_iter++
                 ) {
                     spdlog::trace("{}:serialize signature share", client_id); 
@@ -352,12 +355,12 @@ public:
                     // merge signature
                     spdlog::trace("{}:merge signature", client_id); 
                     std::shared_ptr<BLSSignature> tss_sig = sig_share_set.merge(); 
-                    tc_server_->pb_accessor->second->tss_sig_ = tss_sig;
+                    accessor->second->tss_sig_ = tss_sig;
 
                     // insert block to committed
                     spdlog::trace("{}:insert block to committed", client_id);
                     tc_server_->committed_blks.insert(
-                        tc_server_->pb_accessor, 
+                        accessor, 
                         block->header_.id_
                     ); 
 
@@ -371,7 +374,7 @@ public:
                 }
             }
 
-            tc_server_->pb_accessor.release();             
+            accessor.release();
         }
 
         grpc::ServerUnaryReactor* reactor = context->DefaultReactor();
