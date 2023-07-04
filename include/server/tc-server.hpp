@@ -110,6 +110,8 @@ public:
         RegisterResponse* response
     ) override
     {
+        spdlog::debug("gRPC(Register) starts");
+
         uint32_t client_id = request->id();
         std::string pkey_str = request->pkey();
         std::vector<uint8_t> pkey_data_vec(pkey_str.begin(), pkey_str.end());
@@ -128,7 +130,6 @@ public:
         response->set_id(client_id);
         response->set_tss_sk(*(accessor->second->tss_key->first->toString()));
         response->set_status(0); 
-        spdlog::info("register"); 
 
         accessor.release(); 
 
@@ -151,8 +152,9 @@ public:
         HeartbeatResponse* response
     ) override
     {
+        spdlog::debug("gRPC(Heartbeat) starts");
+
         response->set_status(0); 
-        spdlog::info("heartbeat"); 
 
         grpc::ServerUnaryReactor* reactor = context->DefaultReactor();
         reactor->Finish(grpc::Status::OK);
@@ -174,6 +176,7 @@ public:
     ) override
     {
         spdlog::debug("gRPC(PullPendingBlocks) starts"); 
+
         response->set_status(0);  
 
         BlockCHM::accessor accessor;
@@ -223,7 +226,7 @@ public:
         GetBlocksResponse* response
     ) override
     {
-        spdlog::info("get blocks"); 
+        spdlog::debug("gRPC(GetBlocks) starts");
 
         response->set_status(0);
 
