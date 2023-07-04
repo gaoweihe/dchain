@@ -1,3 +1,7 @@
+#pragma once
+#ifndef TC_MSGPACK_ADAPTER
+#define TC_MSGPACK_ADAPTER
+
 #include "block.hpp"
 #include "libBLS.h"
 #include <evmc/evmc.hpp>
@@ -247,3 +251,5 @@ struct as<tomchain::Block> {
 } // namespace adaptor
 } // MSGPACK_API_VERSION_NAMESPACE(MSGPACK_DEFAULT_API_NS)
 } // namespace msgpack
+
+#endif /* TC_MSGPACK_ADAPTER */
