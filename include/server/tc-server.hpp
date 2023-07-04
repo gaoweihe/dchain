@@ -79,7 +79,6 @@ public:
     BlockCHM committed_blks; 
     TransactionCHM pending_txs;
     BlockCHM::accessor pb_accessor; 
-    uint64_t block_id_count = 0; 
 
 private: 
     std::unique_ptr<grpc::Server> grpc_server_; 

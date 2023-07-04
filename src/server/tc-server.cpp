@@ -167,7 +167,6 @@ void TcServer::pack_block(uint64_t num_tx, uint64_t num_block)
 
             // Construct new block 
             uint64_t block_id = distribution(rng);
-            block_id = block_id_count++;
             // TODO: base id
             Block new_block(block_id, 0xDEADBEEF);
             for(it = pending_txs.begin(); it != pending_txs.end(); ++it)
