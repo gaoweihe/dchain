@@ -87,5 +87,6 @@
         "rope": "cpp",
         "slist": "cpp"
     },
-    "C_Cpp.errorSquiggles": "disabled"
+    "C_Cpp.errorSquiggles": "disabled", 
+    "git.enableCommitSigning": true
 }
