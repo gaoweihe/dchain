@@ -172,21 +172,30 @@ public:
         PullPendingBlocksResponse* response
     ) override
     {
-        uint64_t tmp_id = 0;
-
         response->set_status(0);  
 
+        // unsafe iterations on concurrent hash map 
         for (auto iter = tc_server_->pending_blks.begin(); iter != tc_server_->pending_blks.end(); iter++)
         {
-            std::shared_ptr<Block> blk = iter->second; 
+            bool is_found = false; 
+            try {
+                is_found = tc_server_->pending_blks.find(tc_server_->pb_accessor, iter->first);
 
-            tmp_id = blk->header_.id_;
+                if (is_found)
+                {
+                    std::shared_ptr<Block> blk = iter->second; 
 
-            msgpack::sbuffer b;
-            msgpack::pack(b, blk->header_); 
-            std::string blk_hdr_str = sbufferToString(b);
+                    msgpack::sbuffer b;
+                    msgpack::pack(b, blk->header_); 
+                    std::string blk_hdr_str = sbufferToString(b);
 
-            response->add_pb_hdrs(blk_hdr_str);
+                    response->add_pb_hdrs(blk_hdr_str);
+                }
+            }
+            catch (std::exception& e) {
+                tc_server_->pb_accessor.release(); 
+                continue; 
+            }
         }
         
         spdlog::info("pull pending blocks"); 
@@ -215,6 +224,9 @@ public:
         response->set_status(0);
 
         auto req_blk_hdr = request->pb_hdrs(); 
+
+        // unsafe interations on concurrent hash map 
+        // but it is serial
         for (auto iter = req_blk_hdr.begin(); iter != req_blk_hdr.end(); iter++)
         {
             // deserialize requested block headers 
@@ -261,6 +273,9 @@ public:
 
         auto voted_blocks = request->voted_blocks(); 
         spdlog::info("vb count: {}", voted_blocks.size()); 
+
+        // unsafe interations on concurrent hash map 
+        // but it is serial
         for (auto iter = voted_blocks.begin(); iter != voted_blocks.end(); iter++)
         {
             // deserialize request 
@@ -270,9 +285,19 @@ public:
 
             // get block vote from request 
             auto vote = block->votes_.find(request->id()); 
+            if (vote == block->votes_.end())
+            {
+                spdlog::error("vote not found"); 
+                continue;
+            }
 
             // find local block storage 
-            tc_server_->pending_blks.find(tc_server_->pb_accessor, block->header_.id_); 
+            bool block_is_found = tc_server_->pending_blks.find(tc_server_->pb_accessor, block->header_.id_); 
+            if (!block_is_found)
+            {
+                spdlog::error("block not found"); 
+                continue;
+            }
 
             // insert received vote 
             tc_server_->pb_accessor->second->votes_.insert(
@@ -280,6 +305,12 @@ public:
                     request->id(), 
                     vote->second
                 )
+            );
+
+            // log current block id and vote count 
+            spdlog::debug("vote: block id={}, vote count={}", 
+                block->header_.id_, 
+                tc_server_->pb_accessor->second->votes_.size()
             );
 
             // if votes count enough
@@ -291,8 +322,13 @@ public:
                     (*::conf_data)["client-count"]
                 ); 
 
-                for (auto vote_iter = tc_server_->pb_accessor->second->votes_.begin(); vote_iter != tc_server_->pb_accessor->second->votes_.end(); vote_iter++)
-                {
+                // unsafe interations on concurrent hash map 
+                // but it is locked by pb_accessor
+                for (
+                    auto vote_iter = tc_server_->pb_accessor->second->votes_.begin(); 
+                    vote_iter != tc_server_->pb_accessor->second->votes_.end(); 
+                    vote_iter++
+                ) {
                     auto vote = vote_iter->second; 
                     auto str = vote_iter->second->sig_share_->toString(); 
 
@@ -300,9 +336,6 @@ public:
                         vote_iter->second->sig_share_
                     ); 
                 }
-                
-                // assert that signature should be enough 
-                assert(sig_share_set.isEnough()); 
 
                 if (sig_share_set.isEnough())
                 {
@@ -317,6 +350,10 @@ public:
                     ); 
 
                     tc_server_->pending_blks.erase(block->header_.id_); 
+                }
+                else 
+                {
+                    spdlog::error("not enough votes");
                 }
             }
 
