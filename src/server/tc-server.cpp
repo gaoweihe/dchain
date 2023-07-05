@@ -12,6 +12,9 @@ std::shared_ptr<nlohmann::json> conf_data;
 
 namespace tomchain {
 
+// gRPC implementations
+#include "server/tc-server-grpc.hpp"
+
 TcServer::TcServer() 
 {
 
