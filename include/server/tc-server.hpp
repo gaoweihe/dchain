@@ -245,7 +245,12 @@ public:
 
             // find local blocks 
             spdlog::trace("find local blocks"); 
-            tc_server_->pending_blks.find(accessor, blk_hdr.id_); 
+            bool is_found = tc_server_->pending_blks.find(accessor, blk_hdr.id_); 
+            if (!is_found)
+            {
+                spdlog::error("block not found"); 
+                continue;
+            }
             std::shared_ptr<Block> block = accessor->second; 
 
             // serialize block 
@@ -284,7 +289,10 @@ public:
 
         auto client_id = request->id();
         auto voted_blocks = request->voted_blocks(); 
-        spdlog::info("vb count: {}", voted_blocks.size()); 
+        spdlog::trace("{}:voted blocks count={}",
+            client_id, 
+            voted_blocks.size()
+        ); 
 
         // unsafe interations on concurrent hash map 
         // but it is serial
