@@ -1,3 +1,8 @@
+#include <grpcpp/grpcpp.h>
+#include "tc-server.grpc.pb.h"
+
+namespace tomchain {
+
 grpc::Status TcClient::Register()
 {
     RegisterRequest request; 
@@ -230,14 +235,17 @@ grpc::Status TcClient::VoteBlocks()
     {
         auto block_hash_str = iter->second->get_sha256();
 
+        const uint64_t block_id = iter->second->header_.id_; 
+
         // client_id starts from 1, so does signer_index 
         auto signer_index = this->client_id;
         std::shared_ptr<BLSSigShare> sig_share = 
             this->tss_key->first->sign(block_hash_str, this->client_id); 
         BlockVote bv;
+        bv.block_id_ = iter->second->header_.id_;
         bv.sig_share_ = sig_share;
+        bv.voter_id_ = this->client_id;
 
-        const uint64_t block_id = iter->second->header_.id_; 
         iter->second->votes_.insert(
             std::make_pair(
                 this->client_id, 
@@ -297,3 +305,5 @@ grpc::Status TcClient::VoteBlocks()
 
     return status; 
 }
+
+}; 

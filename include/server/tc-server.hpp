@@ -9,6 +9,7 @@
 #include "HashMap.h"
 #include "key.h"
 #include "oneapi/tbb/concurrent_hash_map.h"
+#include "oneapi/tbb/concurrent_queue.h"
 #include <alpaca/alpaca.h>
 #include "libBLS/libBLS.h"
 #include <nlohmann/json.hpp>
@@ -75,11 +76,33 @@ public:
     void pack_block(uint64_t num_tx, uint64_t num_block);
 
 public: 
+    void send_relay_votes(); 
+    void send_relay_blocks(); 
+    grpc::Status RelayVote(uint64_t target_server_id); 
+
+public: 
     uint64_t server_id;
     ClientCHM clients;
     BlockCHM pending_blks; 
     BlockCHM committed_blks; 
     TransactionCHM pending_txs;
+    std::map<
+        uint64_t, 
+        std::shared_ptr<
+            oneapi::tbb::concurrent_queue<
+                std::shared_ptr<BlockVote>
+            >
+        >
+    > relay_votes; 
+    std::map<
+        uint64_t, 
+        std::shared_ptr<
+            oneapi::tbb::concurrent_queue<
+                std::shared_ptr<BlockVote>
+            >
+        >
+    > relay_blocks; 
+
 
 private: 
     std::unique_ptr<grpc::Server> grpc_server_; 

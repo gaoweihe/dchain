@@ -36,6 +36,7 @@ public:
 
 public: 
     uint64_t block_id_; 
+    uint64_t voter_id_; 
     std::shared_ptr<BLSSigShare> sig_share_; 
 }; 
 
@@ -52,6 +53,11 @@ public:
 public: 
     void insert(std::shared_ptr<Transaction> tx);
     std::shared_ptr<std::array<uint8_t, picosha2::k_digest_size>> get_sha256(); 
+    bool is_vote_enough(const uint64_t target_num) const; 
+    void merge_votes(const uint64_t target_num); 
+
+    // server id starts from one 
+    uint64_t get_server_id(uint64_t server_count) const; 
 
 public: 
     BlockHeader header_; 

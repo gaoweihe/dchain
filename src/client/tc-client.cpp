@@ -14,10 +14,10 @@
 
 std::shared_ptr<nlohmann::json> conf_data; 
 
-namespace tomchain {
-
 // gRPC implementations
 #include "client/tc-client-grpc.hpp"
+
+namespace tomchain {
 
 TcClient::TcClient(std::shared_ptr<grpc::Channel> channel)
     :stub_(TcConsensus::NewStub(channel)) 

@@ -8,58 +8,65 @@
 #include "spdlog/spdlog.h"
 #include "argparse/argparse.hpp"
 
-std::shared_ptr<nlohmann::json> conf_data; 
-
-namespace tomchain {
+std::shared_ptr<nlohmann::json> conf_data;
 
 // gRPC implementations
 #include "server/tc-server-grpc.hpp"
 #include "server/tc-server-peer-grpc.hpp"
 
-TcServer::TcServer() 
+namespace tomchain
 {
 
-}
-
-TcServer::~TcServer() 
-{
-    
-}
-
-void TcServer::init_server()
-{
-    this->server_id = (*::conf_data)["server-id"]; 
-}
-
-void TcServer::init_peer_stubs()
-{
-    std::vector<std::string> peer_addr = (*::conf_data)["peer-addr"]; 
-    for (size_t i = 0; i < peer_addr.size(); i++)
+    TcServer::TcServer()
     {
-        grpc_peer_client_stub_.insert(
-            std::make_pair(
-                i, 
-                TcPeerConsensus::NewStub(
-                    grpc::CreateChannel(
-                        peer_addr.at(i), 
-                        grpc::InsecureChannelCredentials()
-                    )
-                )
-            )
-        );
     }
-    
-}
 
-void TcServer::start()
-{
-    this->init_server(); 
-    this->init_peer_stubs(); 
-    this->init_client_profile(); 
-    
-    // start gRPC server thread
-    std::thread grpc_thread([&]() {
-        std::shared_ptr<TcServer> shared_from_tc_server = shared_from_this(); 
+    TcServer::~TcServer()
+    {
+    }
+
+    void TcServer::init_server()
+    {
+        this->server_id = (*::conf_data)["server-id"];
+    }
+
+    void TcServer::init_peer_stubs()
+    {
+        const uint64_t server_count = (*::conf_data)["server-count"];
+        relay_votes.clear();
+        for (uint64_t i = 0; i < server_count; i++)
+        {
+            relay_votes.insert(
+                std::make_pair(
+                    i,
+                    std::make_shared<oneapi::tbb::concurrent_queue<
+                        std::shared_ptr<BlockVote>>>()));
+        }
+
+        std::vector<std::string> peer_addr = (*::conf_data)["peer-addr"];
+        for (size_t i = 0; i < peer_addr.size(); i++)
+        {
+            grpc_peer_client_stub_.insert(
+                std::make_pair(
+                    i,
+                    TcPeerConsensus::NewStub(
+                        grpc::CreateChannel(
+                            peer_addr.at(i),
+                            grpc::InsecureChannelCredentials()))));
+        }
+    }
+
+    void TcServer::start()
+    {
+        this->init_server();
+        this->init_peer_stubs();
+        this->init_client_profile();
+
+        // start gRPC server thread
+        std::thread grpc_thread([&]()
+                                {
+        std::shared_ptr<TcServer> shared_from_tc_server = 
+            shared_from_this(); 
         std::shared_ptr<TcConsensusImpl> consensus_service = 
             std::make_shared<TcConsensusImpl>(); 
         consensus_service->tc_server_ = shared_from_tc_server;
@@ -72,13 +79,14 @@ void TcServer::start()
         builder.RegisterService(consensus_service.get());
 
         grpc_server_ = builder.BuildAndStart();
-        grpc_server_->Wait(); 
-    });
-    grpc_thread.detach();
+        grpc_server_->Wait(); });
+        grpc_thread.detach();
 
-    // start gRPC peer server thread 
-    std::thread grpc_peer_thread([&]() {
-        std::shared_ptr<TcServer> shared_from_tc_server = shared_from_this(); 
+        // start gRPC peer server thread
+        std::thread grpc_peer_thread([&]()
+                                     {
+        std::shared_ptr<TcServer> shared_from_tc_server = 
+            shared_from_this(); 
         std::shared_ptr<TcPeerConsensusImpl> consensus_service = 
             std::make_shared<TcPeerConsensusImpl>(); 
         consensus_service->tc_server_ = shared_from_tc_server;
@@ -91,168 +99,195 @@ void TcServer::start()
         builder.RegisterService(consensus_service.get());
 
         grpc_peer_server_ = builder.BuildAndStart();
-        grpc_peer_server_->Wait(); 
-    });
-    grpc_peer_thread.detach();
+        grpc_peer_server_->Wait(); });
+        grpc_peer_thread.detach();
 
-    // start gRPC peer client thread 
+        // start gRPC peer client thread
 
-
-
-    std::thread schedule_thread([&] {
-        this->schedule(); 
-    }); 
-    schedule_thread.detach();
-}
-
-void TcServer::init_client_profile()
-{
-    auto client_count = (*::conf_data)["client-count"]; 
-
-    DKGBLSWrapper dkg_obj(client_count, client_count);
-    std::shared_ptr<std::vector<libff::alt_bn128_Fr>> sshares = dkg_obj.createDKGSecretShares(); 
-
-    // client number starts from one
-    for (size_t i = 0; i < client_count; i++)
-    {
-        ClientProfile client_profile;
-        client_profile.id = i + 1;
-
-        // TSS keys 
-        BLSPrivateKeyShare skey_share(sshares->at(i), client_count, client_count);
-        BLSPublicKeyShare pkey_share(sshares->at(i), client_count, client_count); 
-        client_profile.tss_key = std::make_shared<std::pair<
-            std::shared_ptr<BLSPrivateKeyShare>, 
-            std::shared_ptr<BLSPublicKeyShare>
-        >>(
-            std::make_pair<
-                std::shared_ptr<BLSPrivateKeyShare>, 
-                std::shared_ptr<BLSPublicKeyShare>
-            >(
-                std::make_shared<BLSPrivateKeyShare>(skey_share), 
-                std::make_shared<BLSPublicKeyShare>(pkey_share)
-            )
-        );
-
-        clients.insert(
-            std::make_pair(
-                client_profile.id, 
-                std::make_shared<ClientProfile>(client_profile)
-            )
-        );
+        std::thread schedule_thread([&]
+                                    { this->schedule(); });
+        schedule_thread.detach();
     }
-}
 
-void TcServer::schedule()
-{
-    Timer t;
+    void TcServer::init_client_profile()
+    {
+        auto client_count =
+            (*::conf_data)["client-count"];
 
-    // generate transactions
-    t.setInterval([&]() {
+        DKGBLSWrapper dkg_obj(client_count, client_count);
+        std::shared_ptr<std::vector<libff::alt_bn128_Fr>> sshares =
+            dkg_obj.createDKGSecretShares();
+
+        // client number starts from one
+        for (size_t i = 0; i < client_count; i++)
+        {
+            ClientProfile client_profile;
+            client_profile.id = i + 1;
+
+            // TSS keys
+            BLSPrivateKeyShare skey_share(
+                sshares->at(i),
+                client_count,
+                client_count);
+            BLSPublicKeyShare pkey_share(
+                sshares->at(i),
+                client_count,
+                client_count);
+            client_profile.tss_key = std::make_shared<std::pair<
+                std::shared_ptr<BLSPrivateKeyShare>,
+                std::shared_ptr<BLSPublicKeyShare>>>(
+                std::make_pair<
+                    std::shared_ptr<BLSPrivateKeyShare>,
+                    std::shared_ptr<BLSPublicKeyShare>>(
+                    std::make_shared<BLSPrivateKeyShare>(skey_share),
+                    std::make_shared<BLSPublicKeyShare>(
+                        pkey_share)));
+
+            clients.insert(
+                std::make_pair(
+                    client_profile.id,
+                    std::make_shared<ClientProfile>(
+                        client_profile)));
+        }
+    }
+
+    void TcServer::schedule()
+    {
+        Timer t;
+
+        // generate transactions
+        t.setInterval([&]()
+                      {
         // number of generated transactions per second 
         const uint64_t gen_tx_rate = (*::conf_data)["generate-tx-rate"]; 
-        this->generate_tx(gen_tx_rate);
-    }, (*::conf_data)["scheduler_freq"]); 
+        this->generate_tx(gen_tx_rate); },
+                      (*::conf_data)["scheduler_freq"]);
 
-    // pack blocks 
-    t.setInterval([&]() {
+        // pack blocks
+        t.setInterval([&]()
+                      {
         // number of generated transactions per second 
         const uint64_t tx_per_block = (*::conf_data)["tx-per-block"]; 
-        this->pack_block(tx_per_block, INT_MAX); 
-    }, (*::conf_data)["scheduler_freq"]); 
+        this->pack_block(tx_per_block, INT_MAX); },
+                      (*::conf_data)["scheduler_freq"]);
 
-    // count blocks
-    t.setInterval([&]() {
-        spdlog::info("tx:{} | pb:{} | cb:{}", 
-            pending_txs.size(), 
-            pending_blks.size(), 
-            committed_blks.size()
-        );
-    }, (*::conf_data)["scheduler_freq"]); 
+        // count blocks
+        t.setInterval([&]()
+                      { spdlog::info("tx:{} | pb:{} | cb:{}",
+                                     pending_txs.size(),
+                                     pending_blks.size(),
+                                     committed_blks.size()); },
+                      (*::conf_data)["scheduler_freq"]);
 
-    // TODO: change to shutdown conditional variable 
-    while(true) { sleep(INT_MAX); }
-}
+        // peer relay
+        t.setInterval([&]()
+                      { 
+                        this->send_relay_votes();
+                        this->send_relay_blocks(); },
+                      (*::conf_data)["scheduler_freq"]);
 
-void TcServer::generate_tx(uint64_t num_tx)
-{
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<
-        std::mt19937::result_type
-    > distribution(1, INT_MAX);
-
-    for (size_t i = 0; i < num_tx; i++)
-    {
-        uint64_t tx_id = distribution(rng);
-        Transaction tx(
-            tx_id, 
-            0xDEADBEEF, 
-            0xDEADBEEF, 
-            0xDEADBEEF, 
-            0xDEADBEEF
-        ); 
-        pending_txs.insert(
-            std::make_pair(tx_id, std::make_shared<Transaction>(tx))
-        ); 
-    }
-}
-
-void TcServer::pack_block(uint64_t num_tx, uint64_t num_block)
-{
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<
-        std::mt19937::result_type
-    > distribution(1, INT_MAX);
-
-    for (size_t i = 0; i < num_block; i++)
-    {
-        std::size_t pending_txs_size = pending_txs.size(); 
-        if (pending_txs_size >= num_tx) 
+        // TODO: change to shutdown conditional variable
+        while (true)
         {
-            std::vector<uint64_t> extracted_tx; 
-            TransactionCHM::iterator it; 
-            BlockCHM::accessor accessor;
-
-            // Construct new block 
-            uint64_t block_id = distribution(rng);
-            // TODO: base id
-            Block new_block(block_id, 0xDEADBEEF);
-            for(it = pending_txs.begin(); it != pending_txs.end(); ++it)
-            {
-                extracted_tx.push_back(it->first); 
-                new_block.tx_vec_.push_back(it->second); 
-            }
-
-            pending_blks.insert(
-                accessor, 
-                block_id
-            ); 
-            accessor->second = std::make_shared<Block>(new_block); 
-            spdlog::info("gen block: {}", block_id); 
-
-            // remove extracted pending transactions 
-            for (auto iter = extracted_tx.begin(); iter < extracted_tx.end(); iter++)
-            {
-                pending_txs.erase(*iter); 
-            }
-        }
-        else {
-            break; 
+            sleep(INT_MAX);
         }
     }
-}
+
+    void TcServer::generate_tx(uint64_t num_tx)
+    {
+        std::random_device dev;
+        std::mt19937 rng(dev());
+        std::uniform_int_distribution<
+            std::mt19937::result_type>
+            distribution(1, INT_MAX);
+
+        for (size_t i = 0; i < num_tx; i++)
+        {
+            uint64_t tx_id = distribution(rng);
+            Transaction tx(
+                tx_id,
+                0xDEADBEEF,
+                0xDEADBEEF,
+                0xDEADBEEF,
+                0xDEADBEEF);
+            pending_txs.insert(
+                std::make_pair(tx_id, std::make_shared<Transaction>(tx)));
+        }
+    }
+
+    void TcServer::pack_block(uint64_t num_tx, uint64_t num_block)
+    {
+        std::random_device dev;
+        std::mt19937 rng(dev());
+        std::uniform_int_distribution<
+            std::mt19937::result_type>
+            distribution(1, INT_MAX);
+
+        for (size_t i = 0; i < num_block; i++)
+        {
+            std::size_t pending_txs_size = pending_txs.size();
+            if (pending_txs_size >= num_tx)
+            {
+                std::vector<uint64_t> extracted_tx;
+                TransactionCHM::iterator it;
+                BlockCHM::accessor accessor;
+
+                // Construct new block
+                uint64_t block_id = distribution(rng);
+                // TODO: base id
+                Block new_block(block_id, 0xDEADBEEF);
+                for (it = pending_txs.begin(); it != pending_txs.end(); ++it)
+                {
+                    extracted_tx.push_back(it->first);
+                    new_block.tx_vec_.push_back(it->second);
+                }
+
+                pending_blks.insert(
+                    accessor,
+                    block_id);
+                accessor->second = std::make_shared<Block>(new_block);
+                spdlog::info("gen block: {}", block_id);
+
+                // remove extracted pending transactions
+                for (auto iter = extracted_tx.begin(); iter < extracted_tx.end(); iter++)
+                {
+                    pending_txs.erase(*iter);
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+
+    void TcServer::send_relay_votes()
+    {
+        for (uint64_t i = 0; i < (*::conf_data)["server-count"]; i++)
+        {
+            // server id starts from one
+            uint64_t target_server_id = i + 1;
+            if (target_server_id == server_id)
+            {
+                continue;
+            }
+            RelayVote(target_server_id);
+        }
+    }
+
+    void TcServer::send_relay_blocks()
+    {
+    }
 
 }
 
-int main(const int argc, const char* argv[])
+int main(const int argc, const char *argv[])
 {
-    spdlog::info("TomChain server starts. "); 
+    spdlog::info("TomChain server starts. ");
 
     // set CLI argument parser
     spdlog::info("Parsing CLI arguments: argc={}", argc);
-    for(int i = 0; i < argc; i++)
+    for (int i = 0; i < argc; i++)
     {
         spdlog::info("argv[{}]={}", i, argv[i]);
     }
@@ -260,22 +295,20 @@ int main(const int argc, const char* argv[])
     parser.add_argument("--cf")
         .help("configuration file")
         .required()
-        .default_value(std::string{""}); 
+        .default_value(std::string{""});
     parser.add_argument("--id")
         .help("server id")
         .scan<'u', uint32_t>()
-        .default_value(1); 
-    parser.parse_args(argc, argv); 
-    
+        .default_value(1);
+    parser.parse_args(argc, argv);
+
     // parse json configuration
     spdlog::info("Parsing JSON configuration file. ");
     std::string conf_file_path = parser.get<std::string>(
-        "--cf"
-    );
+        "--cf");
     std::ifstream fs(conf_file_path);
     ::conf_data = std::make_shared<nlohmann::json>(
-        nlohmann::json::parse(fs)
-    );
+        nlohmann::json::parse(fs));
 
     uint64_t conf_server_id = parser.get<uint32_t>("--id");
     if (conf_server_id != 0)
@@ -287,18 +320,17 @@ int main(const int argc, const char* argv[])
     spdlog::info("Setting log level. ");
     spdlog::set_level(
         spdlog::level::from_str(
-            (*::conf_data)["log-level"]
-        )
-    );
+            (*::conf_data)["log-level"]));
 
     // start server
     spdlog::info("Starting server. ");
-    std::shared_ptr<tomchain::TcServer> server = 
-        std::make_shared<tomchain::TcServer>(); 
-    server->start(); 
+    std::shared_ptr<tomchain::TcServer> server =
+        std::make_shared<tomchain::TcServer>();
+    server->start();
 
     // watch dog
-    while(true) { 
+    while (true)
+    {
         sleep(2);
         spdlog::info("server watchdog");
     }

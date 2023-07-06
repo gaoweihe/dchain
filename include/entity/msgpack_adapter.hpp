@@ -173,10 +173,13 @@ template <>
 struct pack<tomchain::BlockVote> {
     template <typename Stream>
     msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, tomchain::BlockVote const& v) const {
-        o.pack_map(2);
+        o.pack_map(3);
 
         o.pack("block_id"); 
         o.pack(v.block_id_);
+
+        o.pack("voter_id");
+        o.pack(v.voter_id_);
 
         o.pack("sig_share");
         o.pack(v.sig_share_); 
@@ -191,12 +194,13 @@ struct as<tomchain::BlockVote> {
         tomchain::BlockVote bv; 
 
         if (o.type != msgpack::type::MAP) throw msgpack::type_error();
-        if (o.via.map.size != 2) throw msgpack::type_error();
+        if (o.via.map.size != 3) throw msgpack::type_error();
         std::map<std::string, msgpack::object> m;
         o >> m;
 
         bv.block_id_ = m["block_id"].as<uint64_t>();
-        bv.sig_share_ = m["sig_share"].as<std::shared_ptr<BLSSigShare>>(); 
+        bv.sig_share_ = m["sig_share"].as<std::shared_ptr<BLSSigShare>>();
+        bv.voter_id_ = m["voter_id"].as<uint64_t>();
 
         return bv; 
     }
