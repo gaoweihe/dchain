@@ -58,7 +58,7 @@ public:
      * 
      * @param addr Listen address. 
      */
-    void start(const std::string addr); 
+    void start(); 
 
     void init_server(); 
     void init_client_profile(); 
@@ -82,6 +82,7 @@ public:
 
 private: 
     std::unique_ptr<grpc::Server> grpc_server_; 
+    std::unique_ptr<grpc::Server> grpc_peer_server_; 
 
 };
 

@@ -31,11 +31,12 @@ void TcServer::init_server()
     this->server_id = (*::conf_data)["server-id"]; 
 }
 
-void TcServer::start(const std::string addr)
+void TcServer::start()
 {
     this->init_server(); 
     this->init_client_profile(); 
     
+    // start gRPC server thread
     std::thread grpc_thread([&]() {
         std::shared_ptr<TcServer> shared_from_tc_server = shared_from_this(); 
         std::shared_ptr<TcConsensusImpl> consensus_service = 
@@ -44,7 +45,7 @@ void TcServer::start(const std::string addr)
 
         grpc::ServerBuilder builder;
         builder.AddListeningPort(
-            addr, 
+            (*::conf_data)["grpc-listen-addr"], 
             grpc::InsecureServerCredentials()
         ); 
         builder.RegisterService(consensus_service.get());
@@ -53,6 +54,29 @@ void TcServer::start(const std::string addr)
         grpc_server_->Wait(); 
     });
     grpc_thread.detach();
+
+    // start gRPC peer server thread 
+    std::thread grpc_peer_thread([&]() {
+        std::shared_ptr<TcServer> shared_from_tc_server = shared_from_this(); 
+        std::shared_ptr<TcPeerConsensusImpl> consensus_service = 
+            std::make_shared<TcPeerConsensusImpl>(); 
+        consensus_service->tc_server_ = shared_from_tc_server;
+
+        grpc::ServerBuilder builder;
+        builder.AddListeningPort(
+            (*::conf_data)["grpc-peer-listen-addr"], 
+            grpc::InsecureServerCredentials()
+        ); 
+        builder.RegisterService(consensus_service.get());
+
+        grpc_peer_server_ = builder.BuildAndStart();
+        grpc_peer_server_->Wait(); 
+    });
+    grpc_peer_thread.detach();
+
+    // start gRPC peer client thread 
+
+
 
     std::thread schedule_thread([&] {
         this->schedule(); 
@@ -250,7 +274,7 @@ int main(const int argc, const char* argv[])
     spdlog::info("Starting server. ");
     std::shared_ptr<tomchain::TcServer> server = 
         std::make_shared<tomchain::TcServer>(); 
-    server->start((*::conf_data)["grpc-listen-addr"]); 
+    server->start(); 
 
     // watch dog
     while(true) { 
