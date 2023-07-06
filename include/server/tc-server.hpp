@@ -79,6 +79,7 @@ public:
     void send_relay_votes(); 
     void send_relay_blocks(); 
     grpc::Status RelayVote(uint64_t target_server_id); 
+    grpc::Status RelayBlock(uint64_t target_server_id); 
 
 public: 
     uint64_t server_id;
@@ -98,7 +99,7 @@ public:
         uint64_t, 
         std::shared_ptr<
             oneapi::tbb::concurrent_queue<
-                std::shared_ptr<BlockVote>
+                std::shared_ptr<Block>
             >
         >
     > relay_blocks; 

@@ -43,6 +43,16 @@ namespace tomchain
                         std::shared_ptr<BlockVote>>>()));
         }
 
+        relay_blocks.clear(); 
+        for (uint64_t i = 0; i < server_count; i++)
+        {
+            relay_blocks.insert(
+                std::make_pair(
+                    i,
+                    std::make_shared<oneapi::tbb::concurrent_queue<
+                        std::shared_ptr<Block>>>()));
+        }
+
         std::vector<std::string> peer_addr = (*::conf_data)["peer-addr"];
         for (size_t i = 0; i < peer_addr.size(); i++)
         {
@@ -242,10 +252,17 @@ namespace tomchain
                     new_block.tx_vec_.push_back(it->second);
                 }
 
+                auto p_block = std::make_shared<Block>(new_block);
                 pending_blks.insert(
                     accessor,
                     block_id);
-                accessor->second = std::make_shared<Block>(new_block);
+                accessor->second = p_block;
+                
+                for (auto iter = relay_blocks.begin(); iter != relay_blocks.end(); iter++)
+                {
+                    iter->second->push(accessor->second); 
+                }
+                
                 spdlog::info("gen block: {}", block_id);
 
                 // remove extracted pending transactions
@@ -277,6 +294,16 @@ namespace tomchain
 
     void TcServer::send_relay_blocks()
     {
+        for (uint64_t i = 0; i < (*::conf_data)["server-count"]; i++)
+        {
+            // server id starts from one
+            uint64_t target_server_id = i + 1;
+            if (target_server_id == server_id)
+            {
+                continue;
+            }
+            RelayBlock(target_server_id);
+        }
     }
 
 }

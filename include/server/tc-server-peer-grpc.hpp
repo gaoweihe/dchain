@@ -16,7 +16,7 @@ namespace tomchain
 
     public:
         /**
-         * @brief Client registers when it connects to server.
+         * @brief Server relays votes to its peer.
          *
          * @param context RPC context.
          * @param request RPC request.
@@ -73,6 +73,39 @@ namespace tomchain
             reactor->Finish(grpc::Status::OK);
             return reactor;
         }
+
+        /**
+         * @brief Server relays blocks to its peer.
+         *
+         * @param context RPC context.
+         * @param request RPC request.
+         * @param response RPC response.
+         * @return grpc::Status RPC status.
+         */
+        grpc::ServerUnaryReactor *RelayBlock(
+            grpc::CallbackServerContext *context,
+            const RelayBlockRequest *request,
+            RelayBlockResponse *response) override
+        {
+            spdlog::debug("gRPC(RelayBlock) starts");
+
+            uint32_t peer_id = request->id();
+            auto req_blocks = request->blocks();
+
+            for (auto iter = req_blocks.begin(); iter != req_blocks.end(); iter++)
+            {
+                // deserialize relayed votes
+                msgpack::sbuffer des_b = stringToSbuffer(*iter);
+                auto oh = msgpack::unpack(des_b.data(), des_b.size());
+                auto vote = oh->as<std::shared_ptr<Block>>();
+
+                // store block locally
+            }
+
+            grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
+            reactor->Finish(grpc::Status::OK);
+            return reactor;
+        }
     };
 
     grpc::Status TcServer::RelayVote(uint64_t target_server_id)
@@ -114,6 +147,51 @@ namespace tomchain
         }
 
         spdlog::trace("gRPC(RelayVote): {}:{}",
+                      status.error_code(),
+                      status.error_message());
+
+        return status;
+    }
+
+    grpc::Status TcServer::RelayBlock(uint64_t target_server_id)
+    {
+        RelayBlockRequest request;
+        request.set_id(this->server_id);
+
+        std::shared_ptr<Block> block;
+        while (relay_blocks.find(target_server_id)->second->try_pop(block))
+        {
+            // serialize block
+            msgpack::sbuffer b;
+            msgpack::pack(b, block);
+            std::string ser_block = sbufferToString(b);
+
+            // add to relayed block vector
+            request.add_blocks(ser_block);
+        }
+
+        RelayBlockResponse response;
+
+        grpc::ClientContext context;
+        std::mutex mu;
+        std::condition_variable cv;
+        bool done = false;
+
+        grpc::Status status;
+        grpc_peer_client_stub_.find(target_server_id)->second->async()->RelayBlock(&context, &request, &response, [&mu, &cv, &done, &status](grpc::Status s)
+                                                                                   {
+                status = std::move(s);
+                std::lock_guard<std::mutex> lock(mu);
+                done = true;
+                cv.notify_one(); });
+
+        std::unique_lock<std::mutex> lock(mu);
+        while (!done)
+        {
+            cv.wait(lock);
+        }
+
+        spdlog::trace("gRPC(RelayBlock): {}:{}",
                       status.error_code(),
                       status.error_message());
 
