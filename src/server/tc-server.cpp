@@ -31,9 +31,30 @@ void TcServer::init_server()
     this->server_id = (*::conf_data)["server-id"]; 
 }
 
+void TcServer::init_peer_stubs()
+{
+    std::vector<std::string> peer_addr = (*::conf_data)["peer-addr"]; 
+    for (size_t i = 0; i < peer_addr.size(); i++)
+    {
+        grpc_peer_client_stub_.insert(
+            std::make_pair(
+                i, 
+                TcPeerConsensus::NewStub(
+                    grpc::CreateChannel(
+                        peer_addr.at(i), 
+                        grpc::InsecureChannelCredentials()
+                    )
+                )
+            )
+        );
+    }
+    
+}
+
 void TcServer::start()
 {
     this->init_server(); 
+    this->init_peer_stubs(); 
     this->init_client_profile(); 
     
     // start gRPC server thread

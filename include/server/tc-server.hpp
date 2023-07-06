@@ -62,6 +62,7 @@ public:
 
     void init_server(); 
     void init_client_profile(); 
+    void init_peer_stubs(); 
 
     /**
      * @brief Server scheduler. 
@@ -83,6 +84,10 @@ public:
 private: 
     std::unique_ptr<grpc::Server> grpc_server_; 
     std::unique_ptr<grpc::Server> grpc_peer_server_; 
+    std::map<
+        uint64_t, 
+        std::unique_ptr<TcPeerConsensus::Stub>
+    > grpc_peer_client_stub_;
 
 };
 
