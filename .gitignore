@@ -2,6 +2,10 @@
 build/
 third_party/ 
 
+conf/
+!conf/client
+!conf/server
+
 grpc_proto/*.h
 grpc_proto/*.cc 
 
