@@ -15,6 +15,7 @@
 
 #include <grpcpp/grpcpp.h>
 #include "tc-server.grpc.pb.h"
+#include "tc-server-peer.grpc.pb.h"
 
 #include "block.hpp" 
 #include "transaction.hpp" 
@@ -78,7 +79,6 @@ public:
     BlockCHM pending_blks; 
     BlockCHM committed_blks; 
     TransactionCHM pending_txs;
-    // BlockCHM::accessor pb_accessor; 
 
 private: 
     std::unique_ptr<grpc::Server> grpc_server_; 

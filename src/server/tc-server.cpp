@@ -14,6 +14,7 @@ namespace tomchain {
 
 // gRPC implementations
 #include "server/tc-server-grpc.hpp"
+#include "server/tc-server-peer-grpc.hpp"
 
 TcServer::TcServer() 
 {

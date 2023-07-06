@@ -1,3 +1,8 @@
+#include "spdlog/spdlog.h"
+
+#include <grpcpp/grpcpp.h>
+#include "tc-server.grpc.pb.h"
+
 class TcConsensusImpl final : 
     public TcConsensus::CallbackService {
 
