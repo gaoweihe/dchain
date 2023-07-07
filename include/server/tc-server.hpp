@@ -80,6 +80,8 @@ public:
     void send_relay_blocks(); 
     grpc::Status RelayVote(uint64_t target_server_id); 
     grpc::Status RelayBlock(uint64_t target_server_id); 
+    void send_heartbeats(); 
+    grpc::Status SPHeartbeat(uint64_t target_server_id); 
 
 public: 
     uint64_t server_id;

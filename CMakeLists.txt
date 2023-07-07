@@ -5,6 +5,9 @@ set( CMAKE_BUILD_TYPE "Release" )
 
 project(tomchain)
 
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/debug)
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/release)
+
 ## fetch dependencies with FetchContent
 include(FetchContent)
 set(FETCHCONTENT_QUIET OFF)

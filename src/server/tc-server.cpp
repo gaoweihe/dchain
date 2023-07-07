@@ -27,28 +27,44 @@ namespace tomchain
 
     void TcServer::init_server()
     {
+        spdlog::info("Initializing server");
         this->server_id = (*::conf_data)["server-id"];
     }
 
     void TcServer::init_peer_stubs()
     {
+        spdlog::info("Initializing peer stubs");
         const uint64_t server_count = (*::conf_data)["server-count"];
         relay_votes.clear();
         for (uint64_t i = 0; i < server_count; i++)
         {
+            // server id starts from one 
+            const uint64_t server_id = i + 1; 
+            if (server_id == this->server_id)
+            {
+                continue;
+            }
+
             relay_votes.insert(
                 std::make_pair(
-                    i,
+                    server_id,
                     std::make_shared<oneapi::tbb::concurrent_queue<
                         std::shared_ptr<BlockVote>>>()));
         }
 
-        relay_blocks.clear(); 
+        relay_blocks.clear();
         for (uint64_t i = 0; i < server_count; i++)
         {
+            // server id starts from one 
+            const uint64_t server_id = i + 1; 
+            if (server_id == this->server_id)
+            {
+                continue;
+            }
+
             relay_blocks.insert(
                 std::make_pair(
-                    i,
+                    server_id,
                     std::make_shared<oneapi::tbb::concurrent_queue<
                         std::shared_ptr<Block>>>()));
         }
@@ -56,9 +72,16 @@ namespace tomchain
         std::vector<std::string> peer_addr = (*::conf_data)["peer-addr"];
         for (size_t i = 0; i < peer_addr.size(); i++)
         {
+            // server id starts from one 
+            const uint64_t server_id = i + 1; 
+            if (server_id == this->server_id)
+            {
+                continue;
+            }
+
             grpc_peer_client_stub_.insert(
                 std::make_pair(
-                    i,
+                    server_id,
                     TcPeerConsensus::NewStub(
                         grpc::CreateChannel(
                             peer_addr.at(i),
@@ -73,6 +96,7 @@ namespace tomchain
         this->init_client_profile();
 
         // start gRPC server thread
+        spdlog::info("Starting gRPC server thread");
         std::thread grpc_thread([&]()
                                 {
         std::shared_ptr<TcServer> shared_from_tc_server = 
@@ -93,6 +117,7 @@ namespace tomchain
         grpc_thread.detach();
 
         // start gRPC peer server thread
+        spdlog::info("Starting gRPC peer server thread");
         std::thread grpc_peer_thread([&]()
                                      {
         std::shared_ptr<TcServer> shared_from_tc_server = 
@@ -112,8 +137,8 @@ namespace tomchain
         grpc_peer_server_->Wait(); });
         grpc_peer_thread.detach();
 
-        // start gRPC peer client thread
-
+        // start schedule thread
+        spdlog::info("Starting schedule thread");
         std::thread schedule_thread([&]
                                     { this->schedule(); });
         schedule_thread.detach();
@@ -121,6 +146,8 @@ namespace tomchain
 
     void TcServer::init_client_profile()
     {
+        spdlog::info("Initializing client profile");
+
         auto client_count =
             (*::conf_data)["client-count"];
 
@@ -190,11 +217,12 @@ namespace tomchain
                       (*::conf_data)["scheduler_freq"]);
 
         // peer relay
-        t.setInterval([&]()
-                      { 
-                        this->send_relay_votes();
-                        this->send_relay_blocks(); },
-                      (*::conf_data)["scheduler_freq"]);
+        t.setInterval([&]() { 
+            this->send_heartbeats(); 
+            this->send_relay_votes();
+            this->send_relay_blocks(); 
+        },
+        (*::conf_data)["scheduler_freq"]);
 
         // TODO: change to shutdown conditional variable
         while (true)
@@ -257,13 +285,13 @@ namespace tomchain
                     accessor,
                     block_id);
                 accessor->second = p_block;
-                
+
                 for (auto iter = relay_blocks.begin(); iter != relay_blocks.end(); iter++)
                 {
-                    iter->second->push(accessor->second); 
+                    iter->second->push(accessor->second);
                 }
-                
-                spdlog::info("gen block: {}", block_id);
+
+                spdlog::trace("gen block: {}", block_id);
 
                 // remove extracted pending transactions
                 for (auto iter = extracted_tx.begin(); iter < extracted_tx.end(); iter++)
@@ -275,6 +303,20 @@ namespace tomchain
             {
                 break;
             }
+        }
+    }
+
+    void TcServer::send_heartbeats()
+    {
+        for (uint64_t i = 0; i < (*::conf_data)["server-count"]; i++)
+        {
+            // server id starts from one
+            uint64_t target_server_id = i + 1;
+            if (target_server_id == server_id)
+            {
+                continue;
+            }
+            SPHeartbeat(target_server_id);
         }
     }
 

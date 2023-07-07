@@ -3,6 +3,8 @@ syntax = "proto3";
 package tomchain;
 
 service TcPeerConsensus {
+    rpc SPHeartbeat(SPHeartbeatRequest)
+        returns (SPHeartbeatResponse);
     rpc RelayVote(RelayVoteRequest)
         returns (RelayVoteResponse); 
     rpc RelayBlock(RelayBlockRequest)
@@ -25,4 +27,12 @@ message RelayBlockRequest {
 
 message RelayBlockResponse {
     uint32 status = 1; 
+}
+
+message SPHeartbeatRequest {
+    uint32 id = 1;
+}
+
+message SPHeartbeatResponse {
+    uint32 status = 1;
 }

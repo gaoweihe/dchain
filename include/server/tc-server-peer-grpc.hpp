@@ -16,6 +16,30 @@ namespace tomchain
 
     public:
         /**
+         * @brief Server heartbeats with peers.
+         *
+         * @param context RPC context.
+         * @param request RPC request.
+         * @param response RPC response.
+         * @return grpc::Status RPC status.
+         */
+        grpc::ServerUnaryReactor *SPHeartbeat(
+            grpc::CallbackServerContext *context,
+            const SPHeartbeatRequest *request,
+            SPHeartbeatResponse *response) override
+        {
+            spdlog::debug("gRPC(SPHeartbeat) starts");
+
+            uint32_t peer_id = request->id();
+
+            response->set_status(0);
+
+            grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
+            reactor->Finish(grpc::Status::OK);
+            return reactor;
+        }
+
+        /**
          * @brief Server relays votes to its peer.
          *
          * @param context RPC context.
@@ -69,6 +93,8 @@ namespace tomchain
                 }
             }
 
+            response->set_status(0);
+
             grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
             reactor->Finish(grpc::Status::OK);
             return reactor;
@@ -97,16 +123,54 @@ namespace tomchain
                 // deserialize relayed votes
                 msgpack::sbuffer des_b = stringToSbuffer(*iter);
                 auto oh = msgpack::unpack(des_b.data(), des_b.size());
-                auto vote = oh->as<std::shared_ptr<Block>>();
+                auto block = oh->as<std::shared_ptr<Block>>();
 
                 // store block locally
+                BlockCHM::accessor accessor;
+                tc_server_->pending_blks.insert(accessor, block->header_.id_);
+                accessor->second = block;
             }
+
+            response->set_status(0);
 
             grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
             reactor->Finish(grpc::Status::OK);
             return reactor;
         }
     };
+
+    grpc::Status TcServer::SPHeartbeat(uint64_t target_server_id)
+    {
+        SPHeartbeatRequest request;
+        request.set_id(this->server_id);
+
+        SPHeartbeatResponse response;
+
+        grpc::ClientContext context;
+        std::mutex mu;
+        std::condition_variable cv;
+        bool done = false;
+
+        grpc::Status status;
+        grpc_peer_client_stub_.find(target_server_id)->second->async()->SPHeartbeat(&context, &request, &response, [&mu, &cv, &done, &status](grpc::Status s)
+                                                                                   {
+                status = std::move(s);
+                std::lock_guard<std::mutex> lock(mu);
+                done = true;
+                cv.notify_one(); });
+
+        std::unique_lock<std::mutex> lock(mu);
+        while (!done)
+        {
+            cv.wait(lock);
+        }
+
+        spdlog::trace("gRPC(SPHeartbeat): {}:{}",
+                      status.error_code(),
+                      status.error_message());
+
+        return status;
+    }
 
     grpc::Status TcServer::RelayVote(uint64_t target_server_id)
     {
