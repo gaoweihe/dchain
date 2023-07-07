@@ -181,7 +181,7 @@ include_directories(deps/folly/include)
 link_directories(deps/folly/lib)
 
 # Data structures 
-add_library(tc-entity SHARED
+add_library(tc-entity
     src/entity/transaction.cpp 
     src/entity/block.cpp
     )

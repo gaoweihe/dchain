@@ -91,6 +91,7 @@ namespace tomchain
             const PullPendingBlocksRequest *request,
             PullPendingBlocksResponse *response) override
         {
+            EASY_FUNCTION("PullPendingBlocks"); 
             spdlog::debug("gRPC(PullPendingBlocks) starts");
 
             response->set_status(0);
@@ -143,6 +144,7 @@ namespace tomchain
             const GetBlocksRequest *request,
             GetBlocksResponse *response) override
         {
+            EASY_FUNCTION("GetBlocks"); 
             spdlog::debug("gRPC(GetBlocks) starts");
 
             response->set_status(0);
@@ -199,6 +201,7 @@ namespace tomchain
             const VoteBlocksRequest *request,
             VoteBlocksResponse *response) override
         {
+            EASY_FUNCTION("VoteBlocks"); 
             spdlog::debug("gRPC(VoteBlocks) starts");
 
             response->set_status(0);
@@ -215,12 +218,15 @@ namespace tomchain
             for (auto iter = voted_blocks.begin(); iter != voted_blocks.end(); iter++)
             {
                 // deserialize request
+                EASY_BLOCK("deserialize request");
                 spdlog::trace("{}:deserialize request", client_id);
                 msgpack::sbuffer des_b = stringToSbuffer(*iter);
                 auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 auto block = oh->as<std::shared_ptr<Block>>();
+                EASY_END_BLOCK; 
 
                 // get block vote from request
+                EASY_BLOCK("get block vote from request");
                 spdlog::trace("{}:get block vote from request", client_id);
                 auto vote = block->votes_.find(request->id());
                 if (vote == block->votes_.end())
@@ -228,8 +234,10 @@ namespace tomchain
                     spdlog::error("{}:vote not found", client_id);
                     continue;
                 }
+                EASY_END_BLOCK; 
 
                 // check if target server is this server
+                EASY_BLOCK("calculate target server id");
                 const uint64_t target_server_id = block->get_server_id((*::conf_data)["server-count"]);
                 if (target_server_id != tc_server_->server_id)
                 {
@@ -238,8 +246,10 @@ namespace tomchain
                     tc_server_->relay_votes.find(target_server_id)->second->push(vote->second);
                     continue;
                 }
+                EASY_END_BLOCK; 
 
                 // find local block storage
+                EASY_BLOCK("find local block storage");
                 spdlog::trace("{}:find local block storage", client_id);
                 bool block_is_found = tc_server_->pending_blks.find(accessor, block->header_.id_);
                 if (!block_is_found)
@@ -247,15 +257,19 @@ namespace tomchain
                     spdlog::error("{}:block not found", client_id);
                     continue;
                 }
+                EASY_END_BLOCK; 
 
                 // insert received vote
+                EASY_BLOCK("insert received vote");
                 spdlog::trace("{}:insert received vote", client_id);
                 accessor->second->votes_.insert(
                     std::make_pair(
                         request->id(),
                         vote->second));
+                EASY_END_BLOCK;
 
                 // if votes count enough
+                EASY_BLOCK("count votes");
                 spdlog::trace("{}:check if votes count enough", client_id);
                 if (accessor->second->is_vote_enough((*::conf_data)["client-count"]))
                 {
@@ -270,6 +284,7 @@ namespace tomchain
                     spdlog::trace("{}:remove block from pending", client_id);
                     tc_server_->pending_blks.erase(block->header_.id_);
                 }
+                EASY_END_BLOCK;
             }
 
             accessor.release();

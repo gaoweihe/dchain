@@ -396,10 +396,10 @@ int main(const int argc, const char *argv[])
     if ((*::conf_data)["profiler-enable"])
     {
         EASY_PROFILER_ENABLE; 
-        if ((*::conf_data)["profiler-listen"])
-        {
-            profiler::startListen();
-        }
+    }
+    if ((*::conf_data)["profiler-listen"])
+    {
+        profiler::startListen();
     }
 
     // start server

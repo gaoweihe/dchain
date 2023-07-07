@@ -9,12 +9,12 @@
 
 namespace tomchain {
 
-std::string sbufferToString(const msgpack::sbuffer& sbuf) {
+static std::string sbufferToString(const msgpack::sbuffer& sbuf) {
     std::string str(sbuf.data(), sbuf.size());
     return str;
 }
 
-msgpack::sbuffer stringToSbuffer(const std::string& str) {
+static msgpack::sbuffer stringToSbuffer(const std::string& str) {
     msgpack::object_handle oh;
     msgpack::unpack(oh, str.data(), str.size());
     msgpack::sbuffer sbuf;

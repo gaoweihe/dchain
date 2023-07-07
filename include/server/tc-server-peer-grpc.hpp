@@ -52,6 +52,7 @@ namespace tomchain
             const RelayVoteRequest *request,
             RelayVoteResponse *response) override
         {
+            EASY_FUNCTION("RelayVote_rsp"); 
             spdlog::debug("gRPC(RelayVote) starts");
 
             uint32_t peer_id = request->id();
@@ -113,6 +114,7 @@ namespace tomchain
             const RelayBlockRequest *request,
             RelayBlockResponse *response) override
         {
+            EASY_FUNCTION("RelayBlock_rsp"); 
             spdlog::debug("gRPC(RelayBlock) starts");
 
             uint32_t peer_id = request->id();
@@ -174,6 +176,8 @@ namespace tomchain
 
     grpc::Status TcServer::RelayVote(uint64_t target_server_id)
     {
+        EASY_FUNCTION("RelayVote_req"); 
+
         RelayVoteRequest request;
         request.set_id(this->server_id);
 
@@ -219,6 +223,8 @@ namespace tomchain
 
     grpc::Status TcServer::RelayBlock(uint64_t target_server_id)
     {
+        EASY_FUNCTION("RelayBlock_req"); 
+
         RelayBlockRequest request;
         request.set_id(this->server_id);
 

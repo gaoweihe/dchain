@@ -2,6 +2,7 @@
 #include "msgpack_adapter.hpp"
 
 #include <nlohmann/json.hpp>
+#include <easy/profiler.h>
 
 extern std::shared_ptr<nlohmann::json> conf_data;
 
@@ -28,6 +29,8 @@ namespace tomchain
 
     std::shared_ptr<std::array<uint8_t, picosha2::k_digest_size>> Block::get_sha256()
     {
+        EASY_FUNCTION("get_sha256");
+         
         std::vector<unsigned char> hash(picosha2::k_digest_size);
 
         msgpack::sbuffer b;
@@ -56,6 +59,8 @@ namespace tomchain
 
     void Block::merge_votes(const uint64_t target_num)
     {
+        EASY_FUNCTION("merge_votes");
+
         BLSSigShareSet sig_share_set(
             target_num,
             target_num);
