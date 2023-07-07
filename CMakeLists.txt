@@ -132,6 +132,14 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(msgpack)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/msgpack-src/include)
 
+# easy_profiler 
+FetchContent_Declare(
+    easy_profiler
+    GIT_REPOSITORY https://github.com/yse/easy_profiler.git
+    GIT_TAG v2.1.0
+)
+FetchContent_MakeAvailable(easy_profiler)
+
 # flatbuffers
 FetchContent_Declare(
     flatbuffers
@@ -181,6 +189,7 @@ target_link_libraries(tc-entity
     nlohmann_json::nlohmann_json
     TBB::tbb
     picosha2
+    easy_profiler
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     )
 
@@ -199,6 +208,7 @@ target_link_libraries(tc-client
     alpaca
     picosha2
     flatbuffers
+    easy_profiler
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     )
 
@@ -217,6 +227,7 @@ target_link_libraries(tc-server
     alpaca
     picosha2
     flatbuffers
+    easy_profiler
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     )
 

@@ -391,6 +391,17 @@ int main(const int argc, const char *argv[])
         spdlog::level::from_str(
             (*::conf_data)["log-level"]));
 
+    // start profiler
+    spdlog::info("Starting profiler");
+    if ((*::conf_data)["profiler-enable"])
+    {
+        EASY_PROFILER_ENABLE; 
+        if ((*::conf_data)["profiler-listen"])
+        {
+            profiler::startListen();
+        }
+    }
+
     // start server
     spdlog::info("Starting server. ");
     std::shared_ptr<tomchain::TcServer> server =

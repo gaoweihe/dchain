@@ -12,6 +12,7 @@
 #include "key.h"
 #include "oneapi/tbb/concurrent_hash_map.h"
 #include "libBLS/libBLS.h"
+#include <easy/profiler.h>
 
 namespace tomchain {
 
