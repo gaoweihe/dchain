@@ -431,6 +431,10 @@ int main(const int argc, const char *argv[])
     if ((*::conf_data)["profiler-enable"])
     {
         EASY_PROFILER_ENABLE; 
+        Timer t; 
+        t.setTimeout([&]() { 
+            profiler::dumpBlocksToFile("profile-server.prof"); 
+        }, 10000);
     }
     if ((*::conf_data)["profiler-listen"])
     {

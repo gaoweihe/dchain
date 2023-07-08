@@ -15,3 +15,5 @@ log/
 
 cmake-build-debug/ 
 shell/debug/
+
+*.prof
