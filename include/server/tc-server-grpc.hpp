@@ -1,4 +1,5 @@
 #include "spdlog/spdlog.h"
+#include <easy/profiler.h>
 
 #include <grpcpp/grpcpp.h>
 #include "tc-server.grpc.pb.h"

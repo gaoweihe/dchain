@@ -1,4 +1,5 @@
 #include "spdlog/spdlog.h"
+#include <easy/profiler.h>
 
 #include <grpcpp/grpcpp.h>
 #include "tc-server-peer.grpc.pb.h"
@@ -350,6 +351,7 @@ namespace tomchain
 
     grpc::Status TcServer::SPBcastCommit(uint64_t target_server_id)
     {
+        EASY_FUNCTION("SPBcastCommit_req");
         SPBcastCommitRequest request;
         request.set_id(this->server_id);
 
