@@ -64,43 +64,52 @@ namespace tomchain
                 msgpack::sbuffer des_b = stringToSbuffer(*iter);
                 auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 auto vote = oh->as<std::shared_ptr<BlockVote>>();
-
-                // add to local block vote vector
                 const uint64_t block_id = vote->block_id_;
 
-                BlockCHM::accessor accessor;
-                bool is_found = tc_server_->pending_blks.find(accessor, block_id);
+                // add to local block vote vector
+                spdlog::trace("RelayVote: add to local block vote vector");
+                BlockCHM::accessor pb_accessor;
+                bool is_found = tc_server_->pending_blks.find(pb_accessor, block_id);
                 if (!is_found)
                 {
+                    spdlog::error("RelayVote: block not found"); 
                     continue;
                 }
-                accessor->second->votes_.insert(
+                pb_accessor->second->votes_.insert(
                     std::make_pair(
                         vote->voter_id_,
                         vote));
 
                 // check if vote enough
-                if (accessor->second->is_vote_enough((*::conf_data)["client-count"]))
+                if (pb_accessor->second->is_vote_enough((*::conf_data)["client-count"]))
                 {
-                    accessor->second->merge_votes((*::conf_data)["client-count"]);
+                    pb_accessor->second->merge_votes((*::conf_data)["client-count"]);
 
                     // insert block to committed
+                    spdlog::trace("RelayVote: insert block to committed");
+                    BlockCHM::accessor cb_accessor;
                     tc_server_->committed_blks.insert(
-                        accessor,
+                        cb_accessor,
                         block_id);
+                    cb_accessor->second = pb_accessor->second;
 
                     // insert block to bcast commit
+                    spdlog::trace("RelayVote: insert block to bcast commit");
                     for (
                         auto iter = tc_server_->bcast_commit_blocks.begin(); 
                         iter != tc_server_->bcast_commit_blocks.end(); 
                         iter++
                     ) {
-                        iter->second->push(accessor->second);
+                        iter->second->push(cb_accessor->second);
                     }
 
                     // remove block from pending
-                    tc_server_->pending_blks.erase(block_id);
+                    tc_server_->pending_blks.erase(pb_accessor);
+
+                    cb_accessor.release();
                 }
+
+                pb_accessor.release(); 
             }
 
             response->set_status(0);
@@ -131,15 +140,18 @@ namespace tomchain
 
             for (auto iter = req_blocks.begin(); iter != req_blocks.end(); iter++)
             {
-                // deserialize relayed votes
+                // deserialize relayed blocks
+                spdlog::trace("RelayBlock: deserialize relayed blocks");
                 msgpack::sbuffer des_b = stringToSbuffer(*iter);
                 auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 auto block = oh->as<std::shared_ptr<Block>>();
 
                 // store block locally
+                spdlog::trace("RelayBlock: store block locally");
                 BlockCHM::accessor accessor;
                 tc_server_->pending_blks.insert(accessor, block->header_.id_);
                 accessor->second = block;
+                accessor.release(); 
             }
 
             response->set_status(0);
@@ -167,23 +179,38 @@ namespace tomchain
 
             uint32_t peer_id = request->id();
             auto req_blocks = request->blocks();
+            spdlog::trace("SPBcastCommit: req_blocks size: {}", req_blocks.size()); 
 
             for (auto iter = req_blocks.begin(); iter != req_blocks.end(); iter++)
             {
-                // deserialize relayed votes
+                // deserialize bcasted blocks
+                spdlog::trace("SPBcastCommit: deserialize bcasted blocks"); 
                 msgpack::sbuffer des_b = stringToSbuffer(*iter);
                 auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 auto block = oh->as<std::shared_ptr<Block>>();
 
                 // remove pending block
-                tc_server_->pending_blks.erase(block->header_.id_);
+                spdlog::trace("SPBcastCommit: remove pending block");
+                BlockCHM::accessor pb_accessor;
+                bool is_found = tc_server_->pending_blks.find(
+                    pb_accessor, block->header_.id_); 
+                if (!is_found)
+                {
+                    spdlog::error("SPBcastCommit: block not found"); 
+                }
 
                 // insert into committed blocks
-                BlockCHM::accessor accessor;
+                spdlog::trace("insert into committed blocks");
+                BlockCHM::accessor cb_accessor;
                 tc_server_->committed_blks.insert(
-                    accessor,
+                    cb_accessor,
                     block->header_.id_);
-                accessor->second = block;
+                cb_accessor->second = block;
+
+                tc_server_->pending_blks.erase(pb_accessor);
+
+                cb_accessor.release();
+                pb_accessor.release(); 
             }
 
             response->set_status(0);

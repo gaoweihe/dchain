@@ -214,7 +214,6 @@ namespace tomchain
 
             // unsafe interations on concurrent hash map
             // but it is serial
-            BlockCHM::accessor accessor;
             for (auto iter = voted_blocks.begin(); iter != voted_blocks.end(); iter++)
             {
                 // deserialize request
@@ -251,7 +250,8 @@ namespace tomchain
                 // find local block storage
                 EASY_BLOCK("find local block storage");
                 spdlog::trace("{}:find local block storage", client_id);
-                bool block_is_found = tc_server_->pending_blks.find(accessor, block->header_.id_);
+                BlockCHM::accessor pb_accessor;
+                bool block_is_found = tc_server_->pending_blks.find(pb_accessor, block->header_.id_);
                 if (!block_is_found)
                 {
                     spdlog::error("{}:block not found", client_id);
@@ -262,7 +262,7 @@ namespace tomchain
                 // insert received vote
                 EASY_BLOCK("insert received vote");
                 spdlog::trace("{}:insert received vote", client_id);
-                accessor->second->votes_.insert(
+                pb_accessor->second->votes_.insert(
                     std::make_pair(
                         request->id(),
                         vote->second));
@@ -271,14 +271,16 @@ namespace tomchain
                 // if votes count enough
                 EASY_BLOCK("count votes");
                 spdlog::trace("{}:check if votes count enough", client_id);
-                if (accessor->second->is_vote_enough((*::conf_data)["client-count"]))
+                if (pb_accessor->second->is_vote_enough((*::conf_data)["client-count"]))
                 {
-                    accessor->second->merge_votes((*::conf_data)["client-count"]);
+                    pb_accessor->second->merge_votes((*::conf_data)["client-count"]);
 
                     // insert block to committed
+                    BlockCHM::accessor cb_accessor;
                     tc_server_->committed_blks.insert(
-                        accessor,
+                        cb_accessor,
                         block->header_.id_);
+                    cb_accessor->second = pb_accessor->second;
 
                     // insert block to bcast commit
                     for (
@@ -286,17 +288,20 @@ namespace tomchain
                         iter != tc_server_->bcast_commit_blocks.end(); 
                         iter++
                     ) {
-                        iter->second->push(accessor->second);
+                        iter->second->push(cb_accessor->second);
                     }
 
                     // remove block from pending
                     spdlog::trace("{}:remove block from pending", client_id);
-                    tc_server_->pending_blks.erase(block->header_.id_);
+                    tc_server_->pending_blks.erase(pb_accessor);
+
+                    cb_accessor.release();
                 }
+
+                pb_accessor.release();
+
                 EASY_END_BLOCK;
             }
-
-            accessor.release();
 
             grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
             reactor->Finish(grpc::Status::OK);

@@ -27,6 +27,16 @@ extern std::shared_ptr<nlohmann::json> conf_data;
 
 namespace tomchain {
 
+typedef oneapi::tbb::concurrent_hash_map<
+    uint64_t, std::shared_ptr<Transaction>
+> TransactionCHM; 
+typedef oneapi::tbb::concurrent_hash_map<
+    uint64_t, std::shared_ptr<Block>
+> BlockCHM; 
+typedef oneapi::tbb::concurrent_hash_map<
+    uint64_t, std::shared_ptr<BlockHeader>
+> BlockHeaderCHM; 
+
 class ClientProfile {
 public: 
     uint64_t id;
@@ -35,17 +45,12 @@ public:
         std::shared_ptr<BLSPrivateKeyShare>, 
         std::shared_ptr<BLSPublicKeyShare>
     >> tss_key;
+    BlockHeaderCHM seen_blocks; 
 };
 
 typedef oneapi::tbb::concurrent_hash_map<
     uint64_t, std::shared_ptr<ClientProfile>
 > ClientCHM; 
-typedef oneapi::tbb::concurrent_hash_map<
-    uint64_t, std::shared_ptr<Transaction>
-> TransactionCHM; 
-typedef oneapi::tbb::concurrent_hash_map<
-    uint64_t, std::shared_ptr<Block>
-> BlockCHM; 
 
 class TcServer : 
     virtual public std::enable_shared_from_this<TcServer> {
@@ -73,7 +78,6 @@ public:
     void schedule(); 
 
     void generate_tx(uint64_t num_tx); 
-
     void pack_block(uint64_t num_tx, uint64_t num_block);
 
 public: 

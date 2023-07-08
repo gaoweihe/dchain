@@ -70,8 +70,14 @@ namespace tomchain
 int main(const int argc, const char *argv[])
 {
     spdlog::info("TomChain client starts. ");
+    spdlog::flush_every(std::chrono::seconds(3));
 
     // set CLI argument parser
+    spdlog::trace("Parsing CLI arguments: argc={}", argc);
+    for (int i = 0; i < argc; i++)
+    {
+        spdlog::trace("argv[{}]={}", i, argv[i]);
+    }
     argparse::ArgumentParser parser("tc-client");
     parser.add_argument("--cf")
         .help("configuration file")
@@ -84,6 +90,7 @@ int main(const int argc, const char *argv[])
     parser.parse_args(argc, argv);
 
     // parse json configuration
+    spdlog::info("Parsing JSON configuration file. ");
     std::string conf_file_path = parser.get<std::string>(
         "--cf");
     std::ifstream fs(conf_file_path);

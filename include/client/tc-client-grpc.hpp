@@ -60,7 +60,7 @@ grpc::Status TcClient::Register()
         )
     );
 
-    spdlog::info("gRPC(register): {}:{}", 
+    spdlog::debug("gRPC(Register): {}:{}", 
         status.error_code(), 
         status.error_message()
     ); 
@@ -98,7 +98,7 @@ grpc::Status TcClient::Heartbeat()
       cv.wait(lock);
     }
 
-    spdlog::info("gRPC(heartbeat): {}:{}", 
+    spdlog::debug("gRPC(Heartbeat): {}:{}", 
         status.error_code(), 
         status.error_message()
     ); 
@@ -148,10 +148,10 @@ grpc::Status TcClient::PullPendingBlocks()
                 std::make_shared<BlockHeader>(block_hdr)
             )
         );
-        spdlog::info("block id: {}", block_hdr.id_); 
+        spdlog::trace("block id: {}", block_hdr.id_); 
     }
 
-    spdlog::info("gRPC(pull pending block headers): {}:{}", 
+    spdlog::debug("gRPC(PullPendingBlocks): {}:{}", 
         status.error_code(), 
         status.error_message()
     ); 
@@ -215,11 +215,11 @@ grpc::Status TcClient::GetBlocks()
         // remove block header from CHM
         pending_blkhdr.erase(block.header_.id_); 
 
-        spdlog::info("get block: {}, {}", block.header_.id_, block.header_.base_id_); 
+        spdlog::trace("get block: {}, {}", block.header_.id_, block.header_.base_id_); 
     }
     
 
-    spdlog::info("gRPC(get blocks): {}:{}", 
+    spdlog::debug("gRPC(GetBlocks): {}:{}", 
         status.error_code(), 
         status.error_message()
     ); 
@@ -298,7 +298,7 @@ grpc::Status TcClient::VoteBlocks()
     pending_blks.clear(); 
     
 
-    spdlog::info("gRPC(vote blocks): {}:{}", 
+    spdlog::debug("gRPC(VoteBlocks): {}:{}", 
         status.error_code(), 
         status.error_message()
     ); 

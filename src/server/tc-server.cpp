@@ -236,8 +236,9 @@ namespace tomchain
         // peer relay
         t.setInterval([&]() { 
             this->send_heartbeats(); 
+            this->send_relay_blocks();
             this->send_relay_votes();
-            this->send_relay_blocks(); 
+            this->bcast_commits();
         },
         (*::conf_data)["scheduler_freq"]);
 
@@ -287,7 +288,7 @@ namespace tomchain
                 TransactionCHM::iterator it;
                 BlockCHM::accessor accessor;
 
-                // Construct new block
+                // construct new block
                 uint64_t block_id = distribution(rng);
                 // TODO: base id
                 Block new_block(block_id, 0xDEADBEEF);
@@ -297,12 +298,14 @@ namespace tomchain
                     new_block.tx_vec_.push_back(it->second);
                 }
 
+                // insert into pending blocks 
                 auto p_block = std::make_shared<Block>(new_block);
                 pending_blks.insert(
                     accessor,
                     block_id);
                 accessor->second = p_block;
 
+                // add to relay blocks list 
                 for (auto iter = relay_blocks.begin(); iter != relay_blocks.end(); iter++)
                 {
                     iter->second->push(accessor->second);
@@ -384,12 +387,13 @@ namespace tomchain
 int main(const int argc, const char *argv[])
 {
     spdlog::info("TomChain server starts. ");
+    spdlog::flush_every(std::chrono::seconds(3));
 
     // set CLI argument parser
-    spdlog::info("Parsing CLI arguments: argc={}", argc);
+    spdlog::trace("Parsing CLI arguments: argc={}", argc);
     for (int i = 0; i < argc; i++)
     {
-        spdlog::info("argv[{}]={}", i, argv[i]);
+        spdlog::trace("argv[{}]={}", i, argv[i]);
     }
     argparse::ArgumentParser parser("tc-server");
     parser.add_argument("--cf")
