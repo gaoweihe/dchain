@@ -91,7 +91,7 @@ namespace tomchain
             const PullPendingBlocksRequest *request,
             PullPendingBlocksResponse *response) override
         {
-            EASY_FUNCTION("PullPendingBlocks"); 
+            EASY_FUNCTION("PullPendingBlocks");
             spdlog::debug("gRPC(PullPendingBlocks) starts");
 
             response->set_status(0);
@@ -144,7 +144,7 @@ namespace tomchain
             const GetBlocksRequest *request,
             GetBlocksResponse *response) override
         {
-            EASY_FUNCTION("GetBlocks"); 
+            EASY_FUNCTION("GetBlocks");
             spdlog::debug("gRPC(GetBlocks) starts");
 
             response->set_status(0);
@@ -201,7 +201,7 @@ namespace tomchain
             const VoteBlocksRequest *request,
             VoteBlocksResponse *response) override
         {
-            EASY_FUNCTION("VoteBlocks"); 
+            EASY_FUNCTION("VoteBlocks");
             spdlog::debug("gRPC(VoteBlocks) starts");
 
             response->set_status(0);
@@ -223,7 +223,7 @@ namespace tomchain
                 msgpack::sbuffer des_b = stringToSbuffer(*iter);
                 auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 auto block = oh->as<std::shared_ptr<Block>>();
-                EASY_END_BLOCK; 
+                EASY_END_BLOCK;
 
                 // get block vote from request
                 EASY_BLOCK("get block vote from request");
@@ -234,7 +234,7 @@ namespace tomchain
                     spdlog::error("{}:vote not found", client_id);
                     continue;
                 }
-                EASY_END_BLOCK; 
+                EASY_END_BLOCK;
 
                 // check if target server is this server
                 EASY_BLOCK("calculate target server id");
@@ -246,7 +246,7 @@ namespace tomchain
                     tc_server_->relay_votes.find(target_server_id)->second->push(vote->second);
                     continue;
                 }
-                EASY_END_BLOCK; 
+                EASY_END_BLOCK;
 
                 // find local block storage
                 EASY_BLOCK("find local block storage");
@@ -257,7 +257,7 @@ namespace tomchain
                     spdlog::error("{}:block not found", client_id);
                     continue;
                 }
-                EASY_END_BLOCK; 
+                EASY_END_BLOCK;
 
                 // insert received vote
                 EASY_BLOCK("insert received vote");
@@ -274,11 +274,20 @@ namespace tomchain
                 if (accessor->second->is_vote_enough((*::conf_data)["client-count"]))
                 {
                     accessor->second->merge_votes((*::conf_data)["client-count"]);
-                    
+
                     // insert block to committed
                     tc_server_->committed_blks.insert(
                         accessor,
                         block->header_.id_);
+
+                    // insert block to bcast commit
+                    for (
+                        auto iter = tc_server_->bcast_commit_blocks.begin(); 
+                        iter != tc_server_->bcast_commit_blocks.end(); 
+                        iter++
+                    ) {
+                        iter->second->push(accessor->second);
+                    }
 
                     // remove block from pending
                     spdlog::trace("{}:remove block from pending", client_id);

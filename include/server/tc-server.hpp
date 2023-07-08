@@ -83,6 +83,8 @@ public:
     grpc::Status RelayBlock(uint64_t target_server_id); 
     void send_heartbeats(); 
     grpc::Status SPHeartbeat(uint64_t target_server_id); 
+    grpc::Status SPBcastCommit(uint64_t target_server_id);
+    void bcast_commits(); 
 
 public: 
     uint64_t server_id;
@@ -106,6 +108,14 @@ public:
             >
         >
     > relay_blocks; 
+    std::map<
+        uint64_t, 
+        std::shared_ptr<
+            oneapi::tbb::concurrent_queue<
+                std::shared_ptr<Block>
+            >
+        >
+    > bcast_commit_blocks; 
 
 
 private: 

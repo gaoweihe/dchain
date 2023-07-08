@@ -69,6 +69,23 @@ namespace tomchain
                         std::shared_ptr<Block>>>()));
         }
 
+        bcast_commit_blocks.clear(); 
+        for (uint64_t i = 0; i < server_count; i++)
+        {
+            // server id starts from one 
+            const uint64_t server_id = i + 1; 
+            if (server_id == this->server_id)
+            {
+                continue;
+            }
+
+            bcast_commit_blocks.insert(
+                std::make_pair(
+                    server_id,
+                    std::make_shared<oneapi::tbb::concurrent_queue<
+                        std::shared_ptr<Block>>>()));
+        }
+
         std::vector<std::string> peer_addr = (*::conf_data)["peer-addr"];
         for (size_t i = 0; i < peer_addr.size(); i++)
         {
@@ -345,6 +362,20 @@ namespace tomchain
                 continue;
             }
             RelayBlock(target_server_id);
+        }
+    }
+
+    void TcServer::bcast_commits()
+    {
+        for (uint64_t i = 0; i < (*::conf_data)["server-count"]; i++)
+        {
+            // server id starts from one
+            uint64_t target_server_id = i + 1;
+            if (target_server_id == server_id)
+            {
+                continue;
+            }
+            SPBcastCommit(target_server_id);
         }
     }
 

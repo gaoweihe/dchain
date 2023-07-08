@@ -9,6 +9,8 @@ service TcPeerConsensus {
         returns (RelayVoteResponse); 
     rpc RelayBlock(RelayBlockRequest)
         returns (RelayBlockResponse);
+    rpc SPBcastCommit(SPBcastCommitRequest)
+        returns (SPBcastCommitResponse);
 }
 
 message RelayVoteRequest {
@@ -35,4 +37,13 @@ message SPHeartbeatRequest {
 
 message SPHeartbeatResponse {
     uint32 status = 1;
+}
+
+message SPBcastCommitRequest {
+    uint32 id = 1;
+    repeated bytes blocks = 2; 
+}
+
+message SPBcastCommitResponse {
+    uint32 status = 1; 
 }

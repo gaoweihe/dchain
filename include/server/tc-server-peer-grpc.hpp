@@ -52,7 +52,7 @@ namespace tomchain
             const RelayVoteRequest *request,
             RelayVoteResponse *response) override
         {
-            EASY_FUNCTION("RelayVote_rsp"); 
+            EASY_FUNCTION("RelayVote_rsp");
             spdlog::debug("gRPC(RelayVote) starts");
 
             uint32_t peer_id = request->id();
@@ -89,6 +89,15 @@ namespace tomchain
                         accessor,
                         block_id);
 
+                    // insert block to bcast commit
+                    for (
+                        auto iter = tc_server_->bcast_commit_blocks.begin(); 
+                        iter != tc_server_->bcast_commit_blocks.end(); 
+                        iter++
+                    ) {
+                        iter->second->push(accessor->second);
+                    }
+
                     // remove block from pending
                     tc_server_->pending_blks.erase(block_id);
                 }
@@ -102,7 +111,7 @@ namespace tomchain
         }
 
         /**
-         * @brief Server relays blocks to its peer.
+         * @brief Server relays new pending blocks to its peer.
          *
          * @param context RPC context.
          * @param request RPC request.
@@ -114,7 +123,7 @@ namespace tomchain
             const RelayBlockRequest *request,
             RelayBlockResponse *response) override
         {
-            EASY_FUNCTION("RelayBlock_rsp"); 
+            EASY_FUNCTION("RelayBlock_rsp");
             spdlog::debug("gRPC(RelayBlock) starts");
 
             uint32_t peer_id = request->id();
@@ -130,6 +139,50 @@ namespace tomchain
                 // store block locally
                 BlockCHM::accessor accessor;
                 tc_server_->pending_blks.insert(accessor, block->header_.id_);
+                accessor->second = block;
+            }
+
+            response->set_status(0);
+
+            grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
+            reactor->Finish(grpc::Status::OK);
+            return reactor;
+        }
+
+        /**
+         * @brief Server broadcast commit to its peer.
+         *
+         * @param context RPC context.
+         * @param request RPC request.
+         * @param response RPC response.
+         * @return grpc::Status RPC status.
+         */
+        grpc::ServerUnaryReactor *SPBcastCommit(
+            grpc::CallbackServerContext *context,
+            const SPBcastCommitRequest *request,
+            SPBcastCommitResponse *response) override
+        {
+            EASY_FUNCTION("SPBcastCommit");
+            spdlog::debug("gRPC(SPBcastCommit) starts");
+
+            uint32_t peer_id = request->id();
+            auto req_blocks = request->blocks();
+
+            for (auto iter = req_blocks.begin(); iter != req_blocks.end(); iter++)
+            {
+                // deserialize relayed votes
+                msgpack::sbuffer des_b = stringToSbuffer(*iter);
+                auto oh = msgpack::unpack(des_b.data(), des_b.size());
+                auto block = oh->as<std::shared_ptr<Block>>();
+
+                // remove pending block
+                tc_server_->pending_blks.erase(block->header_.id_);
+
+                // insert into committed blocks
+                BlockCHM::accessor accessor;
+                tc_server_->committed_blks.insert(
+                    accessor,
+                    block->header_.id_);
                 accessor->second = block;
             }
 
@@ -155,7 +208,7 @@ namespace tomchain
 
         grpc::Status status;
         grpc_peer_client_stub_.find(target_server_id)->second->async()->SPHeartbeat(&context, &request, &response, [&mu, &cv, &done, &status](grpc::Status s)
-                                                                                   {
+                                                                                    {
                 status = std::move(s);
                 std::lock_guard<std::mutex> lock(mu);
                 done = true;
@@ -176,7 +229,7 @@ namespace tomchain
 
     grpc::Status TcServer::RelayVote(uint64_t target_server_id)
     {
-        EASY_FUNCTION("RelayVote_req"); 
+        EASY_FUNCTION("RelayVote_req");
 
         RelayVoteRequest request;
         request.set_id(this->server_id);
@@ -223,7 +276,7 @@ namespace tomchain
 
     grpc::Status TcServer::RelayBlock(uint64_t target_server_id)
     {
-        EASY_FUNCTION("RelayBlock_req"); 
+        EASY_FUNCTION("RelayBlock_req");
 
         RelayBlockRequest request;
         request.set_id(this->server_id);
@@ -262,6 +315,51 @@ namespace tomchain
         }
 
         spdlog::trace("gRPC(RelayBlock): {}:{}",
+                      status.error_code(),
+                      status.error_message());
+
+        return status;
+    }
+
+    grpc::Status TcServer::SPBcastCommit(uint64_t target_server_id)
+    {
+        SPBcastCommitRequest request;
+        request.set_id(this->server_id);
+
+        std::shared_ptr<Block> block;
+        while (bcast_commit_blocks.find(target_server_id)->second->try_pop(block))
+        {
+            // serialize block
+            msgpack::sbuffer b;
+            msgpack::pack(b, block);
+            std::string ser_block = sbufferToString(b);
+
+            // add to bcast block vector
+            request.add_blocks(ser_block);
+        }
+
+        SPBcastCommitResponse response;
+
+        grpc::ClientContext context;
+        std::mutex mu;
+        std::condition_variable cv;
+        bool done = false;
+
+        grpc::Status status;
+        grpc_peer_client_stub_.find(target_server_id)->second->async()->SPBcastCommit(&context, &request, &response, [&mu, &cv, &done, &status](grpc::Status s)
+                                                                                      {
+                status = std::move(s);
+                std::lock_guard<std::mutex> lock(mu);
+                done = true;
+                cv.notify_one(); });
+
+        std::unique_lock<std::mutex> lock(mu);
+        while (!done)
+        {
+            cv.wait(lock);
+        }
+
+        spdlog::trace("gRPC(SPBcastCommit): {}:{}",
                       status.error_code(),
                       status.error_message());
 
