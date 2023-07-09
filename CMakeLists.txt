@@ -1,7 +1,7 @@
 cmake_minimum_required( VERSION 3.26 )
 set( CMAKE_CXX_STANDARD 20 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON ) 
-set( CMAKE_BUILD_TYPE "Release" )
+set( CMAKE_BUILD_TYPE "Debug" )
 
 project(tomchain)
 
@@ -204,12 +204,12 @@ target_link_libraries(tc-client
     spdlog::spdlog_header_only
     nlohmann_json::nlohmann_json
     ecdsa++
-    TBB::tbb
     alpaca
     picosha2
     flatbuffers
     easy_profiler
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
+    TBB::tbb
     )
 
 # TomChain server 
@@ -223,12 +223,12 @@ target_link_libraries(tc-server
     spdlog::spdlog_header_only
     nlohmann_json::nlohmann_json
     ecdsa++
-    TBB::tbb
     alpaca
     picosha2
     flatbuffers
     easy_profiler
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
+    TBB::tbb
     )
 
 # tests
@@ -238,6 +238,7 @@ add_executable(test_msgpack
 target_link_libraries(test_msgpack
     tc-entity
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
+    TBB::tbb
     )
 
 add_executable(test_chm
