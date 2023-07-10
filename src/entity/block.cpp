@@ -60,12 +60,13 @@ namespace tomchain
     void Block::merge_votes(const uint64_t target_num)
     {
         EASY_FUNCTION("merge_votes");
+        spdlog::trace("merge votes"); 
 
         BLSSigShareSet sig_share_set(
             target_num,
             target_num);
 
-        // unsafe interations on concurrent hash map
+        // unsafe iterations on concurrent hash map
         // but it is locked by pb_accessor
         for (
             auto vote_iter = votes_.begin();
@@ -79,7 +80,7 @@ namespace tomchain
         if (sig_share_set.isEnough())
         {
             // merge signature
-            std::shared_ptr<BLSSignature> tss_sig = sig_share_set.merge();
+            std::shared_ptr<BLSSignature> tss_sig = sig_share_set.merge(4);
             tss_sig_ = tss_sig;
         }
     }

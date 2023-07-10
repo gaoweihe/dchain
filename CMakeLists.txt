@@ -112,6 +112,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/picosha2-src)
 FetchContent_Declare(
     oneTBB
     GIT_REPOSITORY https://github.com/oneapi-src/oneTBB.git
+    GIT_TAG v2021.9.0
 )
 FetchContent_MakeAvailable(oneTBB)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/build/_deps/onetbb-src/include)
@@ -247,3 +248,10 @@ add_executable(test_chm
 target_link_libraries(test_chm
     tc-entity   
     )
+add_executable(test_parallel_merge
+    test/test_parallel_merge.cpp
+    )
+target_link_libraries(test_parallel_merge
+    ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
+    TBB::tbb
+)
