@@ -4,7 +4,7 @@
     "heartbeat-interval": 1000, 
     "pull-pb-interval": 1000, 
     "log-level": "info", 
-    "client-count": 50, 
+    "client-count": 64, 
     "profiler-enable": true,
     "profiler-listen": true
 }
