@@ -3,8 +3,6 @@
 #include <memory>
 #include <fstream>
 
-#include "client/tc-client.hpp"
-
 #include "timercpp/timercpp.h"
 #include "spdlog/spdlog.h"
 #include "spdlog/fmt/bin_to_hex.h"
@@ -13,6 +11,8 @@
 #include "msgpack_adapter.hpp"
 
 std::shared_ptr<nlohmann::json> conf_data;
+
+#include "client/tc-client.hpp"
 
 // gRPC implementations
 #include "client/tc-client-grpc.hpp"

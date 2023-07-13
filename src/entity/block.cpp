@@ -80,7 +80,7 @@ namespace tomchain
         if (sig_share_set.isEnough())
         {
             // merge signature
-            std::shared_ptr<BLSSignature> tss_sig = sig_share_set.merge(4);
+            std::shared_ptr<BLSSignature> tss_sig = sig_share_set.merge(16);
             tss_sig_ = tss_sig;
         }
     }
