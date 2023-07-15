@@ -111,9 +111,11 @@ namespace tomchain
                     {
                         std::shared_ptr<Block> blk = iter->second;
 
+                        EASY_BLOCK("serialize response");
                         msgpack::sbuffer b;
                         msgpack::pack(b, blk->header_);
                         std::string blk_hdr_str = sbufferToString(b);
+                        EASY_END_BLOCK; 
 
                         response->add_pb_hdrs(blk_hdr_str);
                     }
@@ -158,10 +160,12 @@ namespace tomchain
             for (auto iter = req_blk_hdr.begin(); iter != req_blk_hdr.end(); iter++)
             {
                 // deserialize requested block headers
+                EASY_BLOCK("deserialize request");
                 spdlog::trace("deserialize requested block headers");
                 msgpack::sbuffer des_b = stringToSbuffer(*iter);
                 auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 auto blk_hdr = oh->as<BlockHeader>();
+                EASY_END_BLOCK; 
 
                 // find local blocks
                 spdlog::trace("find local blocks");
@@ -174,10 +178,12 @@ namespace tomchain
                 std::shared_ptr<Block> block = accessor->second;
 
                 // serialize block
+                EASY_BLOCK("serialize response");
                 spdlog::trace("serialize block");
                 msgpack::sbuffer b;
                 msgpack::pack(b, block);
                 std::string ser_blk = sbufferToString(b);
+                EASY_END_BLOCK; 
 
                 // add serialized block to response
                 spdlog::trace("add serialized block to response");
