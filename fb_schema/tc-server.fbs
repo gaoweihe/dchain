@@ -1,9 +1,0 @@
-namespace Tomchain.Consensus;
-
-table BLSSignature {
-
-}
-
-table BLSSigShare {
-
-}

@@ -1,0 +1,31 @@
+namespace tomchain.fb;
+
+table BlockVote {
+    blockid: uint64; 
+    voterid: uint64;
+    sigshare: BLSSigShare; 
+}
+
+table BLSSigShare {
+    point: AltBn128G1; 
+    hint: string; 
+    t: uint64; 
+    n: uint64; 
+}
+
+table AltBn128G1 {
+    limbs: [byte]; 
+}
+
+table VoteBlocksRequest {
+    id: uint32; 
+    votedblocks: [BlockVote]; 
+}
+
+table VoteBlocksResponse {
+    status: uint32; 
+}
+
+rpc_service Consensus {
+    VoteBlocks(VoteBlocksRequest):VoteBlocksResponse; 
+}

@@ -48,5 +48,8 @@ int main()
 
     assert(*(serial_sig->getSig()) == *(parallel_sig->getSig()));
 
+    assert(libff::alt_bn128_q_limbs == 4); 
+    assert(sizeof(libff::alt_bn128_G1) == 96); 
+
     return 0; 
 }

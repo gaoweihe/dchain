@@ -1,7 +1,7 @@
 cmake_minimum_required( VERSION 3.26 )
 set( CMAKE_CXX_STANDARD 20 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON ) 
-set( CMAKE_BUILD_TYPE "Release" )
+set( CMAKE_BUILD_TYPE "Debug" )
 
 project(tomchain)
 
@@ -147,6 +147,14 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/google/flatbuffers.git
 )
 FetchContent_MakeAvailable(flatbuffers)
+execute_process(
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/_deps/flatbuffers-build/flatc --cpp --grpc --gen-mutable -o ${CMAKE_CURRENT_SOURCE_DIR}/fb_schema ${CMAKE_CURRENT_SOURCE_DIR}/fb_schema/consensus.fbs
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  RESULT_VARIABLE FLATBUFFERS_RESULT
+)
+include_directories(${FLATBUFFERS_SRC_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}/_deps/flatbuffers-src/include
+    )
 
 set(LIBBLS_SOURCES_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libBLS/deps)
 set(LIBBLS_INSTALL_ROOT ${LIBBLS_SOURCES_ROOT}/deps_inst/x86_or_x64)
@@ -254,4 +262,12 @@ add_executable(test_parallel_merge
 target_link_libraries(test_parallel_merge
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     TBB::tbb
+)
+add_executable(test_flatbuffers
+    test/test_flatbuffers.cpp
+    )
+target_link_libraries(test_flatbuffers
+    ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
+    TBB::tbb
+    flatbuffers
 )

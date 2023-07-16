@@ -8,6 +8,8 @@ conf/
 
 grpc_proto/*.h
 grpc_proto/*.cc 
+fb_schema/*.h
+fb_schema/*.cc
 
 log/
 *.log
