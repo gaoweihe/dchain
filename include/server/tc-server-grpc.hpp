@@ -109,7 +109,9 @@ namespace tomchain
                 bool is_found = false;
                 try
                 {
+                    EASY_BLOCK("find block");
                     is_found = tc_server_->pending_blks.find(accessor, iter->first);
+                    EASY_END_BLOCK; 
 
                     if (is_found)
                     {
@@ -121,8 +123,12 @@ namespace tomchain
                         std::string blk_hdr_str = sbufferToString(b);
                         EASY_END_BLOCK; 
 
+                        EASY_BLOCK("add header");
                         response->add_pb_hdrs(blk_hdr_str);
+                        EASY_END_BLOCK; 
                     }
+
+                    accessor.release(); 
                 }
                 catch (std::exception &e)
                 {
@@ -172,13 +178,16 @@ namespace tomchain
                 EASY_END_BLOCK; 
 
                 // find local blocks
-                spdlog::trace("find local blocks");
+                EASY_BLOCK("find local block");
+                spdlog::trace("find local block");
                 bool is_found = tc_server_->pending_blks.find(accessor, blk_hdr.id_);
                 if (!is_found)
                 {
                     spdlog::error("block not found");
                     continue;
                 }
+                EASY_END_BLOCK; 
+
                 std::shared_ptr<Block> block = accessor->second;
 
                 // serialize block
@@ -190,8 +199,10 @@ namespace tomchain
                 EASY_END_BLOCK; 
 
                 // add serialized block to response
+                EASY_BLOCK("add block");
                 spdlog::trace("add serialized block to response");
                 response->add_pb(ser_blk);
+                EASY_END_BLOCK; 
             }
 
             grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
