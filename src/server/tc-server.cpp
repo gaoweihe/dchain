@@ -14,6 +14,9 @@ std::shared_ptr<nlohmann::json> conf_data;
 #include "server/tc-server-grpc.hpp"
 #include "server/tc-server-peer-grpc.hpp"
 
+// flatbuffers impl 
+#include "server/tc-server-grpc-fb.hpp"
+
 namespace tomchain
 {
 

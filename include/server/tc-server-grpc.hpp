@@ -4,8 +4,12 @@
 #include <grpcpp/grpcpp.h>
 #include "tc-server.grpc.pb.h"
 
+#include <memory>
+
 namespace tomchain
 {
+    class TcServer; 
+
     class TcConsensusImpl final : public TcConsensus::CallbackService
     {
 

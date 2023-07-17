@@ -154,6 +154,7 @@ execute_process(
 )
 include_directories(${FLATBUFFERS_SRC_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/_deps/flatbuffers-src/include
+    ${CMAKE_CURRENT_BINARY_DIR}/fb_schema 
     )
 
 set(LIBBLS_SOURCES_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libBLS/deps)
@@ -179,6 +180,7 @@ include_directories(src)
 include_directories(src/client)
 include_directories(src/server)
 include_directories(grpc_proto)
+include_directories(fb_schema)
 
 include_directories(third_party)
 include_directories(third_party/hashmap/inc)
