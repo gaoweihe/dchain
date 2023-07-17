@@ -1,8 +1,9 @@
 #include <grpcpp/grpcpp.h>
-
 // #include "flatbuffers/flatbuffers.h"
 #include "consensus.grpc.fb.h"
 #include "consensus_generated.h"
+
+#include "libBLS/libBLS.h"
 
 #include <memory>
 
@@ -29,6 +30,12 @@ namespace tomchain
 
             // // Fields are retrieved as usual with FlatBuffers
             // const std::string &name = request->name()->str();
+            const uint32_t &client_id = request->id(); 
+            auto votes = request->votes(); 
+            for (auto vote : *votes) {
+                auto limbs = vote->sigshare()->point()->limbs(); 
+                libff::alt_bn128_G1 *g1 = (libff::alt_bn128_G1*)limbs->data();
+            }
 
             // // `flatbuffers::grpc::MessageBuilder` is a `FlatBufferBuilder` with a
             // // special allocator for efficient gRPC buffer transfer, but otherwise

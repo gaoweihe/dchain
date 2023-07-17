@@ -14,12 +14,12 @@ table BLSSigShare {
 }
 
 table AltBn128G1 {
-    limbs: [byte]; 
+    limbs: [uint8]; 
 }
 
 table VoteBlocksRequest {
     id: uint32; 
-    votedblocks: [BlockVote]; 
+    votes: [BlockVote]; 
 }
 
 table VoteBlocksResponse {
