@@ -271,5 +271,6 @@ add_executable(test_flatbuffers
 target_link_libraries(test_flatbuffers
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     TBB::tbb
+    grpc++
     flatbuffers
 )

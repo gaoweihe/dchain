@@ -1,5 +1,4 @@
 #include <grpcpp/grpcpp.h>
-// #include "flatbuffers/flatbuffers.h"
 #include "consensus.grpc.fb.h"
 #include "consensus_generated.h"
 
