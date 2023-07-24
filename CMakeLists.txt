@@ -248,6 +248,7 @@ add_executable(test_msgpack
     )
 target_link_libraries(test_msgpack
     tc-entity
+    easy_profiler
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     TBB::tbb
     )
@@ -257,6 +258,7 @@ add_executable(test_chm
     )
 target_link_libraries(test_chm
     tc-entity   
+    easy_profiler
     )
 add_executable(test_parallel_merge
     test/test_parallel_merge.cpp
@@ -264,6 +266,7 @@ add_executable(test_parallel_merge
 target_link_libraries(test_parallel_merge
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     TBB::tbb
+    easy_profiler
 )
 add_executable(test_flatbuffers
     test/test_flatbuffers.cpp
@@ -273,4 +276,5 @@ target_link_libraries(test_flatbuffers
     TBB::tbb
     grpc++
     flatbuffers
+    easy_profiler
 )

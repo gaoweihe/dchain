@@ -6,15 +6,18 @@
 #include "libBLS.h"
 #include <evmc/evmc.hpp>
 #include "spdlog/spdlog.h"
+#include <easy/profiler.h>
 
 namespace tomchain {
 
 static std::string sbufferToString(const msgpack::sbuffer& sbuf) {
+    EASY_FUNCTION("sbufferToString"); 
     std::string str(sbuf.data(), sbuf.size());
     return str;
 }
 
 static msgpack::sbuffer stringToSbuffer(const std::string& str) {
+    EASY_FUNCTION("stringToSbuffer"); 
     msgpack::object_handle oh;
     msgpack::unpack(oh, str.data(), str.size());
     msgpack::sbuffer sbuf;
@@ -33,8 +36,10 @@ template <>
 struct pack<BLSSigShare> {
     template <typename Stream>
     msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, BLSSigShare const& v) const {
+        EASY_FUNCTION("ss:pack"); 
         o.pack_map(5);
 
+        EASY_BLOCK("retrieve");
         auto sig_share = v.getSigShare();
         // auto hint = v.getHint();
         // auto signer_index = v.getSignerIndex();
@@ -44,6 +49,7 @@ struct pack<BLSSigShare> {
         std::vector<uint8_t> sig_share_bv((uint8_t *)(sig_share.get()), (uint8_t *)(sig_share.get()) + 96);
         static_assert(sizeof(libff::alt_bn128_G1) == 96); 
         assert(sig_share_bv.size() == 96); 
+        EASY_END_BLOCK; 
 
         // BLSSigShare tmp_sig_share(
         //     sig_share,
@@ -53,6 +59,7 @@ struct pack<BLSSigShare> {
         //     n
         // ); 
 
+        EASY_BLOCK("pack");
         o.pack("sig_share");
         o.pack(sig_share_bv);
 
@@ -67,6 +74,7 @@ struct pack<BLSSigShare> {
 
         o.pack("n");
         o.pack(v.getTotalSigners());
+        EASY_END_BLOCK; 
 
         return o;
     }
@@ -75,16 +83,23 @@ struct pack<BLSSigShare> {
 template <>
 struct as<BLSSigShare> {
     BLSSigShare operator()(msgpack::object const& o) const {
+        EASY_FUNCTION("ss:as"); 
+
+        EASY_BLOCK("check");
         if (o.type != msgpack::type::MAP) throw msgpack::type_error();
         if (o.via.map.size != 5) throw msgpack::type_error();
         std::map<std::string, msgpack::object> m;
         o >> m;
+        EASY_END_BLOCK;
 
+        EASY_BLOCK("retrieve");
         auto sig_share_bv = m["sig_share"].as<std::vector<uint8_t>>(); 
         assert(sig_share_bv.size() == 96); 
         auto sig_share_rptr = (libff::alt_bn128_G1 *)(sig_share_bv.data());
         std::string hint = m["hint"].as<std::string>(); 
+        EASY_END_BLOCK; 
 
+        EASY_BLOCK("construct");
         BLSSigShare sig_share(
             std::make_shared<libff::alt_bn128_G1>(*sig_share_rptr), 
             hint, 
@@ -92,6 +107,7 @@ struct as<BLSSigShare> {
             m["t"].as<uint64_t>(),
             m["n"].as<uint64_t>()
         );
+        EASY_END_BLOCK; 
 
         return sig_share; 
     }
