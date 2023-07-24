@@ -19,3 +19,6 @@ cmake-build-debug/
 shell/debug/
 
 *.prof
+
+tmp/
+temp/

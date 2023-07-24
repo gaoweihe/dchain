@@ -33,33 +33,40 @@ template <>
 struct pack<BLSSigShare> {
     template <typename Stream>
     msgpack::packer<Stream>& operator()(msgpack::packer<Stream>& o, BLSSigShare const& v) const {
-        o.pack_map(4);
+        o.pack_map(5);
 
         auto sig_share = v.getSigShare();
-        auto hint = v.getHint();
-        auto signer_index = v.getSignerIndex();
-        auto t = v.getRequiredSigners();
-        auto n = v.getTotalSigners();
+        // auto hint = v.getHint();
+        // auto signer_index = v.getSignerIndex();
+        // auto t = v.getRequiredSigners();
+        // auto n = v.getTotalSigners();
 
-        BLSSigShare tmp_sig_share(
-            sig_share,
-            hint,
-            signer_index,
-            t,
-            n
-        ); 
+        std::vector<uint8_t> sig_share_bv((uint8_t *)(sig_share.get()), (uint8_t *)(sig_share.get()) + 96);
+        static_assert(sizeof(libff::alt_bn128_G1) == 96); 
+        assert(sig_share_bv.size() == 96); 
 
-        o.pack("sig_share_str");
-        o.pack(tmp_sig_share.toString());
+        // BLSSigShare tmp_sig_share(
+        //     sig_share,
+        //     hint,
+        //     signer_index,
+        //     t,
+        //     n
+        // ); 
+
+        o.pack("sig_share");
+        o.pack(sig_share_bv);
+
+        o.pack("hint");
+        o.pack(v.getHint());
 
         o.pack("signer_index");
-        o.pack(tmp_sig_share.getSignerIndex());
+        o.pack(v.getSignerIndex());
 
         o.pack("t");
-        o.pack(tmp_sig_share.getRequiredSigners());
+        o.pack(v.getRequiredSigners());
 
         o.pack("n");
-        o.pack(tmp_sig_share.getTotalSigners());
+        o.pack(v.getTotalSigners());
 
         return o;
     }
@@ -69,12 +76,18 @@ template <>
 struct as<BLSSigShare> {
     BLSSigShare operator()(msgpack::object const& o) const {
         if (o.type != msgpack::type::MAP) throw msgpack::type_error();
-        if (o.via.map.size != 4) throw msgpack::type_error();
+        if (o.via.map.size != 5) throw msgpack::type_error();
         std::map<std::string, msgpack::object> m;
         o >> m;
 
+        auto sig_share_bv = m["sig_share"].as<std::vector<uint8_t>>(); 
+        assert(sig_share_bv.size() == 96); 
+        auto sig_share_rptr = (libff::alt_bn128_G1 *)(sig_share_bv.data());
+        std::string hint = m["hint"].as<std::string>(); 
+
         BLSSigShare sig_share(
-            std::make_shared<std::string>(m["sig_share_str"].as<std::string>()), 
+            std::make_shared<libff::alt_bn128_G1>(*sig_share_rptr), 
+            hint, 
             m["signer_index"].as<uint64_t>(),
             m["t"].as<uint64_t>(),
             m["n"].as<uint64_t>()

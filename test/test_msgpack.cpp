@@ -11,6 +11,8 @@ int main() {
     BLSPrivateKeyShare skey_share(sshares->at(0), 1, 1);
     BLSPublicKeyShare pkey_share(sshares->at(0), 1, 1); 
 
+    spdlog::info("initialize context"); 
+
     std::vector<unsigned char> hash(picosha2::k_digest_size);
     std::string str{"hello world"};
     picosha2::hash256(str.begin(), str.end(), hash.begin(), hash.end()); 
@@ -22,13 +24,19 @@ int main() {
     // signer index starts from one
     std::shared_ptr<BLSSigShare> sig_share = skey_share.sign(spHashArr, 1);
 
+    spdlog::info("sign message"); 
+
     msgpack::sbuffer b;
     msgpack::pack(b, sig_share); 
 
+    spdlog::info("stub 1"); 
+ 
     std::string ser_str = sbufferToString(b);
     msgpack::sbuffer des_b = stringToSbuffer(ser_str);
 
-    auto oh = msgpack::unpack(b.data(), b.size());
+    spdlog::info("stub 2"); 
+
+    auto oh = msgpack::unpack(des_b.data(), des_b.size());
     auto f2 = oh->as<std::shared_ptr<BLSSigShare>>();
 
     spdlog::info("{}", f2->getRequiredSigners()); 
