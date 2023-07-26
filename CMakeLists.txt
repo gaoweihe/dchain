@@ -201,6 +201,14 @@ target_link_libraries(tc-entity
     TBB::tbb
     picosha2
     easy_profiler
+    flatbuffers
+    ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
+    )
+add_library(tc-adapter
+    src/entity/flexbuffers_adapter.cpp
+)
+target_link_libraries(tc-adapter 
+    flatbuffers
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     )
 
@@ -272,9 +280,9 @@ add_executable(test_flatbuffers
     test/test_flatbuffers.cpp
     )
 target_link_libraries(test_flatbuffers
-    ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     TBB::tbb
     grpc++
     flatbuffers
     easy_profiler
+    ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
 )
