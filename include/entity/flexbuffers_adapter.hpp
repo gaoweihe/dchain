@@ -30,6 +30,30 @@ struct flexbuffers_adapter<BlockVote> {
     static std::shared_ptr<std::vector<uint8_t>> to_bytes(const BlockVote& vote); 
 };
 
+template<> 
+struct flexbuffers_adapter<BLSSignature> {
+    static std::shared_ptr<BLSSignature> from_bytes(std::shared_ptr<std::vector<uint8_t>> bytes); 
+    static std::shared_ptr<std::vector<uint8_t>> to_bytes(const BLSSignature& vote); 
+};
+
+template<> 
+struct flexbuffers_adapter<BlockHeader> {
+    static std::shared_ptr<BlockHeader> from_bytes(std::shared_ptr<std::vector<uint8_t>> bytes); 
+    static std::shared_ptr<std::vector<uint8_t>> to_bytes(const BlockHeader& vote); 
+};
+
+template<> 
+struct flexbuffers_adapter<Transaction> {
+    static std::shared_ptr<Transaction> from_bytes(std::shared_ptr<std::vector<uint8_t>> bytes); 
+    static std::shared_ptr<std::vector<uint8_t>> to_bytes(const Transaction& vote); 
+};
+
+template<> 
+struct flexbuffers_adapter<Block> {
+    static std::shared_ptr<Block> from_bytes(std::shared_ptr<std::vector<uint8_t>> bytes); 
+    static std::shared_ptr<std::vector<uint8_t>> to_bytes(const Block& vote); 
+};
+
 }
 
 #endif

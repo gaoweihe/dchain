@@ -1,6 +1,8 @@
 #include <grpcpp/grpcpp.h>
 #include "tc-server.grpc.pb.h"
 
+#include "flexbuffers_adapter.hpp"
+
 namespace tomchain {
 
 grpc::Status TcClient::Register()
