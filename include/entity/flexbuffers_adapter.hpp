@@ -27,7 +27,7 @@ struct flexbuffers_adapter<BLSSigShare> {
 template<> 
 struct flexbuffers_adapter<BlockVote> {
     static std::shared_ptr<BlockVote> from_bytes(std::shared_ptr<std::vector<uint8_t>> bytes); 
-    static std::shared_ptr<std::vector<uint8_t>> to_bytes(const BlockVote& sig_share); 
+    static std::shared_ptr<std::vector<uint8_t>> to_bytes(const BlockVote& vote); 
 };
 
 }

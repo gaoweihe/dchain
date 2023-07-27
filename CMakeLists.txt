@@ -280,9 +280,11 @@ add_executable(test_flatbuffers
     test/test_flatbuffers.cpp
     )
 target_link_libraries(test_flatbuffers
+    tc-adapter
+    tc-entity
+    ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     TBB::tbb
     grpc++
     flatbuffers
     easy_profiler
-    ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
 )
