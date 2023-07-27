@@ -2,7 +2,7 @@
 
 namespace tomchain {
 
-std::shared_ptr<BLSSigShare> from_bytes(std::shared_ptr<std::vector<uint8_t>> bytes) {
+std::shared_ptr<BLSSigShare> flexbuffers_adapter<BLSSigShare>::from_bytes(std::shared_ptr<std::vector<uint8_t>> bytes) {
     auto map = flexbuffers::GetRoot(*bytes).AsMap(); 
 
     auto g1_blob = map["g1"].AsBlob();
@@ -21,7 +21,7 @@ std::shared_ptr<BLSSigShare> from_bytes(std::shared_ptr<std::vector<uint8_t>> by
     return sig_share; 
 }
 
-std::shared_ptr<std::vector<uint8_t>> flexbuffers_adapter::to_bytes(const BLSSigShare& sig_share) {
+std::shared_ptr<std::vector<uint8_t>> flexbuffers_adapter<BLSSigShare>::to_bytes(const BLSSigShare& sig_share) {
     std::shared_ptr<libff::alt_bn128_G1> g1 = sig_share.getSigShare();
     std::vector<uint8_t> g1_bv((uint8_t *)(g1.get()), (uint8_t *)(g1.get()) + 96);
     static_assert(sizeof(libff::alt_bn128_G1) == 96); 
@@ -44,6 +44,13 @@ std::shared_ptr<std::vector<uint8_t>> flexbuffers_adapter::to_bytes(const BLSSig
     fbb.Finish();
 
     return std::make_shared<std::vector<uint8_t>>(fbb.GetBuffer());
+}
+
+std::shared_ptr<std::vector<uint8_t>> flexbuffers_adapter<BlockVote>::to_bytes(const BlockVote& sig_share) {
+    flexbuffers::Builder fbb;
+    fbb.Finish(); 
+
+    return std::make_shared<std::vector<uint8_t>>(fbb.GetBuffer()); 
 }
 
 }
