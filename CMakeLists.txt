@@ -217,6 +217,7 @@ add_executable(tc-client
     src/client/tc-client.cpp
     )
 target_link_libraries(tc-client 
+    tc-adapter
     tc-entity
     grpc-proto-obj
     argparse
@@ -236,6 +237,7 @@ add_executable(tc-server
     src/server/tc-server.cpp
     )
 target_link_libraries(tc-server 
+    tc-adapter
     tc-entity
     grpc-proto-obj
     argparse

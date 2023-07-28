@@ -4,6 +4,8 @@
 #include <grpcpp/grpcpp.h>
 #include "tc-server.grpc.pb.h"
 
+#include "flexbuffers_adapter.hpp"
+
 #include <memory>
 
 namespace tomchain
@@ -241,9 +243,14 @@ namespace tomchain
                 // deserialize request
                 EASY_BLOCK("deserialize request");
                 spdlog::trace("{}:deserialize request", client_id);
-                msgpack::sbuffer des_b = stringToSbuffer(*iter);
-                auto oh = msgpack::unpack(des_b.data(), des_b.size());
-                auto block = oh->as<std::shared_ptr<Block>>();
+                // msgpack::sbuffer des_b = stringToSbuffer(*iter);
+                // auto oh = msgpack::unpack(des_b.data(), des_b.size());
+                // auto block = oh->as<std::shared_ptr<Block>>();
+                std::vector<uint8_t> block_ser((*iter).begin(), (*iter).end());
+                auto block = 
+                    flexbuffers_adapter<Block>::from_bytes(
+                        std::make_shared<std::vector<uint8_t>>(block_ser)
+                    );
                 EASY_END_BLOCK;
 
                 // get block vote from request

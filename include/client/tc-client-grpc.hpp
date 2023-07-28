@@ -163,6 +163,8 @@ grpc::Status TcClient::PullPendingBlocks()
 
 grpc::Status TcClient::GetBlocks()
 {
+    spdlog::debug("gRPC(GetBlocks): start");
+
     GetBlocksRequest request; 
 
     for (auto iter = pending_blkhdr.begin(); iter != pending_blkhdr.end(); iter++)
@@ -231,6 +233,8 @@ grpc::Status TcClient::GetBlocks()
 
 grpc::Status TcClient::VoteBlocks()
 {
+    spdlog::debug("gRPC(VoteBlocks): start");
+
     VoteBlocksRequest request; 
     request.set_id(this->client_id); 
     for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
@@ -255,9 +259,13 @@ grpc::Status TcClient::VoteBlocks()
             )
         );
 
-        msgpack::sbuffer b;
-        msgpack::pack(b, iter->second); 
-        std::string block_ser = sbufferToString(b);
+        spdlog::debug("gRPC(VoteBlocks): serialize");
+        Block block = *(iter->second);
+        // msgpack::sbuffer b;
+        // msgpack::pack(b, iter->second); 
+        // std::string block_ser = sbufferToString(b);
+        auto block_bv = flexbuffers_adapter<Block>::to_bytes(block);
+        std::string block_ser(block_bv->begin(), block_bv->end());
       
         request.add_voted_blocks(block_ser); 
     }
@@ -269,6 +277,7 @@ grpc::Status TcClient::VoteBlocks()
     std::condition_variable cv;
     bool done = false;
 
+    spdlog::debug("gRPC(VoteBlocks): send request");
     grpc::Status status;
     stub_->async()->VoteBlocks(
         &context, 
@@ -288,6 +297,7 @@ grpc::Status TcClient::VoteBlocks()
       cv.wait(lock);
     }
 
+    spdlog::debug("gRPC(VoteBlocks): recv response");
     for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
     {
         voted_blks.insert(
