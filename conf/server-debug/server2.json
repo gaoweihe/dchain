@@ -1,0 +1,25 @@
+{
+    "server-id": 2, 
+    "server-count": 9, 
+    "grpc-listen-addr": "0.0.0.0:2510", 
+    "grpc-peer-listen-addr": "0.0.0.0:2511", 
+    "peer-addr": [
+        "10.0.0.6:2511", 
+        "10.0.0.8:2511", 
+        "10.0.0.9:2511", 
+        "10.0.0.10:2511", 
+        "10.0.0.11:2511", 
+        "10.0.0.12:2511", 
+        "10.0.0.13:2511", 
+        "10.0.0.14:2511", 
+        "10.0.0.15:2511"
+    ], 
+    "scheduler_freq": 1000, 
+    "generate-tx-rate": 10000, 
+    "tx-per-block": 1000,  
+    "log-level": "debug", 
+    "client-count": 64,
+    "merge-threads": 16, 
+    "profiler-enable": true,
+    "profiler-listen": false
+}

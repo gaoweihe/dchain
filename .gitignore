@@ -2,7 +2,7 @@
 build/
 third_party/ 
 
-conf/
+# conf/
 !conf/client
 !conf/server
 
