@@ -14,7 +14,7 @@ std::shared_ptr<nlohmann::json> conf_data;
 #include "server/tc-server-grpc.hpp"
 #include "server/tc-server-peer-grpc.hpp"
 
-// flatbuffers impl 
+// flatbuffers impl
 #include "server/tc-server-grpc-fb.hpp"
 
 namespace tomchain
@@ -41,8 +41,8 @@ namespace tomchain
         relay_votes.clear();
         for (uint64_t i = 0; i < server_count; i++)
         {
-            // server id starts from one 
-            const uint64_t server_id = i + 1; 
+            // server id starts from one
+            const uint64_t server_id = i + 1;
             if (server_id == this->server_id)
             {
                 continue;
@@ -58,8 +58,8 @@ namespace tomchain
         relay_blocks.clear();
         for (uint64_t i = 0; i < server_count; i++)
         {
-            // server id starts from one 
-            const uint64_t server_id = i + 1; 
+            // server id starts from one
+            const uint64_t server_id = i + 1;
             if (server_id == this->server_id)
             {
                 continue;
@@ -72,11 +72,11 @@ namespace tomchain
                         std::shared_ptr<Block>>>()));
         }
 
-        bcast_commit_blocks.clear(); 
+        bcast_commit_blocks.clear();
         for (uint64_t i = 0; i < server_count; i++)
         {
-            // server id starts from one 
-            const uint64_t server_id = i + 1; 
+            // server id starts from one
+            const uint64_t server_id = i + 1;
             if (server_id == this->server_id)
             {
                 continue;
@@ -92,8 +92,8 @@ namespace tomchain
         std::vector<std::string> peer_addr = (*::conf_data)["peer-addr"];
         for (size_t i = 0; i < peer_addr.size(); i++)
         {
-            // server id starts from one 
-            const uint64_t server_id = i + 1; 
+            // server id starts from one
+            const uint64_t server_id = i + 1;
             if (server_id == this->server_id)
             {
                 continue;
@@ -217,7 +217,11 @@ namespace tomchain
                       {
         // number of generated transactions per second 
         const uint64_t gen_tx_rate = (*::conf_data)["generate-tx-rate"]; 
-        this->generate_tx(gen_tx_rate); },
+        
+        if (pending_blks.size() < (*::conf_data)["pb-pool-limit"]) 
+        {
+            this->generate_tx(gen_tx_rate);
+        } },
                       (*::conf_data)["scheduler_freq"]);
 
         // pack blocks
@@ -237,13 +241,13 @@ namespace tomchain
                       (*::conf_data)["scheduler_freq"]);
 
         // peer relay
-        t.setInterval([&]() { 
+        t.setInterval([&]()
+                      { 
             this->send_heartbeats(); 
             this->send_relay_blocks();
             this->send_relay_votes();
-            this->bcast_commits();
-        },
-        (*::conf_data)["scheduler_freq"]);
+            this->bcast_commits(); },
+                      (*::conf_data)["scheduler_freq"]);
 
         // TODO: change to shutdown conditional variable
         while (true)
@@ -301,14 +305,14 @@ namespace tomchain
                     new_block.tx_vec_.push_back(it->second);
                 }
 
-                // insert into pending blocks 
+                // insert into pending blocks
                 auto p_block = std::make_shared<Block>(new_block);
                 pending_blks.insert(
                     accessor,
                     block_id);
                 accessor->second = p_block;
 
-                // add to relay blocks list 
+                // add to relay blocks list
                 for (auto iter = relay_blocks.begin(); iter != relay_blocks.end(); iter++)
                 {
                     iter->second->push(accessor->second);
@@ -433,11 +437,11 @@ int main(const int argc, const char *argv[])
     spdlog::info("Starting profiler");
     if ((*::conf_data)["profiler-enable"])
     {
-        EASY_PROFILER_ENABLE; 
-        Timer t; 
-        t.setTimeout([&]() { 
-            profiler::dumpBlocksToFile("profile-server.prof"); 
-        }, 10000);
+        EASY_PROFILER_ENABLE;
+        Timer t;
+        t.setTimeout([&]()
+                     { profiler::dumpBlocksToFile("profile-server.prof"); },
+                     10000);
     }
     if ((*::conf_data)["profiler-listen"])
     {
