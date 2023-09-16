@@ -12,6 +12,8 @@ fb_schema/*.h
 fb_schema/*.cc
 
 log/
+!.keep
+!.gitkeep
 *.log
 *.out
 
