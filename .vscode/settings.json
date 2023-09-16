@@ -85,7 +85,9 @@
         "charconv": "cpp",
         "source_location": "cpp",
         "rope": "cpp",
-        "slist": "cpp"
+        "slist": "cpp",
+        "ranges": "cpp",
+        "span": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled", 
     "git.enableCommitSigning": true

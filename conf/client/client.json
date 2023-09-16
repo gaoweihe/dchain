@@ -1,8 +1,9 @@
 {
     "client-id": 1, 
     "grpc-server-addr": "127.0.0.1:2510", 
-    "grpc-server-ip": "", 
-    "grpc-server-port": 2510, 
+    "grpc-server-ip": "166.111.69.5", 
+    "grpc-server-port": 61000, 
+    "grpc-server-count": 9, 
     "heartbeat-interval": 1000, 
     "pull-pb-interval": 1000, 
     "log-level": "debug", 
