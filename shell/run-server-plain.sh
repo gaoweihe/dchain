@@ -3,6 +3,7 @@ eval node_label=\$\($cmd\)
 
 mkdir -p ../log
 rm -rf ../log/*
+rm -f ./*.prof
 ../build/tc-server \
     --cf ../conf/server/server.json \
     --id $node_label \
