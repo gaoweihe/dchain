@@ -120,7 +120,8 @@ int main(const int argc, const char *argv[])
     }
 
     // start client
-    uint32_t server_select = ((*::conf_data)["client-id"].template get<uint32_t>() % (*::conf_data)["grpc-server-count"].template get<uint32_t>()) + 1; 
+    uint32_t client_index = (*::conf_data)["client-id"].template get<uint32_t>() - 1;
+    uint32_t server_select = (client_index % (*::conf_data)["grpc-server-count"].template get<uint32_t>()) + 1; 
     uint32_t grpc_server_port = (*::conf_data)["grpc-server-port"].template get<uint32_t>() + server_select; 
     std::string server_addr = 
         (*::conf_data)["grpc-server-ip"].template get<std::string>() + 
