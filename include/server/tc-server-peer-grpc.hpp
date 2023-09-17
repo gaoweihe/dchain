@@ -62,29 +62,29 @@ namespace tomchain
             // for (auto iter = req_votes.begin(); iter != req_votes.end(); iter++)
             for (size_t rv_index = 0; rv_index < req_votes.size(); rv_index++)
             {   
-                spdlog::trace("RelayVote: get relayed vote");
+                spdlog::trace("{} RelayVote: get relayed vote", std::this_thread::get_id());
                 auto rv = req_votes.Get(rv_index); 
 
                 // deserialize relayed votes
-                spdlog::trace("RelayVote: deserialize relayed votes");
+                spdlog::trace("{} RelayVote: deserialize relayed votes", std::this_thread::get_id());
                 msgpack::sbuffer des_b = stringToSbuffer(rv);
                 auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 auto vote = oh->as<std::shared_ptr<BlockVote>>();
                 const uint64_t block_id = vote->block_id_;
 
                 // add to local block vote vector
-                spdlog::trace("RelayVote: add to local block vote vector");
+                spdlog::trace("{} RelayVote: add to local block vote vector", std::this_thread::get_id());
                 BlockCHM::accessor pb_accessor;
 
-                spdlog::trace("RelayVote: finding block in pb");
+                spdlog::trace("{} RelayVote: finding block in pb", std::this_thread::get_id());
                 bool is_found = tc_server_->pending_blks.find(pb_accessor, block_id);
                 if (!is_found)
                 {
-                    spdlog::error("RelayVote: block not found"); 
+                    spdlog::error("{} RelayVote: block not found", std::this_thread::get_id()); 
                     continue;
                 }
                 else {
-                    spdlog::trace("RelayVote: block found");
+                    spdlog::trace("{} RelayVote: block found", std::this_thread::get_id());
                 }
 
                 std::shared_ptr<tomchain::Block> block_sp = pb_accessor->second; 
@@ -95,15 +95,15 @@ namespace tomchain
                         vote));
 
                 // check if vote enough
-                spdlog::trace("RelayVote: check if vote enough");
+                spdlog::trace("{} RelayVote: check if vote enough", std::this_thread::get_id());
                 if (block_sp->is_vote_enough((*::conf_data)["client-count"]))
                 {
-                    spdlog::trace("RelayVote: vote enough");
+                    spdlog::trace("{} RelayVote: vote enough", std::this_thread::get_id());
 
                     block_sp->merge_votes((*::conf_data)["client-count"]);
 
                     // insert block to committed
-                    spdlog::trace("RelayVote: insert block to committed");
+                    spdlog::trace("{} RelayVote: insert block to committed", std::this_thread::get_id());
                     BlockCHM::accessor cb_accessor;
                     tc_server_->committed_blks.insert(
                         cb_accessor,
@@ -111,7 +111,7 @@ namespace tomchain
                     cb_accessor->second = block_sp;
 
                     // insert block to bcast commit
-                    spdlog::trace("RelayVote: insert block to bcast commit");
+                    spdlog::trace("{} RelayVote: insert block to bcast commit", std::this_thread::get_id());
                     for (
                         auto bcast_iter = tc_server_->bcast_commit_blocks.begin(); 
                         bcast_iter != tc_server_->bcast_commit_blocks.end(); 
@@ -126,11 +126,11 @@ namespace tomchain
                     cb_accessor.release();
                 }
 
-                spdlog::trace("RelayVote: vote proc finished");
+                spdlog::trace("{} RelayVote: vote proc finished", std::this_thread::get_id());
 
                 pb_accessor.release(); 
 
-                spdlog::trace("RelayVote: pb_accessor released");
+                spdlog::trace("{} RelayVote: pb_accessor released", std::this_thread::get_id());
             }
 
             response->set_status(0);
