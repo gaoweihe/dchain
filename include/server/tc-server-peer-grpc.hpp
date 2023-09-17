@@ -135,8 +135,13 @@ namespace tomchain
 
             response->set_status(0);
 
+            spdlog::trace("{} RelayVote: ends proc", peer_id);
+
             grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
             reactor->Finish(grpc::Status::OK);
+
+            spdlog::trace("{} RelayVote: ends", peer_id);
+
             return reactor;
         }
 
@@ -177,8 +182,13 @@ namespace tomchain
 
             response->set_status(0);
 
+            spdlog::trace("{} RelayBlock: ends proc", peer_id);
+
             grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
             reactor->Finish(grpc::Status::OK);
+
+            spdlog::trace("{} RelayBlock: ends", peer_id);
+
             return reactor;
         }
 
