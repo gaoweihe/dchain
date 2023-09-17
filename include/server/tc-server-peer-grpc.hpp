@@ -278,11 +278,13 @@ namespace tomchain
     grpc::Status TcServer::RelayVote(uint64_t target_server_id)
     {
         EASY_FUNCTION("RelayVote_req");
+        spdlog::trace("{} gRPC(RelayVote) starts", target_server_id);
 
         RelayVoteRequest request;
         request.set_id(this->server_id);
 
         std::shared_ptr<BlockVote> vote;
+        spdlog::trace("{} gRPC(RelayVote) pop votes", target_server_id);
         while (relay_votes.find(target_server_id)->second->try_pop(vote))
         {
             // serialize vote
@@ -307,6 +309,7 @@ namespace tomchain
         std::condition_variable cv;
         bool done = false;
 
+        spdlog::trace("{} gRPC(RelayVote) waiting", target_server_id);
         grpc::Status status;
         grpc_peer_client_stub_.find(target_server_id)->second->async()->RelayVote(&context, &request, &response, [&mu, &cv, &done, &status](grpc::Status s)
                                                                                   {
@@ -331,11 +334,13 @@ namespace tomchain
     grpc::Status TcServer::RelayBlock(uint64_t target_server_id)
     {
         EASY_FUNCTION("RelayBlock_req");
+        spdlog::trace("{} gRPC(RelayBlock) starts", target_server_id);
 
         RelayBlockRequest request;
         request.set_id(this->server_id);
 
         std::shared_ptr<Block> block;
+        spdlog::trace("{} gRPC(RelayBlock) pops blocks", target_server_id);
         while (relay_blocks.find(target_server_id)->second->try_pop(block))
         {
             // serialize block
@@ -360,6 +365,7 @@ namespace tomchain
         std::condition_variable cv;
         bool done = false;
 
+        spdlog::trace("{} gRPC(RelayBlock) waiting", target_server_id);
         grpc::Status status;
         grpc_peer_client_stub_.find(target_server_id)->second->async()->RelayBlock(&context, &request, &response, [&mu, &cv, &done, &status](grpc::Status s)
                                                                                    {
@@ -384,10 +390,13 @@ namespace tomchain
     grpc::Status TcServer::SPBcastCommit(uint64_t target_server_id)
     {
         EASY_FUNCTION("SPBcastCommit_req");
+        spdlog::trace("{} gRPC(SPBcastCommit) starts", target_server_id);
+
         SPBcastCommitRequest request;
         request.set_id(this->server_id);
 
         std::shared_ptr<Block> block;
+        spdlog::trace("{} gRPC(SPBcastCommit) pops blocks", target_server_id);
         while (bcast_commit_blocks.find(target_server_id)->second->try_pop(block))
         {
             // serialize block
@@ -412,6 +421,7 @@ namespace tomchain
         std::condition_variable cv;
         bool done = false;
 
+        spdlog::trace("{} gRPC(SPBcastCommit) waiting", target_server_id);
         grpc::Status status;
         grpc_peer_client_stub_.find(target_server_id)->second->async()->SPBcastCommit(&context, &request, &response, [&mu, &cv, &done, &status](grpc::Status s)
                                                                                       {
