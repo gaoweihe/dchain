@@ -7,4 +7,4 @@ rm -f ./*.prof
 ../build/tc-server \
     --cf ../conf/server/server.json \
     --id $node_label \
-    >../log/server-$node_label.out 2>&1 &
+#    >../log/server-$node_label.out 2>&1 &
