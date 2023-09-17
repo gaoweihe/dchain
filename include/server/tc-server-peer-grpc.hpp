@@ -70,22 +70,25 @@ namespace tomchain
                 // add to local block vote vector
                 spdlog::trace("RelayVote: add to local block vote vector");
                 BlockCHM::accessor pb_accessor;
+
                 bool is_found = tc_server_->pending_blks.find(pb_accessor, block_id);
                 if (!is_found)
                 {
                     spdlog::error("RelayVote: block not found"); 
                     continue;
                 }
-                pb_accessor->second->votes_.insert(
+
+                std::shared_ptr<tomchain::Block> block_sp = pb_accessor->second; 
+                block_sp->votes_.insert(
                     std::make_pair(
                         vote->voter_id_,
                         vote));
 
                 // check if vote enough
                 spdlog::trace("RelayVote: check if vote enough");
-                if (pb_accessor->second->is_vote_enough((*::conf_data)["client-count"]))
+                if (block_sp->is_vote_enough((*::conf_data)["client-count"]))
                 {
-                    pb_accessor->second->merge_votes((*::conf_data)["client-count"]);
+                    block_sp->merge_votes((*::conf_data)["client-count"]);
 
                     // insert block to committed
                     spdlog::trace("RelayVote: insert block to committed");
@@ -93,7 +96,7 @@ namespace tomchain
                     tc_server_->committed_blks.insert(
                         cb_accessor,
                         block_id);
-                    cb_accessor->second = pb_accessor->second;
+                    cb_accessor->second = block_sp;
 
                     // insert block to bcast commit
                     spdlog::trace("RelayVote: insert block to bcast commit");
