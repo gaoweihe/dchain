@@ -79,6 +79,7 @@ namespace tomchain
                 }
 
                 std::shared_ptr<tomchain::Block> block_sp = pb_accessor->second; 
+                assert(block_sp->votes_ != nullptr); 
                 block_sp->votes_.insert(
                     std::make_pair(
                         vote->voter_id_,
