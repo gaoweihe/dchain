@@ -89,6 +89,8 @@ namespace tomchain
                 spdlog::trace("RelayVote: check if vote enough");
                 if (block_sp->is_vote_enough((*::conf_data)["client-count"]))
                 {
+                    spdlog::trace("RelayVote: vote enough");
+                    
                     block_sp->merge_votes((*::conf_data)["client-count"]);
 
                     // insert block to committed
@@ -114,6 +116,8 @@ namespace tomchain
 
                     cb_accessor.release();
                 }
+
+                spdlog::trace("RelayVote: vote proc finished");
 
                 pb_accessor.release(); 
             }
