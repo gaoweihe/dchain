@@ -71,8 +71,6 @@ int main(const int argc, const char *argv[])
 {
     spdlog::info("TomChain client starts. ");
     // spdlog::flush_every(std::chrono::seconds(3));
-    spdlog::flush_on(spdlog::level::from_str(
-            (*::conf_data)["log-level"])); 
 
     // set CLI argument parser
     spdlog::trace("Parsing CLI arguments: argc={}", argc);
@@ -105,6 +103,8 @@ int main(const int argc, const char *argv[])
         (*::conf_data)["client-id"] = conf_client_id;
     }
 
+    spdlog::flush_on(spdlog::level::from_str(
+            (*::conf_data)["log-level"])); 
     // set log level
     spdlog::set_level(
         spdlog::level::from_str(
