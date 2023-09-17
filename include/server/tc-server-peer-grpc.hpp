@@ -380,7 +380,7 @@ namespace tomchain
         }
 
         // if no commits, return 
-        if (request.block_size() == 0)
+        if (request.blocks_size() == 0)
         {
             return grpc::Status::OK; 
         } 
