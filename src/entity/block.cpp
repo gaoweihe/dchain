@@ -54,13 +54,14 @@ namespace tomchain
 
     bool Block::is_vote_enough(const uint64_t target_num) const
     {
+        spdlog::trace("{}: Block::is_vote_enough()", target_num); 
         return votes_.size() >= target_num;
     }
 
     void Block::merge_votes(const uint64_t target_num)
     {
         EASY_FUNCTION("merge_votes");
-        spdlog::trace("merge votes"); 
+        spdlog::trace("{}: merge votes", target_num); 
 
         BLSSigShareSet sig_share_set(
             target_num,
@@ -68,7 +69,7 @@ namespace tomchain
 
         // unsafe iterations on concurrent hash map
         // but it is locked by pb_accessor
-        spdlog::trace("iterate chm"); 
+        spdlog::trace("{}: iterate chm", target_num); 
         for (
             auto vote_iter = votes_.begin();
             vote_iter != votes_.end();
@@ -78,7 +79,7 @@ namespace tomchain
                 vote_iter->second->sig_share_);
         }
 
-        spdlog::trace("merge sigset"); 
+        spdlog::trace("{}: merge sigset", target_num); 
         if (sig_share_set.isEnough())
         {
             // merge signature

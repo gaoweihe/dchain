@@ -82,6 +82,7 @@ namespace tomchain
                         vote));
 
                 // check if vote enough
+                spdlog::trace("RelayVote: check if vote enough");
                 if (pb_accessor->second->is_vote_enough((*::conf_data)["client-count"]))
                 {
                     pb_accessor->second->merge_votes((*::conf_data)["client-count"]);
