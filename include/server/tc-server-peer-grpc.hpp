@@ -59,11 +59,15 @@ namespace tomchain
             uint32_t peer_id = request->id();
             auto req_votes = request->votes();
 
-            for (auto iter = req_votes.begin(); iter != req_votes.end(); iter++)
-            {
+            // for (auto iter = req_votes.begin(); iter != req_votes.end(); iter++)
+            for (size_t rv_index = 0; rv_index < req_votes.size(); rv_index++)
+            {   
+                spdlog::trace("RelayVote: get relayed vote");
+                auto rv = req_votes.Get(rv_index); 
+
                 // deserialize relayed votes
                 spdlog::trace("RelayVote: deserialize relayed votes");
-                msgpack::sbuffer des_b = stringToSbuffer(*iter);
+                msgpack::sbuffer des_b = stringToSbuffer(rv);
                 auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 auto vote = oh->as<std::shared_ptr<BlockVote>>();
                 const uint64_t block_id = vote->block_id_;
