@@ -56,7 +56,7 @@ namespace tomchain
                       {
         this->PullPendingBlocks(); 
         this->GetBlocks(); 
-        this->VoteBlocks(); },
+        if (this->pending_blks.size() > 0) { this->VoteBlocks(); } },
                       (*::conf_data)["pull-pb-interval"]);
 
         while (true)
