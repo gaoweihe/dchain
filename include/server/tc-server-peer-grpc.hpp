@@ -53,7 +53,7 @@ namespace tomchain
             const RelayVoteRequest *request,
             RelayVoteResponse *response) override
         {
-            const size_t thread_id = (size_t)(std::::this_thread::get_id()); 
+            const size_t thread_id = (size_t)(std::this_thread::get_id()); 
 
             EASY_FUNCTION("RelayVote_rsp");
             spdlog::debug("gRPC(RelayVote) starts");
