@@ -76,11 +76,15 @@ namespace tomchain
                 spdlog::trace("RelayVote: add to local block vote vector");
                 BlockCHM::accessor pb_accessor;
 
+                spdlog::trace("RelayVote: finding block in pb");
                 bool is_found = tc_server_->pending_blks.find(pb_accessor, block_id);
                 if (!is_found)
                 {
                     spdlog::error("RelayVote: block not found"); 
                     continue;
+                }
+                else {
+                    spdlog::trace("RelayVote: block found");
                 }
 
                 std::shared_ptr<tomchain::Block> block_sp = pb_accessor->second; 
