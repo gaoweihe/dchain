@@ -68,6 +68,7 @@ namespace tomchain
 
         // unsafe iterations on concurrent hash map
         // but it is locked by pb_accessor
+        spdlog::trace("iterate chm"); 
         for (
             auto vote_iter = votes_.begin();
             vote_iter != votes_.end();
@@ -77,6 +78,7 @@ namespace tomchain
                 vote_iter->second->sig_share_);
         }
 
+        spdlog::trace("merge sigset"); 
         if (sig_share_set.isEnough())
         {
             // merge signature
