@@ -274,6 +274,12 @@ namespace tomchain
             request.add_votes(ser_vote);
         }
 
+        // if no votes, return 
+        if (request.votes_size() == 0)
+        {
+            return grpc::Status::OK; 
+        } 
+
         RelayVoteResponse response;
 
         grpc::ClientContext context;
@@ -321,6 +327,12 @@ namespace tomchain
             request.add_blocks(ser_block);
         }
 
+        // if no blocks, return 
+        if (request.blocks_size() == 0)
+        {
+            return grpc::Status::OK; 
+        } 
+
         RelayBlockResponse response;
 
         grpc::ClientContext context;
@@ -366,6 +378,12 @@ namespace tomchain
             // add to bcast block vector
             request.add_blocks(ser_block);
         }
+
+        // if no commits, return 
+        if (request.block_size() == 0)
+        {
+            return grpc::Status::OK; 
+        } 
 
         SPBcastCommitResponse response;
 
