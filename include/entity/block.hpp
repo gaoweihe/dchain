@@ -21,6 +21,11 @@ class BlockVote;
 
 class BlockHeader {
 public: 
+    BlockHeader(); 
+    BlockHeader(uint64_t id, uint64_t base_id);
+    BlockHeader(const BlockHeader& bh); 
+
+public: 
     uint64_t id_;
     uint64_t base_id_;
 
@@ -33,6 +38,7 @@ public:
 class BlockVote {
 public: 
     BlockVote(); 
+    BlockVote(const BlockVote& bv); 
 
 public: 
     uint64_t block_id_; 
@@ -48,6 +54,7 @@ class Block {
 public: 
     Block(); 
     Block(uint64_t id, uint64_t base_id);
+    Block(const Block& block); 
     virtual ~Block(); 
 
 public: 

@@ -17,6 +17,15 @@ Transaction::Transaction(
 
 }
 
+Transaction::Transaction(const Transaction& tx)
+{
+    this->id_ = tx.id_; 
+    this->sender_ = tx.sender_; 
+    this->receiver_ = tx.receiver_; 
+    this->value_ = tx.value_; 
+    this->fee_ = tx.fee_;
+}
+
 Transaction::Transaction()
 {
     

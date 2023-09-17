@@ -22,6 +22,7 @@ public:
         uint64_t receiver, 
         uint64_t value, 
         uint64_t fee);
+    Transaction(const Transaction& tx); 
     virtual ~Transaction();
 
 public: 

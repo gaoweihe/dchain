@@ -18,6 +18,14 @@ namespace tomchain
             std::shared_ptr<Transaction>>();
     }
 
+    Block::Block(const Block& block)
+    {
+        this->header_ = block.header_;
+        this->tx_vec_ = block.tx_vec_;
+        this->tss_sig_ = block.tss_sig_; 
+        this->votes_ = block.votes_; 
+    }
+
     Block::~Block()
     {
     }
@@ -90,5 +98,25 @@ namespace tomchain
     }
 
     BlockVote::BlockVote() {}
+
+    BlockVote::BlockVote(const BlockVote& bv)
+    {
+        this->block_id_ = bv.block_id_;
+        this->voter_id_ = bv.voter_id_;
+        this->sig_share_ = bv.sig_share_;
+    }
+
+    BlockHeader::BlockHeader() {}
+
+    BlockHeader::BlockHeader(uint64_t id, uint64_t base_id)
+        : id_(id), base_id_(base_id)
+    {
+    }
+
+    BlockHeader::BlockHeader(const BlockHeader& bh)
+    {
+        this->id_ = bh.id_;
+        this->base_id_ = bh.base_id_;
+    }
 
 }
