@@ -62,6 +62,7 @@ namespace tomchain
             for (auto iter = req_votes.begin(); iter != req_votes.end(); iter++)
             {
                 // deserialize relayed votes
+                spdlog::trace("RelayVote: deserialize relayed votes");
                 msgpack::sbuffer des_b = stringToSbuffer(*iter);
                 auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 auto vote = oh->as<std::shared_ptr<BlockVote>>();
@@ -120,6 +121,8 @@ namespace tomchain
                 spdlog::trace("RelayVote: vote proc finished");
 
                 pb_accessor.release(); 
+
+                spdlog::trace("RelayVote: pb_accessor released");
             }
 
             response->set_status(0);
