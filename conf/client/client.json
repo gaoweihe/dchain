@@ -6,7 +6,7 @@
     "grpc-server-count": 9, 
     "heartbeat-interval": 1000, 
     "pull-pb-interval": 500, 
-    "log-level": "debug", 
+    "log-level": "trace", 
     "client-count": 64, 
     "profiler-enable": true,
     "profiler-listen": true
