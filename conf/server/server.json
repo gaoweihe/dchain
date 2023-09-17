@@ -31,7 +31,7 @@
     "tx-per-block": 1000,  
     "log-level": "trace", 
     "client-count": 64,
-    "merge-threads": 8, 
+    "merge-threads": 1, 
     "profiler-enable": true,
     "profiler-listen": false
 }
