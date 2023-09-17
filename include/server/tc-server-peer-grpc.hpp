@@ -90,7 +90,7 @@ namespace tomchain
                 if (block_sp->is_vote_enough((*::conf_data)["client-count"]))
                 {
                     spdlog::trace("RelayVote: vote enough");
-                    
+
                     block_sp->merge_votes((*::conf_data)["client-count"]);
 
                     // insert block to committed
@@ -104,11 +104,11 @@ namespace tomchain
                     // insert block to bcast commit
                     spdlog::trace("RelayVote: insert block to bcast commit");
                     for (
-                        auto iter = tc_server_->bcast_commit_blocks.begin(); 
-                        iter != tc_server_->bcast_commit_blocks.end(); 
-                        iter++
+                        auto bcast_iter = tc_server_->bcast_commit_blocks.begin(); 
+                        bcast_iter != tc_server_->bcast_commit_blocks.end(); 
+                        bcast_iter++
                     ) {
-                        iter->second->push(cb_accessor->second);
+                        bcast_iter->second->push(cb_accessor->second);
                     }
 
                     // remove block from pending
