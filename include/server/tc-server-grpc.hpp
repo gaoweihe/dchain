@@ -101,6 +101,8 @@ namespace tomchain
             EASY_FUNCTION("PullPendingBlocks");
             spdlog::debug("gRPC(PullPendingBlocks) starts");
 
+            uint64_t client_id = request->id();
+
             response->set_status(0);
 
             BlockCHM::accessor accessor;
@@ -119,6 +121,23 @@ namespace tomchain
                     {
                         std::shared_ptr<Block> blk = iter->second;
 
+                        // TODO: check client seen blocks
+                        ClientCHM::accessor client_accessor;
+                        BlockHeaderCHM::accessor seenblk_accessor;
+                        tc_server_->clients.find(client_accessor, client_id);
+                        bool is_bh_found = client_accessor->second->seen_blocks.find(seenblk_accessor, blk->header_.id_);
+                        if (is_bh_found)
+                        {
+                            seenblk_accessor.release();
+                            continue;
+                        }
+
+                        // TODO: record client seen blocks
+                        client_accessor->second->seen_blocks.insert(
+                            std::make_pair(
+                                blk->header_.id_,
+                                std::make_shared<BlockHeader>(blk->header_)));
+
                         EASY_BLOCK("serialize response");
                         msgpack::sbuffer b;
                         msgpack::pack(b, blk->header_);
@@ -127,7 +146,10 @@ namespace tomchain
 
                         EASY_BLOCK("add header");
                         response->add_pb_hdrs(blk_hdr_str);
-                        EASY_END_BLOCK; 
+                        EASY_END_BLOCK;
+
+                        seenblk_accessor.release();
+                        client_accessor.release();
                     }
 
                     accessor.release(); 
