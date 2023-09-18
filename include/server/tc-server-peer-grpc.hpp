@@ -56,82 +56,82 @@ namespace tomchain
             EASY_FUNCTION("RelayVote_rsp");
             spdlog::debug("gRPC(RelayVote) starts");
 
-            uint32_t peer_id = request->id();
-            auto req_votes = request->votes();
+            // uint32_t peer_id = request->id();
+            // auto req_votes = request->votes();
 
-            // for (auto iter = req_votes.begin(); iter != req_votes.end(); iter++)
-            for (size_t rv_index = 0; rv_index < req_votes.size(); rv_index++)
-            {   
-                spdlog::trace("{} RelayVote: get relayed vote", peer_id);
-                auto rv = req_votes.Get(rv_index); 
+            // // for (auto iter = req_votes.begin(); iter != req_votes.end(); iter++)
+            // for (size_t rv_index = 0; rv_index < req_votes.size(); rv_index++)
+            // {   
+            //     spdlog::trace("{} RelayVote: get relayed vote", peer_id);
+            //     auto rv = req_votes.Get(rv_index); 
 
-                // deserialize relayed votes
-                spdlog::trace("{} RelayVote: deserialize relayed votes", peer_id);
-                msgpack::sbuffer des_b = stringToSbuffer(rv);
-                auto oh = msgpack::unpack(des_b.data(), des_b.size());
-                auto vote = oh->as<std::shared_ptr<BlockVote>>();
-                const uint64_t block_id = vote->block_id_;
+            //     // deserialize relayed votes
+            //     spdlog::trace("{} RelayVote: deserialize relayed votes", peer_id);
+            //     msgpack::sbuffer des_b = stringToSbuffer(rv);
+            //     auto oh = msgpack::unpack(des_b.data(), des_b.size());
+            //     auto vote = oh->as<std::shared_ptr<BlockVote>>();
+            //     const uint64_t block_id = vote->block_id_;
 
-                // add to local block vote vector
-                spdlog::trace("{} RelayVote: add to local block vote vector", peer_id);
-                BlockCHM::accessor pb_accessor;
+            //     // add to local block vote vector
+            //     spdlog::trace("{} RelayVote: add to local block vote vector", peer_id);
+            //     BlockCHM::accessor pb_accessor;
 
-                spdlog::trace("{} RelayVote: finding block in pb", peer_id);
-                bool is_found = tc_server_->pending_blks.find(pb_accessor, block_id);
-                if (!is_found)
-                {
-                    spdlog::error("{} RelayVote: block not found", peer_id); 
-                    continue;
-                }
-                else {
-                    spdlog::trace("{} RelayVote: block found", peer_id);
-                }
+            //     spdlog::trace("{} RelayVote: finding block in pb", peer_id);
+            //     bool is_found = tc_server_->pending_blks.find(pb_accessor, block_id);
+            //     if (!is_found)
+            //     {
+            //         spdlog::error("{} RelayVote: block not found", peer_id); 
+            //         continue;
+            //     }
+            //     else {
+            //         spdlog::trace("{} RelayVote: block found", peer_id);
+            //     }
 
-                std::shared_ptr<tomchain::Block> block_sp = pb_accessor->second; 
-                assert(block_sp != nullptr); 
-                block_sp->votes_.insert(
-                    std::make_pair(
-                        vote->voter_id_,
-                        vote));
+            //     std::shared_ptr<tomchain::Block> block_sp = pb_accessor->second; 
+            //     assert(block_sp != nullptr); 
+            //     block_sp->votes_.insert(
+            //         std::make_pair(
+            //             vote->voter_id_,
+            //             vote));
 
-                // check if vote enough
-                spdlog::trace("{} RelayVote: check if vote enough", peer_id);
-                if (block_sp->is_vote_enough((*::conf_data)["client-count"]))
-                {
-                    spdlog::trace("{} RelayVote: vote enough", peer_id);
+            //     // check if vote enough
+            //     spdlog::trace("{} RelayVote: check if vote enough", peer_id);
+            //     if (block_sp->is_vote_enough((*::conf_data)["client-count"]))
+            //     {
+            //         spdlog::trace("{} RelayVote: vote enough", peer_id);
 
-                    block_sp->merge_votes((*::conf_data)["client-count"]);
+            //         block_sp->merge_votes((*::conf_data)["client-count"]);
 
-                    // insert block to committed
-                    spdlog::trace("{} RelayVote: insert block to committed", peer_id);
-                    BlockCHM::accessor cb_accessor;
-                    tc_server_->committed_blks.insert(
-                        cb_accessor,
-                        block_id);
-                    cb_accessor->second = block_sp;
+            //         // insert block to committed
+            //         spdlog::trace("{} RelayVote: insert block to committed", peer_id);
+            //         BlockCHM::accessor cb_accessor;
+            //         tc_server_->committed_blks.insert(
+            //             cb_accessor,
+            //             block_id);
+            //         cb_accessor->second = block_sp;
 
-                    // insert block to bcast commit
-                    spdlog::trace("{} RelayVote: insert block to bcast commit", peer_id);
-                    for (
-                        auto bcast_iter = tc_server_->bcast_commit_blocks.begin(); 
-                        bcast_iter != tc_server_->bcast_commit_blocks.end(); 
-                        bcast_iter++
-                    ) {
-                        bcast_iter->second->push(cb_accessor->second);
-                    }
+            //         // insert block to bcast commit
+            //         spdlog::trace("{} RelayVote: insert block to bcast commit", peer_id);
+            //         for (
+            //             auto bcast_iter = tc_server_->bcast_commit_blocks.begin(); 
+            //             bcast_iter != tc_server_->bcast_commit_blocks.end(); 
+            //             bcast_iter++
+            //         ) {
+            //             bcast_iter->second->push(cb_accessor->second);
+            //         }
 
-                    // remove block from pending
-                    tc_server_->pending_blks.erase(pb_accessor);
+            //         // remove block from pending
+            //         tc_server_->pending_blks.erase(pb_accessor);
 
-                    cb_accessor.release();
-                }
+            //         cb_accessor.release();
+            //     }
 
-                spdlog::trace("{} RelayVote: vote proc finished", peer_id);
+            //     spdlog::trace("{} RelayVote: vote proc finished", peer_id);
 
-                pb_accessor.release(); 
+            //     pb_accessor.release(); 
 
-                spdlog::trace("{} RelayVote: pb_accessor released", peer_id);
-            }
+            //     spdlog::trace("{} RelayVote: pb_accessor released", peer_id);
+            // }
 
             response->set_status(0);
 
