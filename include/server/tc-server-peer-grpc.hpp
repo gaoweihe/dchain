@@ -110,15 +110,15 @@ namespace tomchain
                         block_id);
                     cb_accessor->second = block_sp;
 
-                    // // insert block to bcast commit
-                    // spdlog::trace("{} RelayVote: insert block to bcast commit", peer_id);
-                    // for (
-                    //     auto bcast_iter = tc_server_->bcast_commit_blocks.begin(); 
-                    //     bcast_iter != tc_server_->bcast_commit_blocks.end(); 
-                    //     bcast_iter++
-                    // ) {
-                    //     bcast_iter->second->push(cb_accessor->second);
-                    // }
+                    // insert block to bcast commit
+                    spdlog::trace("{} RelayVote: insert block to bcast commit", peer_id);
+                    for (
+                        auto bcast_iter = tc_server_->bcast_commit_blocks.begin(); 
+                        bcast_iter != tc_server_->bcast_commit_blocks.end(); 
+                        bcast_iter++
+                    ) {
+                        bcast_iter->second->push(cb_accessor->second);
+                    }
 
                     // remove block from pending
                     tc_server_->pending_blks.erase(pb_accessor);
@@ -402,49 +402,49 @@ namespace tomchain
         EASY_FUNCTION("SPBcastCommit_req");
         spdlog::trace("{} gRPC(SPBcastCommit) starts", target_server_id);
 
-        SPBcastCommitRequest request;
-        request.set_id(this->server_id);
+        // SPBcastCommitRequest request;
+        // request.set_id(this->server_id);
 
-        std::shared_ptr<Block> block;
-        spdlog::trace("{} gRPC(SPBcastCommit) pops blocks", target_server_id);
-        while (bcast_commit_blocks.find(target_server_id)->second->try_pop(block))
-        {
-            // serialize block
-            msgpack::sbuffer b;
-            msgpack::pack(b, block);
-            std::string ser_block = sbufferToString(b);
+        // std::shared_ptr<Block> block;
+        // spdlog::trace("{} gRPC(SPBcastCommit) pops blocks", target_server_id);
+        // while (bcast_commit_blocks.find(target_server_id)->second->try_pop(block))
+        // {
+        //     // serialize block
+        //     msgpack::sbuffer b;
+        //     msgpack::pack(b, block);
+        //     std::string ser_block = sbufferToString(b);
 
-            // add to bcast block vector
-            request.add_blocks(ser_block);
-        }
+        //     // add to bcast block vector
+        //     request.add_blocks(ser_block);
+        // }
 
-        // if no commits, return 
-        if (request.blocks_size() == 0)
-        {
-            return grpc::Status::OK; 
-        } 
+        // // if no commits, return 
+        // if (request.blocks_size() == 0)
+        // {
+        //     return grpc::Status::OK; 
+        // } 
 
-        SPBcastCommitResponse response;
+        // SPBcastCommitResponse response;
 
-        grpc::ClientContext context;
-        std::mutex mu;
-        std::condition_variable cv;
-        bool done = false;
+        // grpc::ClientContext context;
+        // std::mutex mu;
+        // std::condition_variable cv;
+        // bool done = false;
 
         spdlog::trace("{} gRPC(SPBcastCommit) waiting", target_server_id);
         grpc::Status status;
-        grpc_peer_client_stub_.find(target_server_id)->second->async()->SPBcastCommit(&context, &request, &response, [&mu, &cv, &done, &status](grpc::Status s)
-                                                                                      {
-                status = std::move(s);
-                std::lock_guard<std::mutex> lock(mu);
-                done = true;
-                cv.notify_one(); });
+        // grpc_peer_client_stub_.find(target_server_id)->second->async()->SPBcastCommit(&context, &request, &response, [&mu, &cv, &done, &status](grpc::Status s)
+        //                                                                               {
+        //         status = std::move(s);
+        //         std::lock_guard<std::mutex> lock(mu);
+        //         done = true;
+        //         cv.notify_one(); });
 
-        std::unique_lock<std::mutex> lock(mu);
-        while (!done)
-        {
-            cv.wait(lock);
-        }
+        // std::unique_lock<std::mutex> lock(mu);
+        // while (!done)
+        // {
+        //     cv.wait(lock);
+        // }
 
         spdlog::trace("gRPC(SPBcastCommit): {}:{}",
                       status.error_code(),
