@@ -110,7 +110,7 @@ namespace tomchain
                         block_id);
                     cb_accessor->second = block_sp;
 
-                    insert block to bcast commit
+                    // insert block to bcast commit
                     spdlog::trace("{} RelayVote: insert block to bcast commit", peer_id);
                     for (
                         auto bcast_iter = tc_server_->bcast_commit_blocks.begin(); 
