@@ -119,7 +119,7 @@ namespace tomchain
                     ) {
                         if (cb_accessor->second == nullptr) { spdlog::error("stub1"); exit(1); }
                         if (bcast_iter->second == nullptr) { spdlog::error("stub2"); exit(1); }
-                        bcast_iter->second->push(cb_accessor->second);
+                        bcast_iter->second->push(block_sp);
                     }
 
                     // remove block from pending
