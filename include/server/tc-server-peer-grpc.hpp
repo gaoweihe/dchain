@@ -56,7 +56,7 @@ namespace tomchain
             EASY_FUNCTION("RelayVote_rsp");
             spdlog::debug("gRPC(RelayVote) starts");
 
-            // uint32_t peer_id = request->id();
+            uint32_t peer_id = request->id();
             // auto req_votes = request->votes();
 
             // // for (auto iter = req_votes.begin(); iter != req_votes.end(); iter++)
