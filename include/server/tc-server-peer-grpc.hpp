@@ -117,7 +117,9 @@ namespace tomchain
                         bcast_iter != tc_server_->bcast_commit_blocks.end(); 
                         bcast_iter++
                     ) {
-                        // bcast_iter->second->push(cb_accessor->second);
+                        if (cb_accessor->second == nullptr) { spdlog::error("stub1"); exit(1); }
+                        if (bcast_iter->second == nullptr) { spdlog::error("stub2"); exit(1); }
+                        bcast_iter->second->push(cb_accessor->second);
                     }
 
                     // remove block from pending
