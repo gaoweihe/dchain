@@ -110,15 +110,15 @@ namespace tomchain
                         block_id);
                     cb_accessor->second = block_sp;
 
-                    // insert block to bcast commit
-                    // spdlog::trace("{} RelayVote: insert block to bcast commit", peer_id);
-                    // for (
-                    //     auto bcast_iter = tc_server_->bcast_commit_blocks.begin(); 
-                    //     bcast_iter != tc_server_->bcast_commit_blocks.end(); 
-                    //     bcast_iter++
-                    // ) {
-                    //     bcast_iter->second->push(cb_accessor->second);
-                    // }
+                    insert block to bcast commit
+                    spdlog::trace("{} RelayVote: insert block to bcast commit", peer_id);
+                    for (
+                        auto bcast_iter = tc_server_->bcast_commit_blocks.begin(); 
+                        bcast_iter != tc_server_->bcast_commit_blocks.end(); 
+                        bcast_iter++
+                    ) {
+                        // bcast_iter->second->push(cb_accessor->second);
+                    }
 
                     // remove block from pending
                     tc_server_->pending_blks.erase(pb_accessor);
