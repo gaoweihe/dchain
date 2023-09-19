@@ -25,10 +25,10 @@
         "10.0.0.14:2511", 
         "10.0.0.15:2511"
     ], 
-    "scheduler_freq": 500, 
-    "generate-tx-rate": 1, 
+    "scheduler_freq": 200, 
+    "generate-tx-rate": 100, 
     "pb-pool-limit": 640, 
-    "tx-per-block": 1,  
+    "tx-per-block": 100,  
     "log-level": "debug", 
     "client-count": 64,
     "merge-threads": 1, 
