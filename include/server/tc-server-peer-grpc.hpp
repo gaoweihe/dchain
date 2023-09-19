@@ -121,13 +121,14 @@ namespace tomchain
                         if (bcast_iter->second == nullptr) { spdlog::error("stub2"); exit(1); }
                         bcast_iter->second->push(block_sp);
                     }
+                    spdlog::trace("{} RelayVote: bcast commits", peer_id);
+                    tc_server_->bcast_commits();
 
                     // remove block from pending
+                    spdlog::trace("{} RelayVote: remove block from pending", peer_id);
                     tc_server_->pending_blks.erase(pb_accessor);
 
                     cb_accessor.release();
-
-                    tc_server_->bcast_commits();
                 }
 
                 spdlog::trace("{} RelayVote: vote proc finished", peer_id);
