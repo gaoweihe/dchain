@@ -123,7 +123,7 @@ namespace tomchain
                     }
 
                     // remove block from pending
-                    tc_server_->pending_blks.erase(pb_accessor);
+                    // tc_server_->pending_blks.erase(pb_accessor);
 
                     cb_accessor.release();
 
