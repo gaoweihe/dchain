@@ -126,7 +126,7 @@ namespace tomchain
 
                     // remove block from pending
                     spdlog::trace("{} RelayVote: remove block from pending", peer_id);
-                    tc_server_->pending_blks.erase(pb_accessor);
+                    tc_server_->pending_blks.erase(block_id);
 
                     cb_accessor.release();
                 }
@@ -461,11 +461,11 @@ namespace tomchain
 
         }
 
-        // // if no commits, return 
-        // if (request.blocks_size() == 0)
-        // {
-        //     return grpc::Status::OK; 
-        // } 
+        // if no commits, return 
+        if (request.blocks_size() == 0)
+        {
+            return grpc::Status::OK; 
+        } 
 
         SPBcastCommitResponse response;
 
