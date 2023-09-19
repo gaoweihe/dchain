@@ -48,16 +48,32 @@ namespace tomchain
     {
         Timer t;
 
-        t.setInterval([&]()
-                      { this->Heartbeat(); },
-                      (*::conf_data)["heartbeat-interval"]);
+        bool heartbeat_flag = false;
+        t.setInterval(
+            [&]() {
+                if (heartbeat_flag == true) { return; }
+                heartbeat_flag = true; 
+                this->Heartbeat(); 
+                heartbeat_flag = false; 
+            },
+            (*::conf_data)["heartbeat-interval"]
+        );
 
-        t.setInterval([&]()
-                      {
-        this->PullPendingBlocks(); 
-        this->GetBlocks(); 
-        if (this->pending_blks.size() > 0) { this->VoteBlocks(); } },
-                      (*::conf_data)["pull-pb-interval"]);
+        bool chain_flag = false;
+        t.setInterval(
+            [&]() {
+                if (chain_flag == true) { return; }
+                chain_flag = true; 
+                this->PullPendingBlocks(); 
+                this->GetBlocks(); 
+                if (this->pending_blks.size() > 0) 
+                { 
+                    this->VoteBlocks(); 
+                } 
+                chain_flag = false; 
+            },
+            (*::conf_data)["pull-pb-interval"]
+        );
 
         while (true)
         {

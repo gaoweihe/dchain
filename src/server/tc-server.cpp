@@ -216,42 +216,66 @@ namespace tomchain
         Timer t;
 
         // generate transactions
-        t.setInterval([&]()
-                      {
-        // number of generated transactions per second 
-        const uint64_t gen_tx_rate = (*::conf_data)["generate-tx-rate"]; 
+        bool gen_flag = false;
+        t.setInterval(
+            [&]() {
+                if (gen_flag == true) { return; }
+                gen_flag = true; 
+                // number of generated transactions per second 
+                const uint64_t gen_tx_rate = (*::conf_data)["generate-tx-rate"]; 
         
-        if (pending_blks.size() < (*::conf_data)["pb-pool-limit"]) 
-        {
-            this->generate_tx(gen_tx_rate);
-        } },
-                      (*::conf_data)["scheduler_freq"]);
+                if (pending_blks.size() < (*::conf_data)["pb-pool-limit"]) 
+                {
+                    this->generate_tx(gen_tx_rate);
+                }
+                gen_flag = false; 
+            },
+            (*::conf_data)["scheduler_freq"]
+        );
 
         // pack blocks
-        t.setInterval([&]()
-                      {
-        // number of generated transactions per second 
-        const uint64_t tx_per_block = (*::conf_data)["tx-per-block"]; 
-        this->pack_block(tx_per_block, INT_MAX); },
-                      (*::conf_data)["scheduler_freq"]);
+        bool pack_flag = false;
+        t.setInterval(
+            [&]() {
+                if (pack_flag == true) { return; }
+                pack_flag = true; 
+                // number of generated transactions per second 
+                const uint64_t tx_per_block = (*::conf_data)["tx-per-block"]; 
+                this->pack_block(tx_per_block, INT_MAX); 
+                pack_flag = false; 
+            },
+            (*::conf_data)["scheduler_freq"]
+        );
 
         // count blocks
-        t.setInterval([&]()
-                      { spdlog::info("tx:{} | pb:{} | cb:{}",
-                                     pending_txs.size(),
-                                     pending_blks.size(),
-                                     committed_blks.size()); },
-                      (*::conf_data)["scheduler_freq"]);
+        bool count_flag = false;
+        t.setInterval(
+            [&]() { 
+                if (count_flag == true) { return; }
+                count_flag = true; 
+                spdlog::info(
+                    "tx:{} | pb:{} | cb:{}",
+                    pending_txs.size(),
+                    pending_blks.size(),
+                    committed_blks.size()); count_flag = false; 
+            },
+            (*::conf_data)["scheduler_freq"]
+        );
 
         // peer relay
-        t.setInterval([&]()
-                      { 
-            this->send_heartbeats(); 
-            // this->send_relay_blocks();
-            // this->send_relay_votes();
-            // this->bcast_commits(); 
+        bool relay_flag = false;
+        t.setInterval(
+            [&]() { 
+                if (relay_flag == true) { return; }
+                relay_flag = true;
+                this->send_heartbeats(); 
+                // this->send_relay_blocks();
+                // this->send_relay_votes();
+                // this->bcast_commits(); 
+                relay_flag = false;
             },
-                      (*::conf_data)["scheduler_freq"]);
+            (*::conf_data)["scheduler_freq"]
+        );
 
         // TODO: change to shutdown conditional variable
         while (true)
@@ -465,9 +489,12 @@ int main(const int argc, const char *argv[])
     {
         EASY_PROFILER_ENABLE;
         Timer t;
-        t.setTimeout([&]()
-                     { profiler::dumpBlocksToFile("profile-server.prof"); },
-                     10000);
+        t.setTimeout(
+            [&]() { 
+                profiler::dumpBlocksToFile("profile-server.prof"); 
+            },
+            10000
+        );
     }
     if ((*::conf_data)["profiler-listen"])
     {
