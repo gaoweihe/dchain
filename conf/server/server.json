@@ -30,7 +30,7 @@
     "pb-pool-limit": 64, 
     "tx-per-block": 1024,   
     "log-level": "info", 
-    "client-count": 64,
+    "client-count": 128,
     "merge-threads": 1, 
     "profiler-enable": true,
     "profiler-listen": false
