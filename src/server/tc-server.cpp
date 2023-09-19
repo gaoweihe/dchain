@@ -325,6 +325,8 @@ namespace tomchain
                 {
                     pending_txs.erase(*iter);
                 }
+
+                this->send_relay_blocks(); 
             }
             else
             {

@@ -126,6 +126,8 @@ namespace tomchain
                     // tc_server_->pending_blks.erase(pb_accessor);
 
                     cb_accessor.release();
+
+                    tc_server_->bcast_commits();
                 }
 
                 spdlog::trace("{} RelayVote: vote proc finished", peer_id);

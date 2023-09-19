@@ -297,6 +297,7 @@ namespace tomchain
                     // if remote
                     // insert vote into relay queue and skip this iteration
                     tc_server_->relay_votes.find(target_server_id)->second->push(vote->second);
+                    tc_server_->send_relay_votes(); 
                     continue;
                 }
                 EASY_END_BLOCK;
@@ -350,6 +351,8 @@ namespace tomchain
                     tc_server_->pending_blks.erase(pb_accessor);
 
                     cb_accessor.release();
+
+                    tc_server_->bcast_commits();
                 }
 
                 pb_accessor.release();
