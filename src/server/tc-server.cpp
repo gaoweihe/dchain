@@ -277,10 +277,55 @@ namespace tomchain
             (*::conf_data)["scheduler_freq"]
         );
 
+        // merge votes
+        bool merge_flag = false;
+        t.setInterval(
+            [&]() { 
+                if (merge_flag == true) { return; }
+                merge_flag = true;
+                this->merge_votes();
+                merge_flag = false;
+            },
+            (*::conf_data)["scheduler_freq"]
+        );
+
         // TODO: change to shutdown conditional variable
         while (true)
         {
             sleep(INT_MAX);
+        }
+    }
+
+    void TcServer::merge_votes()
+    {
+        std::shared_ptr<Block> sp_block; 
+        while (pb_merge_queue.try_pop(sp_block))
+        {
+            sp_block->merge_votes((*::conf_data)["client-count"]);
+
+            // insert block to committed
+            BlockCHM::accessor cb_accessor;
+                this->committed_blks.insert(
+                    cb_accessor,
+                    sp_block->header_.id_);
+                cb_accessor->second = sp_block;
+
+            // insert block to bcast commit
+            for (
+                auto iter = this->bcast_commit_blocks.begin(); 
+                iter != this->bcast_commit_blocks.end(); 
+                iter++
+            ) {
+                iter->second->push(cb_accessor->second);
+            }
+
+            cb_accessor.release();
+
+            // remove block from pending
+            spdlog::trace("remove block ({}) from pending", sp_block->header_.id_);
+            this->pending_blks.erase(sp_block->header_.id_);
+
+            this->bcast_commits();
         }
     }
 

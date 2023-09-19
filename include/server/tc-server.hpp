@@ -92,6 +92,7 @@ public:
     void bcast_commits(); 
     grpc::Status RelayBlockSync(uint64_t block_id, uint64_t target_server_id); 
     void send_relay_block_sync(uint64_t block_id);
+    void merge_votes(); 
 
 public: 
     uint64_t server_id;
@@ -100,6 +101,9 @@ public:
     oneapi::tbb::concurrent_set<
         uint64_t
     > pb_sync_labels;
+    oneapi::tbb::concurrent_queue<
+        std::shared_ptr<Block>
+    > pb_merge_queue;
     BlockCHM committed_blks; 
     TransactionCHM pending_txs;
     std::map<

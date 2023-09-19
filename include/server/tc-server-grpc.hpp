@@ -332,35 +332,11 @@ namespace tomchain
                 EASY_END_BLOCK;
 
                 // if votes count enough
-                EASY_BLOCK("count votes");
+                EASY_BLOCK("count votes"); 
                 spdlog::trace("{}:check if votes count enough", client_id);
                 if (pb_accessor->second->is_vote_enough((*::conf_data)["client-count"]))
                 {
-                    pb_accessor->second->merge_votes((*::conf_data)["client-count"]);
-
-                    // insert block to committed
-                    BlockCHM::accessor cb_accessor;
-                    tc_server_->committed_blks.insert(
-                        cb_accessor,
-                        block->header_.id_);
-                    cb_accessor->second = pb_accessor->second;
-
-                    // insert block to bcast commit
-                    for (
-                        auto iter = tc_server_->bcast_commit_blocks.begin(); 
-                        iter != tc_server_->bcast_commit_blocks.end(); 
-                        iter++
-                    ) {
-                        iter->second->push(cb_accessor->second);
-                    }
-
-                    // remove block from pending
-                    spdlog::trace("{}:remove block from pending", client_id);
-                    tc_server_->pending_blks.erase(pb_accessor);
-
-                    cb_accessor.release();
-
-                    tc_server_->bcast_commits();
+                    tc_server_->pb_merge_queue.push(pb_accessor->second); 
                 }
 
                 pb_accessor.release();
