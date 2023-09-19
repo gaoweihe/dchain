@@ -406,6 +406,7 @@ namespace tomchain
         }
 
         this->pb_sync_labels.insert(block_id);
+        spdlog::trace("block ({}) signaled locally", block_id);
     }
 
 }
