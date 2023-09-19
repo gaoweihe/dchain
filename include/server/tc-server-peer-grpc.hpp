@@ -442,13 +442,15 @@ namespace tomchain
         spdlog::trace("{} gRPC(SPBcastCommit) pops blocks", target_server_id);
         while (bcast_commit_blocks.find(target_server_id)->second->try_pop(block))
         {
-            // // serialize block
-            // msgpack::sbuffer b;
-            // msgpack::pack(b, block);
-            // std::string ser_block = sbufferToString(b);
+            if (block == nullptr) { spdlog::error("block is nullptr"); exit(1); }
 
-            // // add to bcast block vector
-            // request.add_blocks(ser_block);
+            // serialize block
+            msgpack::sbuffer b;
+            msgpack::pack(b, block);
+            std::string ser_block = sbufferToString(b);
+
+            // add to bcast block vector
+            request.add_blocks(ser_block);
         }
 
         // if no commits, return 
