@@ -304,16 +304,15 @@ namespace tomchain
                     extracted_tx.push_back(it->first);
                     new_block.tx_vec_.push_back(it->second);
                 }
+                auto p_block = std::make_shared<Block>(new_block);
 
                 // add to relay blocks list
                 for (auto iter = relay_blocks.begin(); iter != relay_blocks.end(); iter++)
                 {
-                    iter->second->push(accessor->second);
+                    iter->second->push(p_block);
                 }
-                this->send_relay_blocks(); 
 
                 // insert into pending blocks
-                auto p_block = std::make_shared<Block>(new_block);
                 pending_blks.insert(
                     accessor,
                     block_id);
@@ -326,6 +325,8 @@ namespace tomchain
                 {
                     pending_txs.erase(*iter);
                 }
+
+                this->send_relay_blocks(); 
             }
             else
             {
