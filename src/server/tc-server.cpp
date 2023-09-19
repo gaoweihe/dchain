@@ -112,7 +112,6 @@ namespace tomchain
     void TcServer::start()
     {
         this->init_server();
-        this->init_peer_stubs();
         this->init_client_profile();
 
         // start gRPC server thread
@@ -156,6 +155,10 @@ namespace tomchain
         grpc_peer_server_ = builder.BuildAndStart();
         grpc_peer_server_->Wait(); });
         grpc_peer_thread.detach();
+
+        // Wait all servers to get online 
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        this->init_peer_stubs();
 
         // start schedule thread
         spdlog::info("Starting schedule thread");
