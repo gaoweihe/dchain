@@ -11,6 +11,8 @@ service TcPeerConsensus {
         returns (RelayBlockResponse);
     rpc SPBcastCommit(SPBcastCommitRequest)
         returns (SPBcastCommitResponse);
+    rpc RelayBlockSync(RelayBlockSyncRequest)
+        returns (RelayBlockSyncResponse);
 }
 
 message RelayVoteRequest {
@@ -45,5 +47,14 @@ message SPBcastCommitRequest {
 }
 
 message SPBcastCommitResponse {
+    uint32 status = 1; 
+}
+
+message RelayBlockSyncRequest {
+    uint32 id = 1;
+    uint64 block_id = 2; 
+}
+
+message RelayBlockSyncResponse {
     uint32 status = 1; 
 }

@@ -319,6 +319,8 @@ namespace tomchain
                     block_id);
                 accessor->second = p_block;
 
+                this->send_relay_block_sync(block_id);
+
                 spdlog::trace("gen block: {}", block_id);
 
                 // remove extracted pending transactions
@@ -388,6 +390,22 @@ namespace tomchain
             }
             SPBcastCommit(target_server_id);
         }
+    }
+
+    void TcServer::send_relay_block_sync(uint64_t block_id)
+    {
+        for (uint64_t i = 0; i < (*::conf_data)["server-count"]; i++)
+        {
+            // server id starts from one
+            uint64_t target_server_id = i + 1;
+            if (target_server_id == server_id)
+            {
+                continue;
+            }
+            RelayBlockSync(block_id, target_server_id);
+        }
+
+        this->pb_sync_labels.insert(block_id);
     }
 
 }

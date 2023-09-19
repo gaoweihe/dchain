@@ -121,6 +121,14 @@ namespace tomchain
 
                     if (is_found)
                     {
+                        // check if got sync signal 
+                        bool is_synced = tc_server_->pb_sync_labels.contains(iter->first);
+                        if (!is_synced)
+                        {
+                            accessor.release(); 
+                            continue; 
+                        }
+
                         std::shared_ptr<Block> blk = iter->second;
 
                         // TODO: check client seen blocks
@@ -132,7 +140,7 @@ namespace tomchain
                         }
                         else 
                         {
-                            // TODO: record client seen blocks
+                            // record client seen blocks
                             client_accessor->second->seen_blocks.insert(
                                 std::make_pair(
                                     blk->header_.id_,

@@ -254,6 +254,34 @@ namespace tomchain
             reactor->Finish(grpc::Status::OK);
             return reactor;
         }
+
+        /**
+         * @brief Server sends relayed block sync signal to another.
+         *
+         * @param context RPC context.
+         * @param request RPC request.
+         * @param response RPC response.
+         * @return grpc::Status RPC status.
+         */
+        grpc::ServerUnaryReactor *RelayBlockSync(
+            grpc::CallbackServerContext *context,
+            const RelayBlockSyncRequest *request,
+            RelayBlockSyncResponse *response) override
+        {
+            EASY_FUNCTION("RelayBlockSync");
+            spdlog::debug("gRPC(RelayBlockSync) starts");
+
+            uint32_t peer_id = request->id();
+            uint64_t block_id = request->block_id();
+            
+            tc_server_->pb_sync_labels.insert(block_id); 
+
+            response->set_status(0);
+
+            grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
+            reactor->Finish(grpc::Status::OK);
+            return reactor;
+        }
     };
 
     grpc::Status TcServer::SPHeartbeat(uint64_t target_server_id)
@@ -451,6 +479,44 @@ namespace tomchain
         }
 
         spdlog::trace("gRPC(SPBcastCommit): {}:{}",
+                      status.error_code(),
+                      status.error_message());
+
+        return status;
+    }
+
+    grpc::Status TcServer::RelayBlockSync(uint64_t block_id, uint64_t target_server_id)
+    {
+        EASY_FUNCTION("RelayBlockSync_req");
+        spdlog::trace("{} gRPC(RelayBlockSync) starts", target_server_id);
+
+        RelayBlockSyncRequest request;
+        request.set_id(this->server_id);
+        request.set_block_id(block_id);
+
+        RelayBlockSyncResponse response;
+
+        grpc::ClientContext context;
+        std::mutex mu;
+        std::condition_variable cv;
+        bool done = false;
+
+        spdlog::trace("{} gRPC(RelayBlockSync) waiting", target_server_id);
+        grpc::Status status;
+        grpc_peer_client_stub_.find(target_server_id)->second->async()->RelayBlockSync(&context, &request, &response, [&mu, &cv, &done, &status](grpc::Status s)
+                                                                                      {
+                status = std::move(s);
+                std::lock_guard<std::mutex> lock(mu);
+                done = true;
+                cv.notify_one(); });
+
+        std::unique_lock<std::mutex> lock(mu);
+        while (!done)
+        {
+            cv.wait(lock);
+        }
+
+        spdlog::trace("gRPC(RelayBlockSync): {}:{}",
                       status.error_code(),
                       status.error_message());
 

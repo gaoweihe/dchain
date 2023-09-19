@@ -10,6 +10,7 @@
 #include "key.h"
 #include "oneapi/tbb/concurrent_hash_map.h"
 #include "oneapi/tbb/concurrent_queue.h"
+#include "oneapi/tbb/concurrent_set.h"
 #include <alpaca/alpaca.h>
 #include "libBLS/libBLS.h"
 #include <nlohmann/json.hpp>
@@ -89,11 +90,16 @@ public:
     grpc::Status SPHeartbeat(uint64_t target_server_id); 
     grpc::Status SPBcastCommit(uint64_t target_server_id);
     void bcast_commits(); 
+    grpc::Status RelayBlockSync(uint64_t block_id, uint64_t target_server_id); 
+    void send_relay_block_sync(uint64_t block_id);
 
 public: 
     uint64_t server_id;
     ClientCHM clients;
     BlockCHM pending_blks; 
+    oneapi::tbb::concurrent_set<
+        uint64_t
+    > pb_sync_labels;
     BlockCHM committed_blks; 
     TransactionCHM pending_txs;
     std::map<
