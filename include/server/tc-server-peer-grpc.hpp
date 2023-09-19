@@ -126,7 +126,15 @@ namespace tomchain
 
                     // remove block from pending
                     spdlog::trace("{} RelayVote: remove block from pending", peer_id);
-                    tc_server_->pending_blks.erase(block_id);
+                    bool is_erased = tc_server_->pending_blks.erase(block_id);
+                    if (is_erased)
+                    {
+                        spdlog::trace("{} RelayVote: block ({}) erased", peer_id, block_id);
+                    }
+                    else 
+                    {
+                        spdlog::error("{} RelayVote: block ({}) not erased", peer_id, block_id);
+                    }
 
                     cb_accessor.release();
                 }
