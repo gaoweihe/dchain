@@ -27,7 +27,7 @@
     ], 
     "scheduler_freq": 200, 
     "generate-tx-rate": 1024, 
-    "pb-pool-limit": 64, 
+    "pb-pool-limit": 1, 
     "tx-per-block": 1024,   
     "log-level": "info", 
     "client-count": 128,
