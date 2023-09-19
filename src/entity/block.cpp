@@ -93,7 +93,7 @@ namespace tomchain
             // merge signature
             // size_t merge_threads = (*::conf_data)["merge-threads"]; 
             spdlog::trace("{}: merge sigset", target_num); 
-            std::shared_ptr<BLSSignature> tss_sig = sig_share_set.merge(4);
+            std::shared_ptr<BLSSignature> tss_sig = sig_share_set.merge(16);
             spdlog::trace("{}: merge complete", target_num); 
             this->tss_sig_ = tss_sig;
         }
