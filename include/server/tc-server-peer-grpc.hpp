@@ -80,7 +80,7 @@ namespace tomchain
                 bool is_found = tc_server_->pending_blks.find(pb_accessor, block_id);
                 if (!is_found)
                 {
-                    spdlog::error("{} RelayVote: block not found", peer_id); 
+                    spdlog::error("{} RelayVote: block ({}) not found", peer_id, block_id); 
                     continue;
                 }
                 else {
@@ -171,13 +171,13 @@ namespace tomchain
             for (auto iter = req_blocks.begin(); iter != req_blocks.end(); iter++)
             {
                 // deserialize relayed blocks
-                spdlog::trace("RelayBlock: deserialize relayed blocks");
+                spdlog::trace("{} RelayBlock: deserialize relayed blocks");
                 msgpack::sbuffer des_b = stringToSbuffer(*iter);
                 auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 auto block = oh->as<std::shared_ptr<Block>>();
 
                 // store block locally
-                spdlog::trace("RelayBlock: store block locally");
+                spdlog::trace("{} RelayBlock: store block ({}) locally", peer_id, block->header_.id_);
                 BlockCHM::accessor accessor;
                 tc_server_->pending_blks.insert(accessor, block->header_.id_);
                 accessor->second = block;
@@ -275,6 +275,7 @@ namespace tomchain
             uint64_t block_id = request->block_id();
             
             tc_server_->pb_sync_labels.insert(block_id); 
+            spdlog::trace("{} RelayBlockSync: block ({}) signaled", peer_id, block_id); 
 
             response->set_status(0);
 
