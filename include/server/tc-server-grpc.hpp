@@ -305,7 +305,7 @@ namespace tomchain
                     // if remote
                     // insert vote into relay queue and skip this iteration
                     tc_server_->relay_votes.find(target_server_id)->second->push(vote->second);
-                    tc_server_->send_relay_votes(); 
+                    // tc_server_->send_relay_votes(); 
                     continue;
                 }
                 EASY_END_BLOCK;

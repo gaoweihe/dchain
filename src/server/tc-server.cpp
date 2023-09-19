@@ -270,7 +270,7 @@ namespace tomchain
                 relay_flag = true;
                 this->send_heartbeats(); 
                 // this->send_relay_blocks();
-                // this->send_relay_votes();
+                this->send_relay_votes();
                 // this->bcast_commits(); 
                 relay_flag = false;
             },
