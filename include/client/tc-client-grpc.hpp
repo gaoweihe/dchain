@@ -216,6 +216,8 @@ grpc::Status TcClient::GetBlocks()
             )
         ); 
 
+        this->VoteBlocks(); 
+
         // remove block header from CHM
         pending_blkhdr.erase(block.header_.id_); 
 
