@@ -247,9 +247,10 @@ namespace tomchain
         t.setInterval([&]()
                       { 
             this->send_heartbeats(); 
-            this->send_relay_blocks();
-            this->send_relay_votes();
-            this->bcast_commits(); },
+            // this->send_relay_blocks();
+            // this->send_relay_votes();
+            // this->bcast_commits(); 
+            },
                       (*::conf_data)["scheduler_freq"]);
 
         // TODO: change to shutdown conditional variable
