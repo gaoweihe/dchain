@@ -491,7 +491,11 @@ int main(const int argc, const char *argv[])
         Timer t;
         t.setTimeout(
             [&]() { 
-                profiler::dumpBlocksToFile("profile-server.prof"); 
+                std::string filename = 
+                    std::string{"profile-server-"} + 
+                    std::to_string((*::conf_data)["server-id"].template get<uint64_t>()) + 
+                    std::string{".prof"}; 
+                profiler::dumpBlocksToFile(filename.c_str()); 
             },
             10000
         );

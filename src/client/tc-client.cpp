@@ -131,6 +131,17 @@ int main(const int argc, const char *argv[])
     if ((*::conf_data)["profiler-enable"])
     {
         EASY_PROFILER_ENABLE; 
+        Timer t;
+        t.setTimeout(
+            [&]() {
+                std::string filename = 
+                    std::string{"profile-client-"} + 
+                    std::to_string((*::conf_data)["client-id"].template get<uint64_t>()) + 
+                    std::string{".prof"}; 
+                profiler::dumpBlocksToFile(filename.c_str());
+            },
+            10000
+        );
     }
     if ((*::conf_data)["profiler-listen"])
     {
