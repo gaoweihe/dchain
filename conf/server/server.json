@@ -26,9 +26,9 @@
         "10.0.0.15:2511"
     ], 
     "scheduler_freq": 200, 
-    "generate-tx-rate": 10000, 
+    "generate-tx-rate": 2048, 
     "pb-pool-limit": 4, 
-    "tx-per-block": 10000,   
+    "tx-per-block": 2048,   
     "log-level": "info", 
     "client-count": 64,
     "merge-threads": 1, 
