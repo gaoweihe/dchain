@@ -110,6 +110,9 @@ namespace tomchain
                         block_id);
                     cb_accessor->second = block_sp;
 
+                    pb_accessor.release(); 
+                    spdlog::trace("{} RelayVote: pb_accessor released", peer_id);
+
                     // insert block to bcast commit
                     spdlog::trace("{} RelayVote: insert block to bcast commit", peer_id);
                     for (
@@ -142,7 +145,6 @@ namespace tomchain
                 spdlog::trace("{} RelayVote: vote proc finished", peer_id);
 
                 pb_accessor.release(); 
-
                 spdlog::trace("{} RelayVote: pb_accessor released", peer_id);
             }
 
