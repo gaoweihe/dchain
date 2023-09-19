@@ -444,20 +444,20 @@ namespace tomchain
         {
             if (block == nullptr) { spdlog::error("block is nullptr"); exit(1); }
 
-            // serialize block
-            msgpack::sbuffer b;
-            msgpack::pack(b, block);
-            std::string ser_block = sbufferToString(b);
+            // // serialize block
+            // msgpack::sbuffer b;
+            // msgpack::pack(b, block);
+            // std::string ser_block = sbufferToString(b);
 
-            // add to bcast block vector
-            request.add_blocks(ser_block);
+            // // add to bcast block vector
+            // request.add_blocks(ser_block);
         }
 
-        // if no commits, return 
-        if (request.blocks_size() == 0)
-        {
-            return grpc::Status::OK; 
-        } 
+        // // if no commits, return 
+        // if (request.blocks_size() == 0)
+        // {
+        //     return grpc::Status::OK; 
+        // } 
 
         SPBcastCommitResponse response;
 
