@@ -311,6 +311,7 @@ namespace tomchain
                 {
                     iter->second->push(p_block);
                 }
+                this->send_relay_blocks(); 
 
                 // insert into pending blocks
                 pending_blks.insert(
@@ -325,8 +326,6 @@ namespace tomchain
                 {
                     pending_txs.erase(*iter);
                 }
-
-                this->send_relay_blocks(); 
             }
             else
             {
