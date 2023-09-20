@@ -584,7 +584,7 @@ int main(const int argc, const char *argv[])
                     std::string{".prof"}; 
                 profiler::dumpBlocksToFile(filename.c_str()); 
             },
-            10000
+            20000
         );
     }
     if ((*::conf_data)["profiler-listen"])
