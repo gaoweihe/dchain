@@ -75,41 +75,72 @@ namespace tomchain
         //     (*::conf_data)["pull-pb-interval"]
         // );
 
-        bool pull_flag = false; 
-        t.setInterval(
-            [&]() {
-                if (pull_flag == true) { return; }
-                pull_flag = true; 
-                this->PullPendingBlocks(); 
-                pull_flag = false; 
-            },
-            (*::conf_data)["pull-pb-interval"]
-        );
+        // bool pull_flag = false; 
+        // t.setInterval(
+        //     [&]() {
+        //         if (pull_flag == true) { return; }
+        //         pull_flag = true; 
+        //         this->PullPendingBlocks(); 
+        //         pull_flag = false; 
+        //     },
+        //     (*::conf_data)["pull-pb-interval"]
+        // );
 
-        bool get_flag = false; 
-        t.setInterval(
+        std::thread pull_thread(
             [&]() {
-                if (get_flag == true) { return; }
-                get_flag = true; 
-                this->GetBlocks(); 
-                get_flag = false; 
-            },
-            (*::conf_data)["pull-pb-interval"]
-        );
+                while (true)
+                {
+                    this->PullPendingBlocks(); 
+                }
+            }
+        ); 
+        pull_thread.detach(); 
 
-        bool vote_flag = false; 
-        t.setInterval(
+        // bool get_flag = false; 
+        // t.setInterval(
+        //     [&]() {
+        //         if (get_flag == true) { return; }
+        //         get_flag = true; 
+        //         this->GetBlocks(); 
+        //         get_flag = false; 
+        //     },
+        //     (*::conf_data)["pull-pb-interval"]
+        // );
+
+        std::thread get_thread(
             [&]() {
-                if (vote_flag == true) { return; }
-                vote_flag = true; 
-                if (!this->pending_blks.empty()) 
-                { 
+                while (true)
+                {
+                    this->GetBlocks(); 
+                }
+            }
+        ); 
+        get_thread.detach(); 
+
+        // bool vote_flag = false; 
+        // t.setInterval(
+        //     [&]() {
+        //         if (vote_flag == true) { return; }
+        //         vote_flag = true; 
+        //         if (!this->pending_blks.empty()) 
+        //         { 
+        //             this->VoteBlocks(); 
+        //         } 
+        //         vote_flag = false; 
+        //     },
+        //     (*::conf_data)["pull-pb-interval"]
+        // );
+
+        std::thread vote_thread(
+            [&]() {
+                while (true)
+                {
                     this->VoteBlocks(); 
-                } 
-                vote_flag = false; 
-            },
-            (*::conf_data)["pull-pb-interval"]
-        );
+                }
+
+            }
+        ); 
+        vote_thread.detach(); 
 
         while (true)
         {
