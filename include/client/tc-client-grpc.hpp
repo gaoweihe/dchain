@@ -110,7 +110,7 @@ grpc::Status TcClient::Heartbeat()
 
 grpc::Status TcClient::PullPendingBlocks()
 {
-    EASY_FUNCTION("PullPendingBlocks_req");
+    // EASY_FUNCTION("PullPendingBlocks_req");
     spdlog::trace("gRPC(PullPendingBlocks) starts");
 
     PullPendingBlocksRequest request; 
@@ -122,7 +122,7 @@ grpc::Status TcClient::PullPendingBlocks()
     std::condition_variable cv;
     bool done = false;
 
-    EASY_BLOCK("waiting");
+    // EASY_BLOCK("waiting");
     grpc::Status status;
     stub_->async()->PullPendingBlocks(
         &context, 
@@ -141,10 +141,10 @@ grpc::Status TcClient::PullPendingBlocks()
     while (!done) {
       cv.wait(lock);
     }
-    EASY_END_BLOCK; 
+    // EASY_END_BLOCK; 
 
     // unpack response 
-    EASY_BLOCK("unpack response");
+    // EASY_BLOCK("unpack response");
     for (int i = 0; i < response.pb_hdrs_size(); i++) {
         msgpack::sbuffer des_b = stringToSbuffer(response.pb_hdrs(i));
         auto oh = msgpack::unpack(des_b.data(), des_b.size());
@@ -158,7 +158,7 @@ grpc::Status TcClient::PullPendingBlocks()
         );
         spdlog::trace("block id: {}", block_hdr.id_); 
     }
-    EASY_END_BLOCK; 
+    // EASY_END_BLOCK; 
 
     spdlog::debug("gRPC(PullPendingBlocks): {}:{}", 
         status.error_code(), 
@@ -170,12 +170,12 @@ grpc::Status TcClient::PullPendingBlocks()
 
 grpc::Status TcClient::GetBlocks()
 {
-    EASY_FUNCTION("GetBlocks_req");
+    // EASY_FUNCTION("GetBlocks_req");
     spdlog::debug("gRPC(GetBlocks): start");
 
     GetBlocksRequest request; 
 
-    EASY_BLOCK("render request");
+    // EASY_BLOCK("render request");
     for (auto iter = pending_blkhdr.begin(); iter != pending_blkhdr.end(); iter++)
     {
         msgpack::sbuffer b;
@@ -184,7 +184,7 @@ grpc::Status TcClient::GetBlocks()
 
         request.add_pb_hdrs(blk_hdr_str);
     }
-    EASY_END_BLOCK; 
+    // EASY_END_BLOCK; 
     
     GetBlocksResponse response; 
 
@@ -193,7 +193,7 @@ grpc::Status TcClient::GetBlocks()
     std::condition_variable cv;
     bool done = false;
 
-    EASY_BLOCK("waiting");
+    // EASY_BLOCK("waiting");
     grpc::Status status;
     stub_->async()->GetBlocks(
         &context, 
@@ -212,39 +212,39 @@ grpc::Status TcClient::GetBlocks()
     while (!done) {
       cv.wait(lock);
     }
-    EASY_END_BLOCK; 
+    // EASY_END_BLOCK; 
 
-    EASY_BLOCK("unpack response");
+    // EASY_BLOCK("unpack response");
     auto resp_blk = response.pb();
     for (auto iter = resp_blk.begin(); iter != resp_blk.end(); iter++)
     {
-        EASY_BLOCK("deserialize");
+        // EASY_BLOCK("deserialize");
         msgpack::sbuffer des_b = stringToSbuffer(*iter);
         auto oh = msgpack::unpack(des_b.data(), des_b.size());
         auto block = oh->as<Block>();
-        EASY_END_BLOCK; 
+        // EASY_END_BLOCK; 
 
-        EASY_BLOCK("insert into pb");
+        // EASY_BLOCK("insert into pb");
         pending_blks.insert(
             std::make_pair(
                 block.header_.id_, 
                 std::make_shared<tomchain::Block>(block)
             )
         ); 
-        EASY_END_BLOCK; 
+        // EASY_END_BLOCK; 
 
-        EASY_BLOCK("vote");
+        // EASY_BLOCK("vote");
         this->VoteBlocks(); 
-        EASY_END_BLOCK; 
+        // EASY_END_BLOCK; 
 
         // remove block header from CHM
-        EASY_BLOCK("remove");
+        // EASY_BLOCK("remove");
         pending_blkhdr.erase(block.header_.id_); 
-        EASY_END_BLOCK; 
+        // EASY_END_BLOCK; 
 
         spdlog::trace("get block: {}, {}", block.header_.id_, block.header_.base_id_); 
     }
-    EASY_END_BLOCK; 
+    // EASY_END_BLOCK; 
     
 
     spdlog::debug("gRPC(GetBlocks): {}:{}", 
@@ -257,7 +257,7 @@ grpc::Status TcClient::GetBlocks()
 
 grpc::Status TcClient::VoteBlocks()
 {
-    EASY_FUNCTION("VoteBlocks_req");
+    // EASY_FUNCTION("VoteBlocks_req");
     spdlog::debug("gRPC(VoteBlocks): start");
 
     VoteBlocksRequest request; 
@@ -269,7 +269,7 @@ grpc::Status TcClient::VoteBlocks()
         const uint64_t block_id = iter->second->header_.id_; 
 
         // client_id starts from 1, so does signer_index 
-        EASY_BLOCK("sign");
+        // EASY_BLOCK("sign");
         auto signer_index = this->client_id;
         std::shared_ptr<BLSSigShare> sig_share = 
             this->tss_key->first->sign(block_hash_str, this->client_id); 
@@ -277,18 +277,18 @@ grpc::Status TcClient::VoteBlocks()
         bv.block_id_ = iter->second->header_.id_;
         bv.sig_share_ = sig_share;
         bv.voter_id_ = this->client_id;
-        EASY_END_BLOCK; 
+        // EASY_END_BLOCK; 
 
-        EASY_BLOCK("insert into votes");
+        // EASY_BLOCK("insert into votes");
         iter->second->votes_.insert(
             std::make_pair(
                 this->client_id, 
                 std::make_shared<BlockVote>(bv)
             )
         );
-        EASY_END_BLOCK; 
+        // EASY_END_BLOCK; 
 
-        EASY_BLOCK("serialize");
+        // EASY_BLOCK("serialize");
         spdlog::debug("gRPC(VoteBlocks): serialize");
         Block block = *(iter->second);
         // msgpack::sbuffer b;
@@ -296,11 +296,11 @@ grpc::Status TcClient::VoteBlocks()
         // std::string block_ser = sbufferToString(b);
         auto block_bv = flexbuffers_adapter<Block>::to_bytes(block);
         std::string block_ser(block_bv->begin(), block_bv->end());
-        EASY_END_BLOCK; 
+        // EASY_END_BLOCK; 
       
-        EASY_BLOCK("add voted blocks");
+        // EASY_BLOCK("add voted blocks");
         request.add_voted_blocks(block_ser); 
-        EASY_END_BLOCK; 
+        // EASY_END_BLOCK; 
     }
     
     VoteBlocksResponse response; 
@@ -310,7 +310,7 @@ grpc::Status TcClient::VoteBlocks()
     std::condition_variable cv;
     bool done = false;
 
-    EASY_BLOCK("waiting");
+    // EASY_BLOCK("waiting");
     spdlog::debug("gRPC(VoteBlocks): send request");
     grpc::Status status;
     stub_->async()->VoteBlocks(
@@ -330,9 +330,9 @@ grpc::Status TcClient::VoteBlocks()
     while (!done) {
       cv.wait(lock);
     }
-    EASY_END_BLOCK; 
+    // EASY_END_BLOCK; 
 
-    EASY_BLOCK("unpack response");
+    // EASY_BLOCK("unpack response");
     spdlog::debug("gRPC(VoteBlocks): recv response");
     for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
     {
@@ -344,7 +344,7 @@ grpc::Status TcClient::VoteBlocks()
         ); 
     }
     pending_blks.clear(); 
-    EASY_END_BLOCK; 
+    // EASY_END_BLOCK; 
     
 
     spdlog::debug("gRPC(VoteBlocks): {}:{}", 
