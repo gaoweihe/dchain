@@ -29,7 +29,7 @@
     "generate-tx-rate": 500, 
     "pb-pool-limit": 16, 
     "tx-per-block": 500,   
-    "log-level": "trace", 
+    "log-level": "info", 
     "client-count": 128,
     "merge-threads": 8, 
     "profiler-enable": true,
