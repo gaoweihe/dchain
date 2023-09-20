@@ -530,10 +530,10 @@ int main(const int argc, const char *argv[])
 
     // start profiler
     spdlog::info("Starting profiler");
+    Timer t;
     if ((*::conf_data)["profiler-enable"])
     {
         EASY_PROFILER_ENABLE;
-        Timer t;
         t.setTimeout(
             [&]() { 
                 std::string filename = 
