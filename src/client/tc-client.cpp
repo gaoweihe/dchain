@@ -59,21 +59,21 @@ namespace tomchain
             (*::conf_data)["heartbeat-interval"]
         );
 
-        // bool chain_flag = false;
-        // t.setInterval(
-        //     [&]() {
-        //         if (chain_flag == true) { return; }
-        //         chain_flag = true; 
-        //         this->PullPendingBlocks(); 
-        //         this->GetBlocks(); 
-        //         if (this->pending_blks.size() > 0) 
-        //         { 
-        //             this->VoteBlocks(); 
-        //         } 
-        //         chain_flag = false; 
-        //     },
-        //     (*::conf_data)["pull-pb-interval"]
-        // );
+        bool chain_flag = false;
+        t.setInterval(
+            [&]() {
+                if (chain_flag == true) { return; }
+                chain_flag = true; 
+                this->PullPendingBlocks(); 
+                this->GetBlocks(); 
+                // if (this->pending_blks.size() > 0) 
+                // { 
+                //     this->VoteBlocks(); 
+                // } 
+                chain_flag = false; 
+            },
+            (*::conf_data)["pull-pb-interval"]
+        );
 
         // bool pull_flag = false; 
         // t.setInterval(
@@ -86,16 +86,16 @@ namespace tomchain
         //     (*::conf_data)["pull-pb-interval"]
         // );
 
-        std::thread pull_thread(
-            [&]() {
-                while (true)
-                {
-                    this->PullPendingBlocks(); 
-                    this->GetBlocks(); 
-                }
-            }
-        ); 
-        pull_thread.detach(); 
+        // std::thread pull_thread(
+        //     [&]() {
+        //         while (true)
+        //         {
+        //             this->PullPendingBlocks(); 
+        //             this->GetBlocks(); 
+        //         }
+        //     }
+        // ); 
+        // pull_thread.detach(); 
 
         // bool get_flag = false; 
         // t.setInterval(
