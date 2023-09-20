@@ -109,6 +109,7 @@ public:
     > pb_merge_queue;
     BlockCHM committed_blks; 
     TransactionCHM pending_txs;
+    std::atomic<uint64_t> blk_seq_generator; 
     std::map<
         uint64_t, 
         std::shared_ptr<

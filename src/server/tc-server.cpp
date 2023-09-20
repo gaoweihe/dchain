@@ -32,6 +32,7 @@ namespace tomchain
     {
         spdlog::info("Initializing server");
         this->server_id = (*::conf_data)["server-id"];
+        this->blk_seq_generator = (*::conf_data)["server-id"].template get<uint64_t>() * 1000000UL; 
     }
 
     void TcServer::init_peer_stubs()
@@ -393,7 +394,8 @@ namespace tomchain
                 BlockCHM::accessor accessor;
 
                 // construct new block
-                uint64_t block_id = distribution(rng);
+                // uint64_t block_id = distribution(rng); 
+                uint64_t block_id = this->blk_seq_generator.fetch_add(1, std::memory_order_seq_cst); 
                 // TODO: base id
                 Block new_block(block_id, 0xDEADBEEF);
                 for (it = pending_txs.begin(); it != pending_txs.end(); ++it)
