@@ -33,5 +33,5 @@
     "client-count": 128,
     "merge-threads": 8, 
     "profiler-enable": true,
-    "profiler-listen": false
+    "profiler-listen": true
 }
