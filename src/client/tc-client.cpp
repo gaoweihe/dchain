@@ -102,7 +102,7 @@ namespace tomchain
             [&]() {
                 if (vote_flag == true) { return; }
                 vote_flag = true; 
-                if (this->pending_blks.size() > 0) 
+                if (!this->pending_blks.empty()) 
                 { 
                     this->VoteBlocks(); 
                 } 

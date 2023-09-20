@@ -11,6 +11,7 @@
 #include "tc-server.grpc.pb.h"
 #include "key.h"
 #include "oneapi/tbb/concurrent_hash_map.h"
+#include "oneapi/tbb/concurrent_queue.h"
 #include "libBLS/libBLS.h"
 #include <easy/profiler.h>
 
@@ -98,7 +99,9 @@ public:
     std::shared_ptr<ecdsa::PubKey> ecc_pkey;
     uint64_t client_id;
     AccountCHM accounts;
-    BlockCHM pending_blks;
+    oneapi::tbb::concurrent_queue<
+        std::shared_ptr<Block>
+    > pending_blks;
     BlockHeaderCHM pending_blkhdr;
     std::shared_ptr<std::pair<
         std::shared_ptr<BLSPrivateKeyShare>, 

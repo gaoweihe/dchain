@@ -225,17 +225,14 @@ grpc::Status TcClient::GetBlocks()
         EASY_END_BLOCK; 
 
         EASY_BLOCK("insert into pb");
-        pending_blks.insert(
-            std::make_pair(
-                block.header_.id_, 
-                std::make_shared<tomchain::Block>(block)
-            )
+        pending_blks.push(
+            std::make_shared<tomchain::Block>(block)
         ); 
         EASY_END_BLOCK; 
 
-        EASY_BLOCK("vote");
-        this->VoteBlocks(); 
-        EASY_END_BLOCK; 
+        // EASY_BLOCK("vote");
+        // this->VoteBlocks(); 
+        // EASY_END_BLOCK; 
 
         // remove block header from CHM
         EASY_BLOCK("remove");
@@ -262,11 +259,14 @@ grpc::Status TcClient::VoteBlocks()
 
     VoteBlocksRequest request; 
     request.set_id(this->client_id); 
-    for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
+    
+    std::shared_ptr<Block> sp_block; 
+    while (pending_blks.try_pop(sp_block))
+    // for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
     {
-        auto block_hash_str = iter->second->get_sha256();
+        auto block_hash_str = sp_block->get_sha256();
 
-        const uint64_t block_id = iter->second->header_.id_; 
+        const uint64_t block_id = sp_block->header_.id_; 
 
         // client_id starts from 1, so does signer_index 
         EASY_BLOCK("sign");
@@ -274,13 +274,13 @@ grpc::Status TcClient::VoteBlocks()
         std::shared_ptr<BLSSigShare> sig_share = 
             this->tss_key->first->sign(block_hash_str, this->client_id); 
         BlockVote bv;
-        bv.block_id_ = iter->second->header_.id_;
+        bv.block_id_ = sp_block->header_.id_;
         bv.sig_share_ = sig_share;
         bv.voter_id_ = this->client_id;
         EASY_END_BLOCK; 
 
         EASY_BLOCK("insert into votes");
-        iter->second->votes_.insert(
+        sp_block->votes_.insert(
             std::make_pair(
                 this->client_id, 
                 std::make_shared<BlockVote>(bv)
@@ -290,7 +290,7 @@ grpc::Status TcClient::VoteBlocks()
 
         EASY_BLOCK("serialize");
         spdlog::debug("gRPC(VoteBlocks): serialize");
-        Block block = *(iter->second);
+        Block block = *(sp_block);
         // msgpack::sbuffer b;
         // msgpack::pack(b, iter->second); 
         // std::string block_ser = sbufferToString(b);
@@ -334,16 +334,16 @@ grpc::Status TcClient::VoteBlocks()
 
     EASY_BLOCK("unpack response");
     spdlog::debug("gRPC(VoteBlocks): recv response");
-    for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
-    {
-        voted_blks.insert(
-            std::make_pair(
-                iter->first, 
-                iter->second
-            )
-        ); 
-    }
-    pending_blks.clear(); 
+    // for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
+    // {
+    //     voted_blks.insert(
+    //         std::make_pair(
+    //             iter->first, 
+    //             iter->second
+    //         )
+    //     ); 
+    // }
+    // pending_blks.clear(); 
     EASY_END_BLOCK; 
     
 
