@@ -98,6 +98,9 @@ public:
     uint64_t server_id;
     ClientCHM clients;
     BlockCHM pending_blks; 
+    oneapi::tbb::concurrent_queue<
+        uint64_t
+    > pb_sync_queue;
     oneapi::tbb::concurrent_set<
         uint64_t
     > pb_sync_labels;

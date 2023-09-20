@@ -393,6 +393,8 @@ namespace tomchain
         RelayBlockRequest request;
         request.set_id(this->server_id);
 
+        std::vector<uint64_t> tmp_sync_vec; 
+
         std::shared_ptr<Block> block;
         spdlog::trace("{} gRPC(RelayBlock) pops blocks", target_server_id);
         while (relay_blocks.find(target_server_id)->second->try_pop(block))
@@ -404,6 +406,7 @@ namespace tomchain
 
             // add to relayed block vector
             request.add_blocks(ser_block);
+            tmp_sync_vec.push_back(block->header_.id_); 
         }
 
         // if no blocks, return 
@@ -432,6 +435,12 @@ namespace tomchain
         while (!done)
         {
             cv.wait(lock);
+        }
+
+        // add block ids to sync queue 
+        for (auto id : tmp_sync_vec)
+        {
+            this->pb_sync_queue.push(id); 
         }
 
         spdlog::trace("gRPC(RelayBlock): {}:{}",

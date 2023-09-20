@@ -262,20 +262,44 @@ namespace tomchain
             (*::conf_data)["scheduler_freq"]
         );
 
-        // peer relay
-        bool relay_flag = false;
+        // peer relay vote
+        bool relay_vote_flag = false;
         t.setInterval(
             [&]() { 
-                if (relay_flag == true) { return; }
-                relay_flag = true;
+                if (relay_vote_flag == true) { return; }
+                relay_vote_flag = true;
                 this->send_heartbeats(); 
                 // this->send_relay_blocks();
                 this->send_relay_votes();
                 // this->bcast_commits(); 
-                relay_flag = false;
+                relay_vote_flag = false;
             },
             (*::conf_data)["scheduler_freq"]
-        );
+        ); 
+
+        // peer relay block 
+        bool relay_block_flag = false; 
+        t.setInterval(
+            [&]() { 
+                if (relay_block_flag == true) { return; }
+                relay_block_flag = true;
+                this->send_relay_blocks();
+                relay_block_flag = false;
+            },
+            (*::conf_data)["scheduler_freq"]
+        ); 
+
+        // peer bcast commit 
+        bool bcast_commit_flag = false; 
+        // t.setInterval(
+        //     [&]() { 
+        //         if (bcast_commit_flag == true) { return; }
+        //         bcast_commit_flag = true;
+        //         this->bcast_commits(); 
+        //         bcast_commit_flag = false;
+        //     },
+        //     (*::conf_data)["scheduler_freq"]
+        // ); 
 
         // merge votes
         bool merge_flag = false;
@@ -384,7 +408,7 @@ namespace tomchain
                 {
                     iter->second->push(p_block);
                 }
-                this->send_relay_blocks(); 
+                // this->send_relay_blocks(); 
 
                 // insert into pending blocks
                 pending_blks.insert(
@@ -392,7 +416,7 @@ namespace tomchain
                     block_id);
                 accessor->second = p_block;
 
-                this->send_relay_block_sync(block_id);
+                // this->send_relay_block_sync(block_id);
 
                 spdlog::trace("gen block: {}", block_id);
 
@@ -448,6 +472,12 @@ namespace tomchain
                 continue;
             }
             RelayBlock(target_server_id);
+        }
+
+        uint64_t block_id; 
+        while (this->pb_sync_queue.try_pop(block_id))
+        {
+            this->send_relay_block_sync(block_id); 
         }
     }
 
