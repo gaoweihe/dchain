@@ -59,18 +59,54 @@ namespace tomchain
             (*::conf_data)["heartbeat-interval"]
         );
 
-        bool chain_flag = false;
+        // bool chain_flag = false;
+        // t.setInterval(
+        //     [&]() {
+        //         if (chain_flag == true) { return; }
+        //         chain_flag = true; 
+        //         this->PullPendingBlocks(); 
+        //         this->GetBlocks(); 
+        //         if (this->pending_blks.size() > 0) 
+        //         { 
+        //             this->VoteBlocks(); 
+        //         } 
+        //         chain_flag = false; 
+        //     },
+        //     (*::conf_data)["pull-pb-interval"]
+        // );
+
+        bool pull_flag = false; 
         t.setInterval(
             [&]() {
-                if (chain_flag == true) { return; }
-                chain_flag = true; 
+                if (pull_flag == true) { return; }
+                pull_flag = true; 
                 this->PullPendingBlocks(); 
+                pull_flag = false; 
+            },
+            (*::conf_data)["pull-pb-interval"]
+        );
+
+        bool get_flag = false; 
+        t.setInterval(
+            [&]() {
+                if (get_flag == true) { return; }
+                get_flag = true; 
                 this->GetBlocks(); 
+                get_flag = false; 
+            },
+            (*::conf_data)["pull-pb-interval"]
+        );
+
+        bool vote_flag = false; 
+        t.setInterval(
+            [&]() {
+                if (vote_flag == true) { return; }
+                vote_flag = true; 
                 if (this->pending_blks.size() > 0) 
                 { 
                     this->VoteBlocks(); 
                 } 
-                chain_flag = false; 
+                vote_flag = false; 
             },
             (*::conf_data)["pull-pb-interval"]
         );
