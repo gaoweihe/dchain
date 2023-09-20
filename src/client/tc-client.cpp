@@ -91,6 +91,7 @@ namespace tomchain
                 while (true)
                 {
                     this->PullPendingBlocks(); 
+                    this->GetBlocks(); 
                 }
             }
         ); 
@@ -107,15 +108,15 @@ namespace tomchain
         //     (*::conf_data)["pull-pb-interval"]
         // );
 
-        std::thread get_thread(
-            [&]() {
-                while (true)
-                {
-                    this->GetBlocks(); 
-                }
-            }
-        ); 
-        get_thread.detach(); 
+        // std::thread get_thread(
+        //     [&]() {
+        //         while (true)
+        //         {
+        //             this->GetBlocks(); 
+        //         }
+        //     }
+        // ); 
+        // get_thread.detach(); 
 
         // bool vote_flag = false; 
         // t.setInterval(
