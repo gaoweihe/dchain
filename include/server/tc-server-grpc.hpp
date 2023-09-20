@@ -105,8 +105,8 @@ namespace tomchain
 
             response->set_status(0);
 
-            BlockCHM::accessor accessor;
-            ClientCHM::accessor client_accessor;
+            BlockCHM::const_accessor accessor;
+            ClientCHM::const_accessor client_accessor;
             BlockHeaderCHM::accessor seenblk_accessor;
 
             // unsafe iterations on concurrent hash map
@@ -198,7 +198,7 @@ namespace tomchain
             response->set_status(0);
 
             auto req_blk_hdr = request->pb_hdrs();
-            BlockCHM::accessor accessor;
+            BlockCHM::const_accessor accessor;
 
             // unsafe interations on concurrent hash map
             // but it is serial
