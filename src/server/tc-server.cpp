@@ -472,7 +472,7 @@ namespace tomchain
                 continue;
             }
             auto status = RelayBlock(target_server_id);
-            if (status != grpc::Status::OK)
+            if (!status.ok())
             {
                 spdlog::error("send relay block error"); 
                 exit(1); 
@@ -511,7 +511,7 @@ namespace tomchain
                 continue;
             }
             auto status = RelayBlockSync(block_id, target_server_id);
-            if (status != grpc::Status::OK)
+            if (!status.ok())
             {
                 spdlog::error("send relay block sync error"); 
                 exit(1); 
