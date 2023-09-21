@@ -578,7 +578,7 @@ namespace tomchain
                       status.error_code(),
                       status.error_message());
 
-        EASY_END_BLOCK； 
+        EASY_END_BLOCK; 
 
         return status;
     }
