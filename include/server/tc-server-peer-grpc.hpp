@@ -66,16 +66,19 @@ namespace tomchain
                 auto rv = req_votes.Get(rv_index); 
 
                 // deserialize relayed votes
+                EASY_BLOCK("deserialize"); 
                 spdlog::trace("{} RelayVote: deserialize relayed votes", peer_id);
                 msgpack::sbuffer des_b = stringToSbuffer(rv);
                 auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 auto vote = oh->as<std::shared_ptr<BlockVote>>();
                 const uint64_t block_id = vote->block_id_;
+                EASY_END_BLOCK; 
 
                 // add to local block vote vector
                 spdlog::trace("{} RelayVote: add to local block vote vector", peer_id);
                 BlockCHM::accessor pb_accessor;
 
+                EASY_BLOCK("find"); 
                 spdlog::trace("{} RelayVote: finding block in pb", peer_id);
                 bool is_found = tc_server_->pending_blks.find(pb_accessor, block_id);
                 if (!is_found)
@@ -86,34 +89,43 @@ namespace tomchain
                 else {
                     spdlog::trace("{} RelayVote: block found", peer_id);
                 }
+                EASY_END_BLOCK; 
 
+                EASY_BLOCK("insert vote"); 
                 std::shared_ptr<tomchain::Block> block_sp = pb_accessor->second; 
                 assert(block_sp != nullptr); 
                 block_sp->votes_.insert(
                     std::make_pair(
                         vote->voter_id_,
                         vote));
+                EASY_END_BLOCK; 
 
                 // check if vote enough
+                EASY_BLOCK("check vote enough"); 
                 spdlog::trace("{} RelayVote: check if vote enough", peer_id);
                 if (block_sp->is_vote_enough((*::conf_data)["client-count"]))
                 {
                     spdlog::trace("{} RelayVote: vote enough", peer_id);
 
+                    EASY_BLOCK("merge"); 
                     block_sp->merge_votes((*::conf_data)["client-count"]);
+                    EASY_END_BLOCK; 
 
                     // insert block to committed
+                    EASY_BLOCK("insert cb"); 
                     spdlog::trace("{} RelayVote: insert block to committed", peer_id);
                     BlockCHM::accessor cb_accessor;
                     tc_server_->committed_blks.insert(
                         cb_accessor,
                         block_id);
                     cb_accessor->second = block_sp;
+                    EASY_END_BLOCK; 
 
                     pb_accessor.release(); 
                     spdlog::trace("{} RelayVote: pb_accessor released", peer_id);
 
                     // insert block to bcast commit
+                    EASY_BLOCK("insert bcast commit"); 
                     spdlog::trace("{} RelayVote: insert block to bcast commit", peer_id);
                     for (
                         auto bcast_iter = tc_server_->bcast_commit_blocks.begin(); 
@@ -124,10 +136,15 @@ namespace tomchain
                         if (bcast_iter->second == nullptr) { spdlog::error("stub2"); exit(1); }
                         bcast_iter->second->push(block_sp);
                     }
+                    EASY_END_BLOCK; 
                     spdlog::trace("{} RelayVote: bcast commits", peer_id);
+
+                    EASY_BLOCK("bcast commits");
                     tc_server_->bcast_commits();
+                    EASY_END_BLOCK; 
 
                     // remove block from pending
+                    EASY_BLOCK("remove from pb"); 
                     spdlog::trace("{} RelayVote: remove block from pending", peer_id);
                     bool is_erased = tc_server_->pending_blks.erase(block_id);
                     if (is_erased)
@@ -138,9 +155,11 @@ namespace tomchain
                     {
                         spdlog::error("{} RelayVote: block ({}) not erased", peer_id, block_id);
                     }
+                    EASY_END_BLOCK; 
 
                     cb_accessor.release();
                 }
+                EASY_END_BLOCK; 
 
                 spdlog::trace("{} RelayVote: vote proc finished", peer_id);
 
@@ -173,7 +192,7 @@ namespace tomchain
             const RelayBlockRequest *request,
             RelayBlockResponse *response) override
         {
-            EASY_FUNCTION("RelayBlock_rsp");
+            EASY_FUNCTION("RelayBlock resp");
             spdlog::debug("gRPC(RelayBlock) starts");
 
             uint32_t peer_id = request->id();
@@ -182,17 +201,21 @@ namespace tomchain
             for (auto iter = req_blocks.begin(); iter != req_blocks.end(); iter++)
             {
                 // deserialize relayed blocks
+                EASY_BLOCK("deserialize"); 
                 spdlog::trace("{} RelayBlock: deserialize relayed blocks");
                 msgpack::sbuffer des_b = stringToSbuffer(*iter);
                 auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 auto block = oh->as<std::shared_ptr<Block>>();
+                EASY_END_BLOCK; 
 
                 // store block locally
+                EASY_BLOCK("store"); 
                 spdlog::trace("{} RelayBlock: store block ({}) locally", peer_id, block->header_.id_);
                 BlockCHM::accessor accessor;
                 tc_server_->pending_blks.insert(accessor, block->header_.id_);
                 accessor->second = block;
                 accessor.release(); 
+                EASY_END_BLOCK; 
             }
 
             response->set_status(0);
@@ -230,12 +253,15 @@ namespace tomchain
             for (auto iter = req_blocks.begin(); iter != req_blocks.end(); iter++)
             {
                 // deserialize bcasted blocks
+                EASY_BLOCK("deserialize"); 
                 spdlog::trace("SPBcastCommit: deserialize bcasted blocks"); 
                 msgpack::sbuffer des_b = stringToSbuffer(*iter);
                 auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 auto block = oh->as<std::shared_ptr<Block>>();
+                EASY_END_BLOCK; 
 
                 // remove pending block
+                EASY_BLOCK("remove pb"); 
                 spdlog::trace("SPBcastCommit: remove pending block");
                 BlockCHM::accessor pb_accessor;
                 bool is_found = tc_server_->pending_blks.find(
@@ -244,16 +270,21 @@ namespace tomchain
                 {
                     spdlog::error("SPBcastCommit: block not found"); 
                 }
+                EASY_END_BLOCK; 
 
                 // insert into committed blocks
+                EASY_BLOCK("insert cb"); 
                 spdlog::trace("insert into committed blocks");
                 BlockCHM::accessor cb_accessor;
                 tc_server_->committed_blks.insert(
                     cb_accessor,
                     block->header_.id_);
                 cb_accessor->second = block;
+                EASY_END_BLOCK; 
 
+                EASY_BLOCK("erase"); 
                 tc_server_->pending_blks.erase(pb_accessor);
+                EASY_END_BLOCK; 
 
                 cb_accessor.release();
                 pb_accessor.release(); 
@@ -285,8 +316,11 @@ namespace tomchain
             uint32_t peer_id = request->id();
             uint64_t block_id = request->block_id();
             
+            // insert sync label 
+            EASY_BLOCK("insert signal"); 
             tc_server_->pb_sync_labels.insert(block_id); 
             spdlog::trace("{} RelayBlockSync: block ({}) signaled", peer_id, block_id); 
+            EASY_END_BLOCK; 
 
             response->set_status(0);
 
@@ -331,12 +365,13 @@ namespace tomchain
 
     grpc::Status TcServer::RelayVote(uint64_t target_server_id)
     {
-        EASY_FUNCTION("RelayVote_req");
+        EASY_FUNCTION("RelayVote req");
         spdlog::trace("{} gRPC(RelayVote) starts", target_server_id);
 
         RelayVoteRequest request;
         request.set_id(this->server_id);
 
+        EASY_BLOCK("add votes"); 
         std::shared_ptr<BlockVote> vote;
         spdlog::trace("{} gRPC(RelayVote) pop votes", target_server_id);
         while (relay_votes.find(target_server_id)->second->try_pop(vote))
@@ -349,6 +384,7 @@ namespace tomchain
             // add to relayed vote vector
             request.add_votes(ser_vote);
         }
+        EASY_END_BLOCK; 
 
         // if no votes, return 
         if (request.votes_size() == 0)
@@ -363,6 +399,7 @@ namespace tomchain
         std::condition_variable cv;
         bool done = false;
 
+        EASY_BLOCK("waiting"); 
         spdlog::trace("{} gRPC(RelayVote) waiting", target_server_id);
         grpc::Status status;
         grpc_peer_client_stub_.find(target_server_id)->second->async()->RelayVote(&context, &request, &response, [&mu, &cv, &done, &status](grpc::Status s)
@@ -377,6 +414,7 @@ namespace tomchain
         {
             cv.wait(lock);
         }
+        EASY_END_BLOCK; 
 
         spdlog::trace("gRPC(RelayVote): {}:{}",
                       status.error_code(),
@@ -387,7 +425,7 @@ namespace tomchain
 
     grpc::Status TcServer::RelayBlock(uint64_t target_server_id)
     {
-        EASY_FUNCTION("RelayBlock_req");
+        EASY_FUNCTION("RelayBlock req");
         spdlog::trace("{} gRPC(RelayBlock) starts", target_server_id);
 
         RelayBlockRequest request;
@@ -396,18 +434,24 @@ namespace tomchain
         std::vector<uint64_t> tmp_sync_vec; 
 
         std::shared_ptr<Block> block;
+        EASY_BLOCK("add blocks"); 
         spdlog::trace("{} gRPC(RelayBlock) pops blocks", target_server_id);
         while (relay_blocks.find(target_server_id)->second->try_pop(block))
         {
             // serialize block
+            EASY_BLOCK("serialize"); 
             msgpack::sbuffer b;
             msgpack::pack(b, block);
             std::string ser_block = sbufferToString(b);
+            EASY_END_BLOCK; 
 
             // add to relayed block vector
+            EASY_BLOCK("add to relay"); 
             request.add_blocks(ser_block);
             tmp_sync_vec.push_back(block->header_.id_); 
+            EASY_END_BLOCK; 
         }
+        EASY_END_BLOCK; 
 
         // if no blocks, return 
         if (request.blocks_size() == 0)
@@ -422,6 +466,7 @@ namespace tomchain
         std::condition_variable cv;
         bool done = false;
 
+        EASY_BLOCK("wait"); 
         spdlog::trace("{} gRPC(RelayBlock) waiting", target_server_id);
         grpc::Status status;
         grpc_peer_client_stub_.find(target_server_id)->second->async()->RelayBlock(&context, &request, &response, [&mu, &cv, &done, &status](grpc::Status s)
@@ -436,12 +481,15 @@ namespace tomchain
         {
             cv.wait(lock);
         }
+        EASY_END_BLOCK; 
 
         // add block ids to sync queue 
+        EASY_BLOCK("add sync queue"); 
         for (auto id : tmp_sync_vec)
         {
             this->pb_sync_queue.push(id); 
         }
+        EASY_END_BLOCK; 
 
         spdlog::trace("gRPC(RelayBlock): {}:{}",
                       status.error_code(),
@@ -452,7 +500,7 @@ namespace tomchain
 
     grpc::Status TcServer::SPBcastCommit(uint64_t target_server_id)
     {
-        EASY_FUNCTION("SPBcastCommit_req");
+        EASY_FUNCTION("SPBcastCommit req");
         spdlog::trace("{} gRPC(SPBcastCommit) starts", target_server_id);
 
         SPBcastCommitRequest request;
@@ -466,9 +514,11 @@ namespace tomchain
 
             try {
                 // serialize block
+                EASY_BLOCK("serialize"); 
                 msgpack::sbuffer b;
                 msgpack::pack(b, block);
                 std::string ser_block = sbufferToString(b);
+                EASY_END_BLOCK; 
 
                 // add to bcast block vector
                 request.add_blocks(ser_block);
@@ -493,6 +543,7 @@ namespace tomchain
         std::condition_variable cv;
         bool done = false;
 
+        EASY_BLOCK("waiting"); 
         spdlog::trace("{} gRPC(SPBcastCommit) waiting", target_server_id);
         grpc::Status status;
         grpc_peer_client_stub_.find(target_server_id)->second->async()->SPBcastCommit(&context, &request, &response, [&mu, &cv, &done, &status](grpc::Status s)
@@ -507,6 +558,7 @@ namespace tomchain
         {
             cv.wait(lock);
         }
+        EASY_END_BLOCK; 
 
         spdlog::trace("gRPC(SPBcastCommit): {}:{}",
                       status.error_code(),
@@ -531,6 +583,7 @@ namespace tomchain
         std::condition_variable cv;
         bool done = false;
 
+        EASY_BLOCK("waiting"); 
         spdlog::trace("{} gRPC(RelayBlockSync) waiting", target_server_id);
         grpc::Status status;
         grpc_peer_client_stub_.find(target_server_id)->second->async()->RelayBlockSync(&context, &request, &response, [&mu, &cv, &done, &status](grpc::Status s)
@@ -545,6 +598,7 @@ namespace tomchain
         {
             cv.wait(lock);
         }
+        EASY_END_BLOCK; 
 
         spdlog::trace("gRPC(RelayBlockSync): {}:{}",
                       status.error_code(),
