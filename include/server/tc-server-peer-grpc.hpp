@@ -53,7 +53,7 @@ namespace tomchain
             const RelayVoteRequest *request,
             RelayVoteResponse *response) override
         {
-            EASY_FUNCTION("RelayVote_rsp");
+            EASY_FUNCTION("RelayVoteRsp");
             spdlog::debug("gRPC(RelayVote) starts");
 
             uint32_t peer_id = request->id();
@@ -192,7 +192,7 @@ namespace tomchain
             const RelayBlockRequest *request,
             RelayBlockResponse *response) override
         {
-            EASY_FUNCTION("RelayBlock resp");
+            EASY_FUNCTION("RelayBlockResp");
             spdlog::debug("gRPC(RelayBlock) starts");
 
             uint32_t peer_id = request->id();
@@ -365,7 +365,7 @@ namespace tomchain
 
     grpc::Status TcServer::RelayVote(uint64_t target_server_id)
     {
-        EASY_FUNCTION("RelayVote req");
+        EASY_FUNCTION("RelayVoteReq");
         spdlog::trace("{} gRPC(RelayVote) starts", target_server_id);
 
         RelayVoteRequest request;
@@ -425,7 +425,7 @@ namespace tomchain
 
     grpc::Status TcServer::RelayBlock(uint64_t target_server_id)
     {
-        EASY_FUNCTION("RelayBlock req");
+        EASY_FUNCTION("RelayBlockReq");
         spdlog::trace("{} gRPC(RelayBlock) starts", target_server_id);
 
         RelayBlockRequest request;
@@ -500,7 +500,7 @@ namespace tomchain
 
     grpc::Status TcServer::SPBcastCommit(uint64_t target_server_id)
     {
-        EASY_FUNCTION("SPBcastCommit req");
+        EASY_FUNCTION("SPBcastCommitReq");
         spdlog::trace("{} gRPC(SPBcastCommit) starts", target_server_id);
 
         SPBcastCommitRequest request;
@@ -569,7 +569,7 @@ namespace tomchain
 
     grpc::Status TcServer::RelayBlockSync(uint64_t block_id, uint64_t target_server_id)
     {
-        EASY_FUNCTION("RelayBlockSync_req");
+        EASY_FUNCTION("RelayBlockSyncReq");
         spdlog::trace("{} gRPC(RelayBlockSync) starts", target_server_id);
 
         RelayBlockSyncRequest request;
