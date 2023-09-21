@@ -81,6 +81,7 @@ namespace tomchain
                 if (pull_flag == true) { return; }
                 pull_flag = true; 
                 this->PullPendingBlocks(); 
+                this->GetBlocks(); 
                 pull_flag = false; 
             },
             (*::conf_data)["pull-pb-interval"]
@@ -97,16 +98,16 @@ namespace tomchain
         // ); 
         // pull_thread.detach(); 
 
-        bool get_flag = false; 
-        t.setInterval(
-            [&]() {
-                if (get_flag == true) { return; }
-                get_flag = true; 
-                this->GetBlocks(); 
-                get_flag = false; 
-            },
-            (*::conf_data)["pull-pb-interval"]
-        );
+        // bool get_flag = false; 
+        // t.setInterval(
+        //     [&]() {
+        //         if (get_flag == true) { return; }
+        //         get_flag = true; 
+        //         this->GetBlocks(); 
+        //         get_flag = false; 
+        //     },
+        //     (*::conf_data)["pull-pb-interval"]
+        // );
 
         // std::thread get_thread(
         //     [&]() {
