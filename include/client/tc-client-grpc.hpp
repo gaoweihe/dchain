@@ -110,7 +110,7 @@ grpc::Status TcClient::Heartbeat()
 
 grpc::Status TcClient::PullPendingBlocks()
 {
-    EASY_FUNCTION("PullPendingBlocks_req");
+    EASY_BLOCK("PullPendingBlocks_req");
     spdlog::trace("gRPC(PullPendingBlocks) starts");
 
     PullPendingBlocksRequest request; 
@@ -170,12 +170,14 @@ grpc::Status TcClient::PullPendingBlocks()
         status.error_message()
     ); 
 
+    EASY_END_BLOCK; 
+
     return status;
 }
 
 grpc::Status TcClient::GetBlocks()
 {
-    EASY_FUNCTION("GetBlocks_req");
+    EASY_BLOCK("GetBlocks_req");
     spdlog::debug("gRPC(GetBlocks): start");
 
     GetBlocksRequest request; 
@@ -254,12 +256,14 @@ grpc::Status TcClient::GetBlocks()
         status.error_message()
     ); 
 
+    EASY_END_BLOCK; 
+
     return status; 
 }
 
 grpc::Status TcClient::VoteBlocks()
 {
-    EASY_FUNCTION("VoteBlocks_req");
+    EASY_BLOCK("VoteBlocks_req");
     spdlog::debug("gRPC(VoteBlocks): start");
 
     VoteBlocksRequest request; 
@@ -356,6 +360,8 @@ grpc::Status TcClient::VoteBlocks()
         status.error_code(), 
         status.error_message()
     ); 
+
+    EASY_END_BLOCK; 
 
     return status; 
 }

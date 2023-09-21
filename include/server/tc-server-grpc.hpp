@@ -98,7 +98,7 @@ namespace tomchain
             const PullPendingBlocksRequest *request,
             PullPendingBlocksResponse *response) override
         {
-            EASY_FUNCTION("PullPendingBlocks");
+            EASY_BLOCK("PullPendingBlocks");
             spdlog::debug("gRPC(PullPendingBlocks) starts");
 
             uint64_t client_id = request->id();
@@ -176,6 +176,9 @@ namespace tomchain
 
             grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
             reactor->Finish(grpc::Status::OK);
+
+            EASY_END_BLOCK; 
+
             return reactor;
         }
 
@@ -192,7 +195,7 @@ namespace tomchain
             const GetBlocksRequest *request,
             GetBlocksResponse *response) override
         {
-            EASY_FUNCTION("GetBlocks");
+            EASY_BLOCK("GetBlocks");
             spdlog::debug("gRPC(GetBlocks) starts");
 
             response->set_status(0);
@@ -242,6 +245,9 @@ namespace tomchain
 
             grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
             reactor->Finish(grpc::Status::OK);
+
+            EASY_END_BLOCK; 
+
             return reactor;
         }
 
@@ -258,7 +264,7 @@ namespace tomchain
             const VoteBlocksRequest *request,
             VoteBlocksResponse *response) override
         {
-            EASY_FUNCTION("VoteBlocks");
+            EASY_BLOCK("VoteBlocks");
             spdlog::debug("gRPC(VoteBlocks) starts");
 
             response->set_status(0);
@@ -346,6 +352,9 @@ namespace tomchain
 
             grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
             reactor->Finish(grpc::Status::OK);
+
+            EASY_END_BLOCK; 
+            
             return reactor;
         }
 

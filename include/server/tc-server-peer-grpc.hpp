@@ -53,7 +53,7 @@ namespace tomchain
             const RelayVoteRequest *request,
             RelayVoteResponse *response) override
         {
-            EASY_FUNCTION("RelayVoteRsp");
+            EASY_BLOCK("RelayVoteRsp");
             spdlog::debug("gRPC(RelayVote) starts");
 
             uint32_t peer_id = request->id();
@@ -176,6 +176,8 @@ namespace tomchain
 
             spdlog::trace("{} RelayVote: ends", peer_id);
 
+            EASY_END_BLOCK; 
+
             return reactor;
         }
 
@@ -192,7 +194,7 @@ namespace tomchain
             const RelayBlockRequest *request,
             RelayBlockResponse *response) override
         {
-            EASY_FUNCTION("RelayBlockResp");
+            EASY_BLOCK("RelayBlockResp");
             spdlog::debug("gRPC(RelayBlock) starts");
 
             uint32_t peer_id = request->id();
@@ -227,6 +229,8 @@ namespace tomchain
 
             spdlog::trace("{} RelayBlock: ends", peer_id);
 
+            EASY_END_BLOCK; 
+
             return reactor;
         }
 
@@ -243,7 +247,7 @@ namespace tomchain
             const SPBcastCommitRequest *request,
             SPBcastCommitResponse *response) override
         {
-            EASY_FUNCTION("SPBcastCommit");
+            EASY_BLOCK("SPBcastCommit");
             spdlog::debug("gRPC(SPBcastCommit) starts");
 
             uint32_t peer_id = request->id();
@@ -294,6 +298,9 @@ namespace tomchain
 
             grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
             reactor->Finish(grpc::Status::OK);
+
+            EASY_END_BLOCK; 
+
             return reactor;
         }
 
@@ -310,7 +317,7 @@ namespace tomchain
             const RelayBlockSyncRequest *request,
             RelayBlockSyncResponse *response) override
         {
-            EASY_FUNCTION("RelayBlockSync");
+            EASY_BLOCK("RelayBlockSync");
             spdlog::debug("gRPC(RelayBlockSync) starts");
 
             uint32_t peer_id = request->id();
@@ -326,6 +333,9 @@ namespace tomchain
 
             grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
             reactor->Finish(grpc::Status::OK);
+
+            EASY_END_BLOCK; 
+            
             return reactor;
         }
     };
@@ -365,7 +375,7 @@ namespace tomchain
 
     grpc::Status TcServer::RelayVote(uint64_t target_server_id)
     {
-        EASY_FUNCTION("RelayVoteReq");
+        EASY_BLOCK("RelayVoteReq");
         spdlog::trace("{} gRPC(RelayVote) starts", target_server_id);
 
         RelayVoteRequest request;
@@ -420,12 +430,14 @@ namespace tomchain
                       status.error_code(),
                       status.error_message());
 
+        EASY_END_BLOCK; 
+
         return status;
     }
 
     grpc::Status TcServer::RelayBlock(uint64_t target_server_id)
     {
-        EASY_FUNCTION("RelayBlockReq");
+        EASY_BLOCK("RelayBlockReq");
         spdlog::trace("{} gRPC(RelayBlock) starts", target_server_id);
 
         RelayBlockRequest request;
@@ -495,12 +507,14 @@ namespace tomchain
                       status.error_code(),
                       status.error_message());
 
+        EASY_END_BLOCK; 
+
         return status;
     }
 
     grpc::Status TcServer::SPBcastCommit(uint64_t target_server_id)
     {
-        EASY_FUNCTION("SPBcastCommitReq");
+        EASY_BLOCK("SPBcastCommitReq");
         spdlog::trace("{} gRPC(SPBcastCommit) starts", target_server_id);
 
         SPBcastCommitRequest request;
@@ -564,12 +578,14 @@ namespace tomchain
                       status.error_code(),
                       status.error_message());
 
+        EASY_END_BLOCK； 
+
         return status;
     }
 
     grpc::Status TcServer::RelayBlockSync(uint64_t block_id, uint64_t target_server_id)
     {
-        EASY_FUNCTION("RelayBlockSyncReq");
+        EASY_BLOCK("RelayBlockSyncReq");
         spdlog::trace("{} gRPC(RelayBlockSync) starts", target_server_id);
 
         RelayBlockSyncRequest request;
@@ -603,6 +619,8 @@ namespace tomchain
         spdlog::trace("gRPC(RelayBlockSync): {}:{}",
                       status.error_code(),
                       status.error_message());
+
+        EASY_END_BLOCK; 
 
         return status;
     }
