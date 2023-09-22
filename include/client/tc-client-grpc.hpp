@@ -185,9 +185,11 @@ grpc::Status TcClient::GetBlocks()
     EASY_BLOCK("render request");
     for (auto iter = pending_blkhdr.begin(); iter != pending_blkhdr.end(); iter++)
     {
-        msgpack::sbuffer b;
-        msgpack::pack(b, iter->second); 
-        std::string blk_hdr_str = sbufferToString(b);
+        // msgpack::sbuffer b;
+        // msgpack::pack(b, iter->second); 
+        // std::string blk_hdr_str = sbufferToString(b);
+        auto hdr_bv = flexbuffers_adapter<BlockHeader>::to_bytes(*(iter->second));
+        std::string blk_hdr_str(hdr_bv->begin(), hdr_bv->end());
 
         request.add_pb_hdrs(blk_hdr_str);
     }
