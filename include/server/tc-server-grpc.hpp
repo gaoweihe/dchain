@@ -236,9 +236,11 @@ namespace tomchain
                 // serialize block
                 EASY_BLOCK("serialize response");
                 spdlog::trace("serialize block");
-                msgpack::sbuffer b;
-                msgpack::pack(b, block);
-                std::string ser_blk = sbufferToString(b);
+                // msgpack::sbuffer b;
+                // msgpack::pack(b, block);
+                // std::string ser_blk = sbufferToString(b); 
+                auto blk_bv = flexbuffers_adapter<Block>::to_bytes(*block);
+                std::string ser_blk(blk_bv->begin(), blk_bv->end());
                 EASY_END_BLOCK; 
 
                 // add serialized block to response

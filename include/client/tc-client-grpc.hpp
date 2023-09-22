@@ -228,14 +228,19 @@ grpc::Status TcClient::GetBlocks()
     for (auto iter = resp_blk.begin(); iter != resp_blk.end(); iter++)
     {
         EASY_BLOCK("deserialize");
-        msgpack::sbuffer des_b = stringToSbuffer(*iter);
-        auto oh = msgpack::unpack(des_b.data(), des_b.size());
-        auto block = oh->as<Block>();
+        // msgpack::sbuffer des_b = stringToSbuffer(*iter);
+        // auto oh = msgpack::unpack(des_b.data(), des_b.size());
+        // auto block = oh->as<Block>(); 
+        std::vector<uint8_t> blk_ser((*iter).begin(), (*iter).end());
+        auto block = 
+            flexbuffers_adapter<Block>::from_bytes(
+                std::make_shared<std::vector<uint8_t>>(blk_ser)
+            );
         EASY_END_BLOCK; 
 
         EASY_BLOCK("insert into pb");
         pending_blks.push(
-            std::make_shared<tomchain::Block>(block)
+            block
         ); 
         EASY_END_BLOCK; 
 
@@ -245,10 +250,10 @@ grpc::Status TcClient::GetBlocks()
 
         // remove block header from CHM
         EASY_BLOCK("remove");
-        pending_blkhdr.erase(block.header_.id_); 
+        pending_blkhdr.erase(block->header_.id_); 
         EASY_END_BLOCK; 
 
-        spdlog::trace("get block: {}, {}", block.header_.id_, block.header_.base_id_); 
+        spdlog::trace("get block: {}, {}", block->header_.id_, block->header_.base_id_); 
     }
     EASY_END_BLOCK; 
     
