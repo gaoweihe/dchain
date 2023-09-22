@@ -210,20 +210,20 @@ namespace tomchain
                 // deserialize requested block headers
                 EASY_BLOCK("deserialize request");
                 spdlog::trace("deserialize requested block headers");
-                // msgpack::sbuffer des_b = stringToSbuffer(*iter);
-                // auto oh = msgpack::unpack(des_b.data(), des_b.size());
-                // auto blk_hdr = oh->as<BlockHeader>();
-                std::vector<uint8_t> blkhdr_ser((*iter).begin(), (*iter).end());
-                auto blk_hdr = 
-                    flexbuffers_adapter<BlockHeader>::from_bytes(
-                        std::make_shared<std::vector<uint8_t>>(blkhdr_ser)
-                    );
+                msgpack::sbuffer des_b = stringToSbuffer(*iter);
+                auto oh = msgpack::unpack(des_b.data(), des_b.size());
+                auto blk_hdr = oh->as<BlockHeader>();
+                // std::vector<uint8_t> blkhdr_ser((*iter).begin(), (*iter).end());
+                // auto blk_hdr = 
+                //     flexbuffers_adapter<BlockHeader>::from_bytes(
+                //         std::make_shared<std::vector<uint8_t>>(blkhdr_ser)
+                //     );
                 EASY_END_BLOCK; 
 
                 // find local blocks
                 EASY_BLOCK("find local block");
                 spdlog::trace("find local block");
-                bool is_found = tc_server_->pending_blks.find(accessor, blk_hdr->id_);
+                bool is_found = tc_server_->pending_blks.find(accessor, blk_hdr.id_);
                 if (!is_found)
                 {
                     spdlog::error("block not found");
