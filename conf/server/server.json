@@ -25,7 +25,7 @@
         "10.0.0.14:2511", 
         "10.0.0.15:2511"
     ], 
-    "scheduler_freq": 100, 
+    "scheduler_freq": 10, 
     "generate-tx-rate": 1000, 
     "pb-pool-limit": 8, 
     "tx-per-block": 1000,   
