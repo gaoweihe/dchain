@@ -219,9 +219,13 @@ namespace tomchain
                 // deserialize relayed blocks
                 EASY_BLOCK("deserialize");
                 spdlog::trace("{} RelayBlock: deserialize relayed blocks");
-                msgpack::sbuffer des_b = stringToSbuffer(*iter);
-                auto oh = msgpack::unpack(des_b.data(), des_b.size());
-                auto block = oh->as<std::shared_ptr<Block>>();
+                // msgpack::sbuffer des_b = stringToSbuffer(*iter);
+                // auto oh = msgpack::unpack(des_b.data(), des_b.size());
+                // auto block = oh->as<std::shared_ptr<Block>>();
+                std::vector<uint8_t> blk_ser((*iter).begin(), (*iter).end());
+                auto block =
+                    flexbuffers_adapter<Block>::from_bytes(
+                        std::make_shared<std::vector<uint8_t>>(blk_ser));
                 EASY_END_BLOCK;
 
                 // store block locally
@@ -468,9 +472,11 @@ namespace tomchain
         {
             // serialize block
             EASY_BLOCK("serialize");
-            msgpack::sbuffer b;
-            msgpack::pack(b, block);
-            std::string ser_block = sbufferToString(b);
+            // msgpack::sbuffer b;
+            // msgpack::pack(b, block);
+            // std::string ser_block = sbufferToString(b);
+            auto blk_bv = flexbuffers_adapter<Block>::to_bytes(*block);
+            std::string ser_block(blk_bv->begin(), blk_bv->end());
             EASY_END_BLOCK;
 
             // add to relayed block vector
