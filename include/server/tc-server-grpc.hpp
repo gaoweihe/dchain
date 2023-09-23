@@ -10,7 +10,7 @@
 
 namespace tomchain
 {
-    class TcServer; 
+    class TcServer;
 
     class TcConsensusImpl final : public TcConsensus::CallbackService
     {
@@ -117,16 +117,16 @@ namespace tomchain
                 {
                     EASY_BLOCK("find block");
                     is_found = tc_server_->pending_blks.find(accessor, iter->first);
-                    EASY_END_BLOCK; 
+                    EASY_END_BLOCK;
 
                     if (is_found)
                     {
-                        // check if got sync signal 
+                        // check if got sync signal
                         bool is_synced = tc_server_->pb_sync_labels.contains(iter->first);
                         if (!is_synced)
                         {
-                            accessor.release(); 
-                            continue; 
+                            accessor.release();
+                            continue;
                         }
 
                         std::shared_ptr<Block> blk = iter->second;
@@ -138,7 +138,7 @@ namespace tomchain
                         {
                             seenblk_accessor.release();
                         }
-                        else 
+                        else
                         {
                             // record client seen blocks
                             client_accessor->second->seen_blocks.insert(
@@ -147,10 +147,12 @@ namespace tomchain
                                     std::make_shared<BlockHeader>(blk->header_)));
 
                             EASY_BLOCK("serialize response");
-                            msgpack::sbuffer b;
-                            msgpack::pack(b, blk->header_);
-                            std::string blk_hdr_str = sbufferToString(b);
-                            EASY_END_BLOCK; 
+                            // msgpack::sbuffer b;
+                            // msgpack::pack(b, blk->header_);
+                            // std::string blk_hdr_str = sbufferToString(b);
+                            auto blk_bv = flexbuffers_adapter<BlockHeader>::to_bytes(blk->header_);
+                            std::string blk_hdr_str(blk_bv->begin(), blk_bv->end());
+                            EASY_END_BLOCK;
 
                             EASY_BLOCK("add header");
                             response->add_pb_hdrs(blk_hdr_str);
@@ -161,7 +163,7 @@ namespace tomchain
                         }
                     }
 
-                    accessor.release(); 
+                    accessor.release();
                 }
                 catch (std::exception &e)
                 {
@@ -177,7 +179,7 @@ namespace tomchain
             grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
             reactor->Finish(grpc::Status::OK);
 
-            EASY_END_BLOCK; 
+            EASY_END_BLOCK;
 
             return reactor;
         }
@@ -214,11 +216,10 @@ namespace tomchain
                 // auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 // auto blk_hdr = oh->as<BlockHeader>();
                 std::vector<uint8_t> blkhdr_ser((*iter).begin(), (*iter).end());
-                auto blk_hdr = 
+                auto blk_hdr =
                     flexbuffers_adapter<BlockHeader>::from_bytes(
-                        std::make_shared<std::vector<uint8_t>>(blkhdr_ser)
-                    );
-                EASY_END_BLOCK; 
+                        std::make_shared<std::vector<uint8_t>>(blkhdr_ser));
+                EASY_END_BLOCK;
 
                 // find local blocks
                 EASY_BLOCK("find local block");
@@ -229,7 +230,7 @@ namespace tomchain
                     spdlog::error("block not found");
                     continue;
                 }
-                EASY_END_BLOCK; 
+                EASY_END_BLOCK;
 
                 std::shared_ptr<Block> block = accessor->second;
 
@@ -238,22 +239,22 @@ namespace tomchain
                 spdlog::trace("serialize block");
                 // msgpack::sbuffer b;
                 // msgpack::pack(b, block);
-                // std::string ser_blk = sbufferToString(b); 
+                // std::string ser_blk = sbufferToString(b);
                 auto blk_bv = flexbuffers_adapter<Block>::to_bytes(*block);
                 std::string ser_blk(blk_bv->begin(), blk_bv->end());
-                EASY_END_BLOCK; 
+                EASY_END_BLOCK;
 
                 // add serialized block to response
                 EASY_BLOCK("add block");
                 spdlog::trace("add serialized block to response");
                 response->add_pb(ser_blk);
-                EASY_END_BLOCK; 
+                EASY_END_BLOCK;
             }
 
             grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
             reactor->Finish(grpc::Status::OK);
 
-            EASY_END_BLOCK; 
+            EASY_END_BLOCK;
 
             return reactor;
         }
@@ -293,10 +294,9 @@ namespace tomchain
                 // auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 // auto block = oh->as<std::shared_ptr<Block>>();
                 std::vector<uint8_t> block_ser((*iter).begin(), (*iter).end());
-                auto block = 
+                auto block =
                     flexbuffers_adapter<Block>::from_bytes(
-                        std::make_shared<std::vector<uint8_t>>(block_ser)
-                    );
+                        std::make_shared<std::vector<uint8_t>>(block_ser));
                 EASY_END_BLOCK;
 
                 // get block vote from request
@@ -318,7 +318,7 @@ namespace tomchain
                     // if remote
                     // insert vote into relay queue and skip this iteration
                     tc_server_->relay_votes.find(target_server_id)->second->push(vote->second);
-                    // tc_server_->send_relay_votes(); 
+                    // tc_server_->send_relay_votes();
                     continue;
                 }
                 EASY_END_BLOCK;
@@ -345,11 +345,11 @@ namespace tomchain
                 EASY_END_BLOCK;
 
                 // if votes count enough
-                EASY_BLOCK("count votes"); 
+                EASY_BLOCK("count votes");
                 spdlog::trace("{}:check if votes count enough", client_id);
                 if (pb_accessor->second->is_vote_enough((*::conf_data)["client-count"]))
                 {
-                    tc_server_->pb_merge_queue.push(pb_accessor->second); 
+                    tc_server_->pb_merge_queue.push(pb_accessor->second);
                 }
 
                 pb_accessor.release();
@@ -360,8 +360,8 @@ namespace tomchain
             grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
             reactor->Finish(grpc::Status::OK);
 
-            EASY_END_BLOCK; 
-            
+            EASY_END_BLOCK;
+
             return reactor;
         }
 
