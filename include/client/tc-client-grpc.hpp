@@ -160,10 +160,10 @@ grpc::Status TcClient::PullPendingBlocks()
     }
     EASY_END_BLOCK; 
 
-    if (response.pb_hdrs_size() == 0)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(30));
-    }
+    // if (response.pb_hdrs_size() == 0)
+    // {
+    //     std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    // }
 
     spdlog::debug("gRPC(PullPendingBlocks): {}:{}", 
         status.error_code(), 
