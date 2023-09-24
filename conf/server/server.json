@@ -25,7 +25,7 @@
         "10.0.0.14:2511", 
         "10.0.0.15:2511"
     ], 
-    "scheduler_freq": 10, 
+    "scheduler_freq": 100, 
     "count_freq": 1000, 
     "pack_freq": 100, 
     "generate-tx-rate": 1000, 
