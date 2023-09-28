@@ -1,4 +1,4 @@
-cmd="head -n 1 ~/node-label | cut -c 1"
+cmd="head -n 1 ~/node-label | cut -c 1-2"
 eval node_label=\$\($cmd\)
 
 mkdir -p ../log
