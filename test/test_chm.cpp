@@ -20,7 +20,7 @@ int main() {
         auto chm1 = chm; 
         uint64_t count = 0;
         std::shared_ptr<tomchain::Block> block = 
-            std::make_shared<tomchain::Block>(1, 1);
+            std::make_shared<tomchain::Block>(1, 1, 1);
         chm1.insert(acc, count++);
         acc->second = block;
         acc.release(); 

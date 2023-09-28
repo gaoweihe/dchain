@@ -68,7 +68,7 @@ int main()
         std::uniform_int_distribution<std::mt19937::result_type> distribution(1, INT_MAX);
         uint64_t header_id = distribution(rng);
         uint64_t header_baseid = distribution(rng);
-        BlockHeader hdr1(header_id, header_baseid);
+        BlockHeader hdr1(header_id, header_baseid, 1);
         auto hdr_bv = flexbuffers_adapter<BlockHeader>::to_bytes(hdr1);
         std::string hdr1_ser(hdr_bv->begin(), hdr_bv->end());
 

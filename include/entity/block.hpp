@@ -22,16 +22,18 @@ class BlockVote;
 class BlockHeader {
 public: 
     BlockHeader(); 
-    BlockHeader(uint64_t id, uint64_t base_id);
+    BlockHeader(uint64_t id, uint64_t base_id, uint64_t timestamp);
     BlockHeader(const BlockHeader& bh); 
 
 public: 
     uint64_t id_;
     uint64_t base_id_;
+    uint64_t timestamp_; 
 
     MSGPACK_DEFINE(
         id_,
-        base_id_
+        base_id_, 
+        timestamp_
     );
 }; 
 
@@ -53,7 +55,7 @@ public:
 class Block {
 public: 
     Block(); 
-    Block(uint64_t id, uint64_t base_id);
+    Block(uint64_t id, uint64_t base_id, uint64_t timestamp);
     Block(const Block& block); 
     virtual ~Block(); 
 

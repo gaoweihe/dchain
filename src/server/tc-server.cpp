@@ -1,6 +1,7 @@
 #include <thread>
 #include <fstream>
 #include <random>
+#include <chrono>
 
 #include "server/tc-server.hpp"
 
@@ -397,7 +398,8 @@ namespace tomchain
                 // uint64_t block_id = distribution(rng); 
                 uint64_t block_id = this->blk_seq_generator.fetch_add(1, std::memory_order_seq_cst); 
                 // TODO: base id
-                Block new_block(block_id, 0xDEADBEEF);
+                uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(); 
+                Block new_block(block_id, 0xDEADBEEF, timestamp);
                 for (it = pending_txs.begin(); it != pending_txs.end(); ++it)
                 {
                     extracted_tx.push_back(it->first);
