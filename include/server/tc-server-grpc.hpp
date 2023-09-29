@@ -357,6 +357,7 @@ namespace tomchain
                 spdlog::trace("{}:check if votes count enough", client_id);
                 if (pb_accessor->second->is_vote_enough((*::conf_data)["client-count"]))
                 {
+                    spdlog::trace("push into pb_merge_queue"); 
                     tc_server_->pb_merge_queue.push(pb_accessor->second);
                 }
 
