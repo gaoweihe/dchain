@@ -334,6 +334,12 @@ namespace tomchain
             uint64_t latency = now_ms - sp_block->header_.proposal_ts_; 
             spdlog::debug("LocalCommit blockid={}, latency={}", sp_block->header_.id_, latency); 
 
+            // record commit timestamp 
+            sp_block->header_.commit_ts_ = now_ms; 
+
+            // record recv timestamp 
+            sp_block->header_.recv_ts_ = now_ms; 
+
             // insert block to committed
             BlockCHM::accessor cb_accessor;
                 this->committed_blks.insert(

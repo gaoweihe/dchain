@@ -1,3 +1,6 @@
+#include <memory>
+#include <chrono>
+
 #include "spdlog/spdlog.h"
 #include <easy/profiler.h>
 
@@ -5,8 +8,6 @@
 #include "tc-server.grpc.pb.h"
 
 #include "flexbuffers_adapter.hpp"
-
-#include <memory>
 
 namespace tomchain
 {
@@ -153,6 +154,13 @@ namespace tomchain
                             auto blk_bv = flexbuffers_adapter<BlockHeader>::to_bytes(blk->header_);
                             std::string blk_hdr_str(blk_bv->begin(), blk_bv->end());
                             EASY_END_BLOCK;
+
+                            // record distribution timestamp 
+                            if (blk->header_.dist_ts_ == 0)
+                            {
+                                blk->header_.dist_ts_ = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                    std::chrono::system_clock::now().time_since_epoch()).count(); 
+                            }
 
                             EASY_BLOCK("add header");
                             response->add_pb_hdrs(blk_hdr_str);
