@@ -158,7 +158,7 @@ namespace tomchain
 
                     spdlog::trace("push into pb_merge_queue"); 
                     tc_server_->pb_merge_queue.push(block_sp);
-                    pb_accessor.release();
+                    // pb_accessor.release();
                     
                     // EASY_BLOCK("bcast commits");
                     // tc_server_->bcast_commits();
@@ -167,7 +167,7 @@ namespace tomchain
                     // remove block from pending
                     EASY_BLOCK("remove from pb");
                     spdlog::trace("{} RelayVote: remove block from pending", peer_id);
-                    bool is_erased = tc_server_->pending_blks.erase(block_id);
+                    bool is_erased = tc_server_->pending_blks.erase(pb_accessor);
                     if (is_erased)
                     {
                         spdlog::trace("{} RelayVote: block ({}) erased", peer_id, block_id);

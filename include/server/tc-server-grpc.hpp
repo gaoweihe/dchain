@@ -357,11 +357,11 @@ namespace tomchain
                 spdlog::trace("{}:check if votes count enough", client_id);
                 if (pb_accessor->second->is_vote_enough((*::conf_data)["client-count"]))
                 {
-                    pb_accessor.release();
+                    // pb_accessor.release();
                     spdlog::trace("push into pb_merge_queue"); 
                     tc_server_->pb_merge_queue.push(pb_accessor->second);
-                    pb_accessor.release(); 
-                    tc_server_->pending_blks.erase(block->header_.id_); 
+                    // pb_accessor.release(); 
+                    tc_server_->pending_blks.erase(pb_accessor); 
                 }
 
                 pb_accessor.release();

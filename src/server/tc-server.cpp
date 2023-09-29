@@ -294,15 +294,15 @@ namespace tomchain
 
         // peer bcast commit 
         bool bcast_commit_flag = false; 
-        // t.setInterval(
-        //     [&]() { 
-        //         if (bcast_commit_flag == true) { return; }
-        //         bcast_commit_flag = true;
-        //         this->bcast_commits(); 
-        //         bcast_commit_flag = false;
-        //     },
-        //     (*::conf_data)["scheduler_freq"]
-        // ); 
+        t.setInterval(
+            [&]() { 
+                if (bcast_commit_flag == true) { return; }
+                bcast_commit_flag = true;
+                this->bcast_commits(); 
+                bcast_commit_flag = false;
+            },
+            (*::conf_data)["scheduler_freq"]
+        ); 
 
         // merge votes
         bool merge_flag = false;
@@ -374,7 +374,7 @@ namespace tomchain
             spdlog::trace("remove block ({}) from pending", sp_block->header_.id_);
             // this->pending_blks.erase(sp_block->header_.id_);
 
-            this->bcast_commits();
+            // this->bcast_commits();
         }
 
         spdlog::info("merge_votes ends "); 
