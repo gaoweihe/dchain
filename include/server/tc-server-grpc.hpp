@@ -359,10 +359,11 @@ namespace tomchain
                 {
                     spdlog::trace("push into pb_merge_queue"); 
                     tc_server_->pb_merge_queue.push(pb_accessor->second);
+                    pb_accessor.release(); 
+                    tc_server_->pending_blks.erase(block->header_.id_); 
                 }
 
                 pb_accessor.release();
-                tc_server_->pending_blks.erase(block->header_.id_); 
 
                 EASY_END_BLOCK;
             }

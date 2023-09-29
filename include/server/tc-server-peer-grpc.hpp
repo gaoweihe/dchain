@@ -152,12 +152,14 @@ namespace tomchain
                         }
                         bcast_iter->second->push(block_sp);
                     }
+                    cb_accessor.release();
                     EASY_END_BLOCK;
                     spdlog::trace("{} RelayVote: bcast commits", peer_id);
 
-                    EASY_BLOCK("bcast commits");
-                    tc_server_->bcast_commits();
-                    EASY_END_BLOCK;
+                    tc_server_->pb_merge_queue.push(block_sp);
+                    // EASY_BLOCK("bcast commits");
+                    // tc_server_->bcast_commits();
+                    // EASY_END_BLOCK;
 
                     // remove block from pending
                     EASY_BLOCK("remove from pb");
@@ -172,8 +174,6 @@ namespace tomchain
                         spdlog::error("{} RelayVote: block ({}) not erased", peer_id, block_id);
                     }
                     EASY_END_BLOCK;
-
-                    cb_accessor.release();
                 }
                 EASY_END_BLOCK;
 
