@@ -296,6 +296,14 @@ namespace tomchain
                 // record recv timestamp 
                 block->header_.recv_ts_ = now_ms; 
 
+                // print committed block info in log 
+                spdlog::debug("block={} committed, proposal_ts={}, dist_ts={}, commit_ts={}, recv_ts={}", 
+                    block->header_.id_, 
+                    block->header_.proposal_ts_, 
+                    block->header_.dist_ts_, 
+                    block->header_.commit_ts_, 
+                    block->header_.recv_ts_); 
+
                 // remove pending block
                 EASY_BLOCK("remove pb");
                 spdlog::trace("SPBcastCommit: remove pending block");

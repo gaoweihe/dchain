@@ -340,6 +340,14 @@ namespace tomchain
             // record recv timestamp 
             sp_block->header_.recv_ts_ = now_ms; 
 
+            // print committed block info in log 
+            spdlog::debug("block={} committed, proposal_ts={}, dist_ts={}, commit_ts={}, recv_ts={}", 
+                sp_block->header_.id_, 
+                sp_block->header_.proposal_ts_, 
+                sp_block->header_.dist_ts_, 
+                sp_block->header_.commit_ts_, 
+                sp_block->header_.recv_ts_); 
+
             // insert block to committed
             BlockCHM::accessor cb_accessor;
                 this->committed_blks.insert(
