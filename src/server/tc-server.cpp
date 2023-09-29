@@ -6,6 +6,7 @@
 #include "timercpp/timercpp.h"
 #include "spdlog/spdlog.h"
 #include "argparse/argparse.hpp"
+#include <nlohmann/json.hpp>
 
 std::shared_ptr<nlohmann::json> conf_data;
 
