@@ -3,13 +3,13 @@
 #include <random>
 #include <chrono>
 
-#include "server/tc-server.hpp"
-
 #include "timercpp/timercpp.h"
 #include "spdlog/spdlog.h"
 #include "argparse/argparse.hpp"
 
 std::shared_ptr<nlohmann::json> conf_data;
+
+#include "server/tc-server.hpp"
 
 // gRPC implementations
 #include "server/tc-server-grpc.hpp"
