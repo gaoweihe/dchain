@@ -290,7 +290,7 @@ namespace tomchain
 
                 // get latency by milliseconds 
                 uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(); 
-                uint64_t latency = now_ms - block->header_.timestamp_; 
+                uint64_t latency = now_ms - block->header_.proposal_ts_; 
                 spdlog::debug("SPBcastCommit blockid={}, latency={}", block->header_.id_, latency); 
 
                 // remove pending block

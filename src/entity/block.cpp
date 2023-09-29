@@ -11,8 +11,8 @@ namespace tomchain
 
     Block::Block() {}
 
-    Block::Block(uint64_t id, uint64_t base_id, uint64_t timestamp)
-        : header_({id, base_id, timestamp})
+    Block::Block(uint64_t id, uint64_t base_id, uint64_t proposal_ts)
+        : header_({id, base_id, proposal_ts})
     {
         this->tx_vec_ = std::vector<
             std::shared_ptr<Transaction>>();
@@ -110,8 +110,8 @@ namespace tomchain
 
     BlockHeader::BlockHeader() {}
 
-    BlockHeader::BlockHeader(uint64_t id, uint64_t base_id, uint64_t timestamp)
-        : id_(id), base_id_(base_id), timestamp_(timestamp)
+    BlockHeader::BlockHeader(uint64_t id, uint64_t base_id, uint64_t proposal_ts)
+        : id_(id), base_id_(base_id), proposal_ts_(proposal_ts)
     {
     }
 
@@ -119,7 +119,10 @@ namespace tomchain
     {
         this->id_ = bh.id_;
         this->base_id_ = bh.base_id_;
-        this->timestamp_ = bh.timestamp_; 
+        this->proposal_ts_ = bh.proposal_ts_;  
+        this->dist_ts_ = bh.dist_ts_;
+        this->commit_ts_ = bh.commit_ts_;
+        this->recv_ts_ = bh.recv_ts_; 
     }
 
 }
