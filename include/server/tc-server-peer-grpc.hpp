@@ -158,6 +158,7 @@ namespace tomchain
 
                     spdlog::trace("push into pb_merge_queue"); 
                     tc_server_->pb_merge_queue.push(block_sp);
+                    pb_accessor.release();
                     
                     // EASY_BLOCK("bcast commits");
                     // tc_server_->bcast_commits();
