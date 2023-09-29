@@ -297,7 +297,7 @@ namespace tomchain
                 block->header_.recv_ts_ = now_ms; 
 
                 // print committed block info in log 
-                spdlog::debug("block={} committed, proposal_ts={}, dist_ts={}, commit_ts={}, recv_ts={}", 
+                spdlog::debug("SPBcastCommit block={}, proposal_ts={}, dist_ts={}, commit_ts={}, recv_ts={}", 
                     block->header_.id_, 
                     block->header_.proposal_ts_, 
                     block->header_.dist_ts_, 
