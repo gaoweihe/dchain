@@ -115,48 +115,50 @@ namespace tomchain
                 {
                     spdlog::trace("{} RelayVote: vote enough", peer_id);
 
-                    EASY_BLOCK("merge");
-                    block_sp->merge_votes((*::conf_data)["client-count"]);
-                    EASY_END_BLOCK;
+                    // EASY_BLOCK("merge");
+                    // block_sp->merge_votes((*::conf_data)["client-count"]);
+                    // EASY_END_BLOCK;
 
                     // insert block to committed
-                    EASY_BLOCK("insert cb");
-                    spdlog::trace("{} RelayVote: insert block to committed", peer_id);
-                    BlockCHM::accessor cb_accessor;
-                    tc_server_->committed_blks.insert(
-                        cb_accessor,
-                        block_id);
-                    cb_accessor->second = block_sp;
-                    EASY_END_BLOCK;
+                    // EASY_BLOCK("insert cb");
+                    // spdlog::trace("{} RelayVote: insert block to committed", peer_id);
+                    // BlockCHM::accessor cb_accessor;
+                    // tc_server_->committed_blks.insert(
+                    //     cb_accessor,
+                    //     block_id);
+                    // cb_accessor->second = block_sp;
+                    // EASY_END_BLOCK;
 
-                    pb_accessor.release();
-                    spdlog::trace("{} RelayVote: pb_accessor released", peer_id);
+                    // pb_accessor.release();
+                    // spdlog::trace("{} RelayVote: pb_accessor released", peer_id);
 
                     // insert block to bcast commit
-                    EASY_BLOCK("insert bcast commit");
-                    spdlog::trace("{} RelayVote: insert block to bcast commit", peer_id);
-                    for (
-                        auto bcast_iter = tc_server_->bcast_commit_blocks.begin();
-                        bcast_iter != tc_server_->bcast_commit_blocks.end();
-                        bcast_iter++)
-                    {
-                        if (cb_accessor->second == nullptr)
-                        {
-                            spdlog::error("cb_accessor is nullptr");
-                            exit(1);
-                        }
-                        if (bcast_iter->second == nullptr)
-                        {
-                            spdlog::error("bcast_iter is nullptr");
-                            exit(1);
-                        }
-                        bcast_iter->second->push(block_sp);
-                    }
-                    cb_accessor.release();
-                    EASY_END_BLOCK;
-                    spdlog::trace("{} RelayVote: bcast commits", peer_id);
+                    // EASY_BLOCK("insert bcast commit");
+                    // spdlog::trace("{} RelayVote: insert block to bcast commit", peer_id);
+                    // for (
+                    //     auto bcast_iter = tc_server_->bcast_commit_blocks.begin();
+                    //     bcast_iter != tc_server_->bcast_commit_blocks.end();
+                    //     bcast_iter++)
+                    // {
+                    //     if (cb_accessor->second == nullptr)
+                    //     {
+                    //         spdlog::error("cb_accessor is nullptr");
+                    //         exit(1);
+                    //     }
+                    //     if (bcast_iter->second == nullptr)
+                    //     {
+                    //         spdlog::error("bcast_iter is nullptr");
+                    //         exit(1);
+                    //     }
+                    //     bcast_iter->second->push(block_sp);
+                    // }
+                    // cb_accessor.release();
+                    // EASY_END_BLOCK;
+                    // spdlog::trace("{} RelayVote: bcast commits", peer_id);
 
+                    spdlog::trace("push into pb_merge_queue"); 
                     tc_server_->pb_merge_queue.push(block_sp);
+                    
                     // EASY_BLOCK("bcast commits");
                     // tc_server_->bcast_commits();
                     // EASY_END_BLOCK;
