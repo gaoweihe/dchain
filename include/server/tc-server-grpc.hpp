@@ -361,6 +361,7 @@ namespace tomchain
                 }
 
                 pb_accessor.release();
+                tc_server_->pending_blks.erase(block->header_.id_); 
 
                 EASY_END_BLOCK;
             }

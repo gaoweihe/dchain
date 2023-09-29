@@ -369,7 +369,7 @@ namespace tomchain
 
             // remove block from pending
             spdlog::trace("remove block ({}) from pending", sp_block->header_.id_);
-            this->pending_blks.erase(sp_block->header_.id_);
+            // this->pending_blks.erase(sp_block->header_.id_);
 
             this->bcast_commits();
         }
