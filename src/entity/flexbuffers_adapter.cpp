@@ -158,6 +158,10 @@ std::shared_ptr<std::vector<uint8_t>> flexbuffers_adapter<BlockHeader>::to_bytes
     fbb.Map([&]() {
         fbb.UInt("id", bh.id_);
         fbb.UInt("base_id", bh.base_id_);
+        fbb.UInt("proposal_ts", bh.proposal_ts_);
+        fbb.UInt("dist_ts", bh.dist_ts_);
+        fbb.UInt("commit_ts", bh.commit_ts_);
+        fbb.UInt("recv_ts", bh.recv_ts_); 
     }); 
     fbb.Finish(); 
 
@@ -174,6 +178,10 @@ std::shared_ptr<BlockHeader> flexbuffers_adapter<BlockHeader>::from_bytes(std::s
     std::shared_ptr<BlockHeader> bh = std::make_shared<BlockHeader>();
     bh->id_ = map["id"].AsUInt64();
     bh->base_id_ = map["base_id"].AsUInt64();
+    bh->proposal_ts_ = map["proposal_ts"].AsUInt64();
+    bh->dist_ts_ = map["dist_ts"].AsUInt64();
+    bh->commit_ts_ = map["commit_ts"].AsUInt64();
+    bh->recv_ts_ = map["recv_ts"].AsUInt64(); 
 
     spdlog::trace("flexbuffers_adapter<BlockHeader>::from_bytes end"); 
 
