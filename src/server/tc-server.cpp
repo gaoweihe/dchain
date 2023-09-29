@@ -310,7 +310,7 @@ namespace tomchain
             [&]() { 
                 if (merge_flag == true) { return; }
                 merge_flag = true; 
-                spdlog::info("merge_votes thread"); 
+                spdlog::trace("merge_votes thread"); 
                 this->merge_votes();
                 merge_flag = false;
             },
@@ -326,7 +326,7 @@ namespace tomchain
 
     void TcServer::merge_votes()
     {
-        spdlog::info("merge_votes starts "); 
+        spdlog::trace("merge_votes starts "); 
 
         std::shared_ptr<Block> sp_block; 
         while (pb_merge_queue.try_pop(sp_block))
@@ -377,7 +377,7 @@ namespace tomchain
             // this->bcast_commits();
         }
 
-        spdlog::info("merge_votes ends "); 
+        spdlog::trace("merge_votes ends "); 
     }
 
     void TcServer::generate_tx(uint64_t num_tx)
