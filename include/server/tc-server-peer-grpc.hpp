@@ -1,3 +1,5 @@
+#include <chrono>
+
 #include "spdlog/spdlog.h"
 #include <easy/profiler.h>
 
@@ -286,7 +288,7 @@ namespace tomchain
                         std::make_shared<std::vector<uint8_t>>(blkhdr_ser));
                 EASY_END_BLOCK;
 
-                // get local time by milliseconds 
+                // get latency by milliseconds 
                 uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(); 
                 uint64_t latency = now_ms - block->header_.timestamp_; 
                 spdlog::debug("SPBcastCommit blockid={}, latency={}", block->header_.id_, latency); 

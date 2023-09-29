@@ -329,6 +329,11 @@ namespace tomchain
         {
             sp_block->merge_votes((*::conf_data)["client-count"]);
 
+            // get latency in milliseconds 
+            uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(); 
+            uint64_t latency = now_ms - sp_block->header_.timestamp_; 
+            spdlog::debug("LocalCommit blockid={}, latency={}", sp_block->header_.id_, latency); 
+
             // insert block to committed
             BlockCHM::accessor cb_accessor;
                 this->committed_blks.insert(
