@@ -37,7 +37,7 @@ namespace tomchain
             const RegisterRequest *request,
             RegisterResponse *response) override
         {
-            spdlog::debug("gRPC(Register) starts");
+            spdlog::trace("gRPC(Register) starts");
 
             uint32_t client_id = request->id();
             std::string pkey_str = request->pkey();
@@ -77,7 +77,7 @@ namespace tomchain
             const HeartbeatRequest *request,
             HeartbeatResponse *response) override
         {
-            spdlog::debug("gRPC(Heartbeat) starts");
+            spdlog::trace("gRPC(Heartbeat) starts");
 
             response->set_status(0);
 
@@ -100,7 +100,7 @@ namespace tomchain
             PullPendingBlocksResponse *response) override
         {
             EASY_BLOCK("PullPendingBlocks");
-            spdlog::debug("gRPC(PullPendingBlocks) starts");
+            spdlog::trace("gRPC(PullPendingBlocks) starts");
 
             uint64_t client_id = request->id();
 
@@ -182,7 +182,7 @@ namespace tomchain
                 }
             }
 
-            spdlog::debug("gRPC(PullPendingBlocks) ends");
+            spdlog::trace("gRPC(PullPendingBlocks) ends");
 
             grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
             reactor->Finish(grpc::Status::OK);
@@ -206,7 +206,7 @@ namespace tomchain
             GetBlocksResponse *response) override
         {
             EASY_BLOCK("GetBlocks");
-            spdlog::debug("gRPC(GetBlocks) starts");
+            spdlog::trace("gRPC(GetBlocks) starts");
 
             response->set_status(0);
 
@@ -235,7 +235,7 @@ namespace tomchain
                 bool is_found = tc_server_->pending_blks.find(accessor, blk_hdr->id_);
                 if (!is_found)
                 {
-                    spdlog::error("block not found");
+                    spdlog::trace("block not found");
                     continue;
                 }
                 EASY_END_BLOCK;
@@ -281,7 +281,7 @@ namespace tomchain
             VoteBlocksResponse *response) override
         {
             EASY_BLOCK("VoteBlocks");
-            spdlog::debug("gRPC(VoteBlocks) starts");
+            spdlog::trace("gRPC(VoteBlocks) starts");
 
             response->set_status(0);
 
@@ -313,7 +313,7 @@ namespace tomchain
                 auto vote = block->votes_.find(request->id());
                 if (vote == block->votes_.end())
                 {
-                    spdlog::error("{}:vote not found", client_id);
+                    spdlog::trace("{}:vote not found", client_id);
                     continue;
                 }
                 EASY_END_BLOCK;
@@ -338,7 +338,7 @@ namespace tomchain
                 bool block_is_found = tc_server_->pending_blks.find(pb_accessor, block->header_.id_);
                 if (!block_is_found)
                 {
-                    spdlog::error("{}:block not found", client_id);
+                    spdlog::trace("{}:block not found", client_id);
                     continue;
                 }
                 EASY_END_BLOCK;

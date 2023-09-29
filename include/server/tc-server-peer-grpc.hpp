@@ -31,7 +31,7 @@ namespace tomchain
             const SPHeartbeatRequest *request,
             SPHeartbeatResponse *response) override
         {
-            spdlog::debug("gRPC(SPHeartbeat) starts");
+            spdlog::trace("gRPC(SPHeartbeat) starts");
 
             uint32_t peer_id = request->id();
 
@@ -56,7 +56,7 @@ namespace tomchain
             RelayVoteResponse *response) override
         {
             EASY_BLOCK("RelayVoteRsp");
-            spdlog::debug("gRPC(RelayVote) starts");
+            spdlog::trace("gRPC(RelayVote) starts");
 
             uint32_t peer_id = request->id();
             auto req_votes = request->votes();
@@ -90,7 +90,7 @@ namespace tomchain
                 bool is_found = tc_server_->pending_blks.find(pb_accessor, block_id);
                 if (!is_found)
                 {
-                    spdlog::error("{} RelayVote: block ({}) not found", peer_id, block_id);
+                    spdlog::trace("{} RelayVote: block ({}) not found", peer_id, block_id);
                     continue;
                 }
                 else
@@ -142,12 +142,12 @@ namespace tomchain
                     {
                         if (cb_accessor->second == nullptr)
                         {
-                            spdlog::error("stub1");
+                            spdlog::error("cb_accessor is nullptr");
                             exit(1);
                         }
                         if (bcast_iter->second == nullptr)
                         {
-                            spdlog::error("stub2");
+                            spdlog::error("bcast_iter is nullptr");
                             exit(1);
                         }
                         bcast_iter->second->push(block_sp);
@@ -211,7 +211,7 @@ namespace tomchain
             RelayBlockResponse *response) override
         {
             EASY_BLOCK("RelayBlockResp");
-            spdlog::debug("gRPC(RelayBlock) starts");
+            spdlog::trace("gRPC(RelayBlock) starts");
 
             uint32_t peer_id = request->id();
             auto req_blocks = request->blocks();
@@ -268,7 +268,7 @@ namespace tomchain
             SPBcastCommitResponse *response) override
         {
             EASY_BLOCK("SPBcastCommit");
-            spdlog::debug("gRPC(SPBcastCommit) starts");
+            spdlog::trace("gRPC(SPBcastCommit) starts");
 
             uint32_t peer_id = request->id();
             auto req_blocks = request->blocks();
@@ -304,7 +304,7 @@ namespace tomchain
                     pb_accessor, block->header_.id_);
                 if (!is_found)
                 {
-                    spdlog::error("SPBcastCommit: block not found");
+                    spdlog::trace("SPBcastCommit: block not found");
                 }
                 EASY_END_BLOCK;
 
@@ -350,7 +350,7 @@ namespace tomchain
             RelayBlockSyncResponse *response) override
         {
             EASY_BLOCK("RelayBlockSync");
-            spdlog::debug("gRPC(RelayBlockSync) starts");
+            spdlog::trace("gRPC(RelayBlockSync) starts");
 
             uint32_t peer_id = request->id();
             uint64_t block_id = request->block_id();

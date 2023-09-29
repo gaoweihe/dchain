@@ -57,7 +57,7 @@ namespace tomchain
                 std::make_shared<BLSPrivateKeyShare>(skey_share),
                 std::make_shared<BLSPublicKeyShare>(pkey_share)));
 
-        spdlog::debug("gRPC(Register): {}:{}",
+        spdlog::trace("gRPC(Register): {}:{}",
                       status.error_code(),
                       status.error_message());
 
@@ -94,7 +94,7 @@ namespace tomchain
             cv.wait(lock);
         }
 
-        spdlog::debug("gRPC(Heartbeat): {}:{}",
+        spdlog::trace("gRPC(Heartbeat): {}:{}",
                       status.error_code(),
                       status.error_message());
 
@@ -162,7 +162,7 @@ namespace tomchain
         //     std::this_thread::sleep_for(std::chrono::milliseconds(30));
         // }
 
-        spdlog::debug("gRPC(PullPendingBlocks): {}:{}",
+        spdlog::trace("gRPC(PullPendingBlocks): {}:{}",
                       status.error_code(),
                       status.error_message());
 
@@ -174,7 +174,7 @@ namespace tomchain
     grpc::Status TcClient::GetBlocks()
     {
         EASY_BLOCK("GetBlocks_req");
-        spdlog::debug("gRPC(GetBlocks): start");
+        spdlog::trace("gRPC(GetBlocks): start");
 
         GetBlocksRequest request;
 
@@ -251,7 +251,7 @@ namespace tomchain
         }
         EASY_END_BLOCK;
 
-        spdlog::debug("gRPC(GetBlocks): {}:{}",
+        spdlog::trace("gRPC(GetBlocks): {}:{}",
                       status.error_code(),
                       status.error_message());
 
@@ -263,7 +263,7 @@ namespace tomchain
     grpc::Status TcClient::VoteBlocks()
     {
         EASY_BLOCK("VoteBlocks_req");
-        spdlog::debug("gRPC(VoteBlocks): start");
+        spdlog::trace("gRPC(VoteBlocks): start");
 
         VoteBlocksRequest request;
         request.set_id(this->client_id);
@@ -295,7 +295,7 @@ namespace tomchain
             EASY_END_BLOCK;
 
             EASY_BLOCK("serialize");
-            spdlog::debug("gRPC(VoteBlocks): serialize");
+            spdlog::trace("gRPC(VoteBlocks): serialize");
             Block block = *(sp_block);
             // msgpack::sbuffer b;
             // msgpack::pack(b, iter->second);
@@ -317,7 +317,7 @@ namespace tomchain
         bool done = false;
 
         EASY_BLOCK("waiting");
-        spdlog::debug("gRPC(VoteBlocks): send request");
+        spdlog::trace("gRPC(VoteBlocks): send request");
         grpc::Status status;
         stub_->async()->VoteBlocks(
             &context,
@@ -339,7 +339,7 @@ namespace tomchain
         EASY_END_BLOCK;
 
         EASY_BLOCK("unpack response");
-        spdlog::debug("gRPC(VoteBlocks): recv response");
+        spdlog::trace("gRPC(VoteBlocks): recv response");
         // for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
         // {
         //     voted_blks.insert(
@@ -352,7 +352,7 @@ namespace tomchain
         // pending_blks.clear();
         EASY_END_BLOCK;
 
-        spdlog::debug("gRPC(VoteBlocks): {}:{}",
+        spdlog::trace("gRPC(VoteBlocks): {}:{}",
                       status.error_code(),
                       status.error_message());
 
