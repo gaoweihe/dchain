@@ -99,7 +99,7 @@ namespace tomchain
             const PullPendingBlocksRequest *request,
             PullPendingBlocksResponse *response) override
         {
-            EASY_BLOCK("PullPendingBlocks");
+            EASY_BLOCK("PullPendingBlocksResp");
             spdlog::trace("gRPC(PullPendingBlocks) starts");
 
             uint64_t client_id = request->id();
@@ -205,7 +205,7 @@ namespace tomchain
             const GetBlocksRequest *request,
             GetBlocksResponse *response) override
         {
-            EASY_BLOCK("GetBlocks");
+            EASY_BLOCK("GetBlocksResp");
             spdlog::trace("gRPC(GetBlocks) starts");
 
             response->set_status(0);
@@ -280,7 +280,7 @@ namespace tomchain
             const VoteBlocksRequest *request,
             VoteBlocksResponse *response) override
         {
-            EASY_BLOCK("VoteBlocks");
+            EASY_BLOCK("VoteBlocksResp");
             spdlog::trace("gRPC(VoteBlocks) starts");
 
             response->set_status(0);

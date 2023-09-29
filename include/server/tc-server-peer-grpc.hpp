@@ -55,7 +55,7 @@ namespace tomchain
             const RelayVoteRequest *request,
             RelayVoteResponse *response) override
         {
-            EASY_BLOCK("RelayVoteRsp");
+            EASY_BLOCK("RelayVoteResp");
             spdlog::trace("gRPC(RelayVote) starts");
 
             uint32_t peer_id = request->id();
@@ -270,7 +270,7 @@ namespace tomchain
             const SPBcastCommitRequest *request,
             SPBcastCommitResponse *response) override
         {
-            EASY_BLOCK("SPBcastCommit");
+            EASY_BLOCK("SPBcastCommitResp");
             spdlog::trace("gRPC(SPBcastCommit) starts");
 
             uint32_t peer_id = request->id();
@@ -360,7 +360,7 @@ namespace tomchain
             const RelayBlockSyncRequest *request,
             RelayBlockSyncResponse *response) override
         {
-            EASY_BLOCK("RelayBlockSync");
+            EASY_BLOCK("RelayBlockSyncResp");
             spdlog::trace("gRPC(RelayBlockSync) starts");
 
             uint32_t peer_id = request->id();
