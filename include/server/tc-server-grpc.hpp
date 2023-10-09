@@ -318,6 +318,16 @@ namespace tomchain
                 }
                 EASY_END_BLOCK;
 
+                // check if died block 
+                EASY_BLOCK("check if died block");
+                bool is_died = tc_server_->died_block.contains(block->header_.id_);
+                if (is_died)
+                {
+                    spdlog::trace("{}:block is died", client_id);
+                    continue;
+                }
+                EASY_END_BLOCK; 
+
                 // check if target server is this server
                 EASY_BLOCK("calculate target server id");
                 const uint64_t target_server_id = block->get_server_id((*::conf_data)["server-count"]);

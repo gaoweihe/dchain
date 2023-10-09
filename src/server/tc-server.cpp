@@ -329,9 +329,24 @@ namespace tomchain
     {
         spdlog::trace("remove_died_blocks starts "); 
 
-        // TODO: not finished 
-        // TODO: check delay 
-
+        // loop for each block in pending block 
+        for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
+        {
+            // get current timestamp 
+            uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+            // get block proposal timestamp 
+            uint64_t proposal_ts = iter->second->header_.proposal_ts_;
+            // get delta 
+            uint64_t delta = now_ms - proposal_ts;
+            // if delta greater than threshold, remove block
+            if (delta > (*::conf_data)["block-die-threshold"])
+            {
+                spdlog::trace("remove block ({}) from pending", iter->second->header_.id_);
+                this->died_block.insert(iter->second->header_.id_); 
+                this->pending_blks.erase(iter->second->header_.id_);
+            }
+        }
+        
         spdlog::trace("remove_died_blocks ends ");
     }
 

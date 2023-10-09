@@ -116,6 +116,8 @@ private:
      * 
      */
     std::unique_ptr<TcConsensus::Stub> stub_;
+    std::unique_ptr<TcConsensus::Stub> stub_shadow;
+
 };
 
 }

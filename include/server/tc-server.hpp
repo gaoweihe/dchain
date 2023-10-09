@@ -135,6 +135,7 @@ public:
             >
         >
     > bcast_commit_blocks; 
+    oneapi::tbb::concurrent_set<uint64_t> died_block; 
 
 
 private: 

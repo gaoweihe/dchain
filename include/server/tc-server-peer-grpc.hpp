@@ -81,6 +81,16 @@ namespace tomchain
                 const uint64_t block_id = vote->block_id_;
                 EASY_END_BLOCK;
 
+                // check if died block 
+                EASY_BLOCK("check if died block");
+                bool is_died = tc_server_->died_block.contains(block_id);
+                if (is_died)
+                {
+                    spdlog::trace("{}:block is died", peer_id);
+                    continue;
+                }
+                EASY_END_BLOCK; 
+
                 // add to local block vote vector
                 spdlog::trace("{} RelayVote: add to local block vote vector", peer_id);
                 BlockCHM::accessor pb_accessor;
