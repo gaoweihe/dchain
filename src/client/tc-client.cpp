@@ -54,93 +54,137 @@ namespace tomchain
         // t.setInterval(
         //     [&]() {
         //         if (heartbeat_flag == true) { return; }
-        //         heartbeat_flag = true; 
-        //         this->Heartbeat(); 
-        //         heartbeat_flag = false; 
+        //         heartbeat_flag = true;
+        //         this->Heartbeat();
+        //         heartbeat_flag = false;
         //     },
         //     (*::conf_data)["heartbeat-interval"]
         // );
 
         std::thread heartbeat_thread_handle = std::thread(
-            [&]() {
+            [&]()
+            {
                 const auto processor_count = std::thread::hardware_concurrency();
-                const auto bind_core = (*::conf_data)["client-id"].template get<uint64_t>() % processor_count; 
+                const auto bind_core = (*::conf_data)["client-id"].template get<uint64_t>() % processor_count;
                 cpu_set_t cpuset;
                 CPU_ZERO(&cpuset);
                 CPU_SET(bind_core, &cpuset);
                 int rc = pthread_setaffinity_np(
                     heartbeat_thread_handle.native_handle(),
-                    sizeof(cpu_set_t), 
-                    &cpuset
-                );
-                if (rc != 0) {
+                    sizeof(cpu_set_t),
+                    &cpuset);
+                if (rc != 0)
+                {
                     spdlog::error("Error calling pthread_setaffinity_np: {}", rc);
-                    exit(-1); 
+                    exit(-1);
                 }
-                                                
-                // sleep ms 
+
+                // sleep ms
                 std::this_thread::sleep_for(std::chrono::milliseconds(20));
                 while (true)
                 {
-                    if (heartbeat_flag == true) { return; }
-                    heartbeat_flag = true; 
-                    this->Heartbeat(); 
-                    heartbeat_flag = false; 
+                    if (heartbeat_flag == true)
+                    {
+                        return;
+                    }
+                    heartbeat_flag = true;
+                    this->Heartbeat();
+                    heartbeat_flag = false;
 
-                    // sleep ms 
+                    // sleep ms
                     std::this_thread::sleep_for(
                         std::chrono::milliseconds(
                             (*::conf_data)["heartbeat-interval"].template get<uint64_t>()));
                 }
-            }
-        );
+            });
 
         // bool chain_flag = false;
         // t.setInterval(
         //     [&]() {
         //         if (chain_flag == true) { return; }
-        //         chain_flag = true; 
-        //         this->PullPendingBlocks(); 
-        //         this->GetBlocks(); 
-        //         if (this->pending_blks.size() > 0) 
-        //         { 
-        //             this->VoteBlocks(); 
-        //         } 
-        //         chain_flag = false; 
+        //         chain_flag = true;
+        //         this->PullPendingBlocks();
+        //         this->GetBlocks();
+        //         if (this->pending_blks.size() > 0)
+        //         {
+        //             this->VoteBlocks();
+        //         }
+        //         chain_flag = false;
         //     },
         //     (*::conf_data)["pull-pb-interval"]
         // );
 
-        bool pull_flag = false; 
-        t.setInterval(
-            [&]() {
-                if (pull_flag == true) { return; }
-                pull_flag = true; 
-                this->PullPendingBlocks(); 
-                this->GetBlocks(); 
-                pull_flag = false; 
-            },
-            (*::conf_data)["pull-pb-interval"]
-        );
+        bool pull_flag = false;
+        // t.setInterval(
+        //     [&]()
+        //     {
+        //         if (pull_flag == true)
+        //         {
+        //             return;
+        //         }
+        //         pull_flag = true;
+        //         this->PullPendingBlocks();
+        //         this->GetBlocks();
+        //         pull_flag = false;
+        //     },
+        //     (*::conf_data)["pull-pb-interval"]);
+
+        std::thread pull_thread_handle = std::thread(
+            [&]()
+            {
+                const auto processor_count = std::thread::hardware_concurrency();
+                const auto bind_core = (*::conf_data)["client-id"].template get<uint64_t>() % processor_count;
+                cpu_set_t cpuset;
+                CPU_ZERO(&cpuset);
+                CPU_SET(bind_core, &cpuset);
+                int rc = pthread_setaffinity_np(
+                    heartbeat_thread_handle.native_handle(),
+                    sizeof(cpu_set_t),
+                    &cpuset);
+                if (rc != 0)
+                {
+                    spdlog::error("Error calling pthread_setaffinity_np: {}", rc);
+                    exit(-1);
+                }
+
+                // sleep ms
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                while (true)
+                {
+                    if (pull_flag == true)
+                    {
+                        return;
+                    }
+                    pull_flag = true;
+                    this->PullPendingBlocks();
+                    this->GetBlocks();
+                    pull_flag = false;
+
+                    // sleep ms
+                    std::this_thread::sleep_for(
+                        std::chrono::milliseconds(
+                            (*::conf_data)["pull-pb-interval"].template get<uint64_t>()));
+                }
+            });
 
         // std::thread pull_thread(
         //     [&]() {
         //         while (true)
         //         {
-        //             this->PullPendingBlocks(); 
-        //             this->GetBlocks(); 
+        //             this->PullPendingBlocks();
+        //             this->GetBlocks();
         //         }
         //     }
-        // ); 
-        // pull_thread.detach(); 
+        // );
+        // pull_thread.detach();
 
-        // bool get_flag = false; 
+        // bool get_flag = false;
         // t.setInterval(
         //     [&]() {
         //         if (get_flag == true) { return; }
-        //         get_flag = true; 
-        //         this->GetBlocks(); 
-        //         get_flag = false; 
+        //         get_flag = true;
+        //         this->GetBlocks();
+        //         get_flag = false;
         //     },
         //     (*::conf_data)["pull-pb-interval"]
         // );
@@ -149,36 +193,76 @@ namespace tomchain
         //     [&]() {
         //         while (true)
         //         {
-        //             this->GetBlocks(); 
+        //             this->GetBlocks();
         //         }
         //     }
-        // ); 
-        // get_thread.detach(); 
+        // );
+        // get_thread.detach();
 
-        bool vote_flag = false; 
-        t.setInterval(
-            [&]() {
-                if (vote_flag == true) { return; }
-                vote_flag = true; 
-                if (!this->pending_blks.empty()) 
-                { 
-                    this->VoteBlocks(); 
-                } 
-                vote_flag = false; 
-            },
-            (*::conf_data)["pull-pb-interval"]
-        );
+        bool vote_flag = false;
+        // t.setInterval(
+        //     [&]()
+        //     {
+        //         if (vote_flag == true)
+        //         {
+        //             return;
+        //         }
+        //         vote_flag = true;
+        //         if (!this->pending_blks.empty())
+        //         {
+        //             this->VoteBlocks();
+        //         }
+        //         vote_flag = false;
+        //     },
+        //     (*::conf_data)["pull-pb-interval"]);
+
+        std::thread vote_thread_handle = std::thread(
+            [&]()
+            {
+                const auto processor_count = std::thread::hardware_concurrency();
+                const auto bind_core = (*::conf_data)["client-id"].template get<uint64_t>() % processor_count;
+                cpu_set_t cpuset;
+                CPU_ZERO(&cpuset);
+                CPU_SET(bind_core, &cpuset);
+                int rc = pthread_setaffinity_np(
+                    heartbeat_thread_handle.native_handle(),
+                    sizeof(cpu_set_t),
+                    &cpuset);
+                if (rc != 0)
+                {
+                    spdlog::error("Error calling pthread_setaffinity_np: {}", rc);
+                    exit(-1);
+                }
+
+                // sleep ms
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                while (true)
+                {
+                    if (pull_flag == true)
+                    {
+                        return;
+                    }
+                    vote_flag = true;
+                    this->VoteBlocks();
+                    vote_flag = false;
+
+                    // sleep ms
+                    std::this_thread::sleep_for(
+                        std::chrono::milliseconds(
+                            (*::conf_data)["pull-pb-interval"].template get<uint64_t>()));
+                }
+            });
 
         // std::thread vote_thread(
         //     [&]() {
         //         while (true)
         //         {
-        //             this->VoteBlocks(); 
+        //             this->VoteBlocks();
         //         }
 
         //     }
-        // ); 
-        // vote_thread.detach(); 
+        // );
+        // vote_thread.detach();
 
         while (true)
         {
@@ -225,7 +309,7 @@ int main(const int argc, const char *argv[])
     }
 
     spdlog::flush_on(spdlog::level::from_str(
-            (*::conf_data)["log-level"])); 
+        (*::conf_data)["log-level"]));
     // set log level
     spdlog::set_level(
         spdlog::level::from_str(
@@ -235,18 +319,18 @@ int main(const int argc, const char *argv[])
     spdlog::info("Starting profiler");
     if ((*::conf_data)["profiler-enable"])
     {
-        EASY_PROFILER_ENABLE; 
+        EASY_PROFILER_ENABLE;
         Timer t;
         t.setTimeout(
-            [&]() {
-                std::string filename = 
-                    std::string{"profile-client-"} + 
-                    std::to_string((*::conf_data)["client-id"].template get<uint64_t>()) + 
-                    std::string{".prof"}; 
+            [&]()
+            {
+                std::string filename =
+                    std::string{"profile-client-"} +
+                    std::to_string((*::conf_data)["client-id"].template get<uint64_t>()) +
+                    std::string{".prof"};
                 profiler::dumpBlocksToFile(filename.c_str());
             },
-            20000
-        );
+            20000);
     }
     if ((*::conf_data)["profiler-listen"])
     {
@@ -255,17 +339,17 @@ int main(const int argc, const char *argv[])
 
     // start client
     uint32_t client_index = (*::conf_data)["client-id"].template get<uint32_t>() - 1;
-    uint32_t server_select = (client_index % (*::conf_data)["grpc-server-count"].template get<uint32_t>()) + 1; 
-    uint32_t grpc_server_port = (*::conf_data)["grpc-server-port"].template get<uint32_t>() + server_select; 
-    std::string server_addr = 
-        (*::conf_data)["grpc-server-ip"].template get<std::string>() + 
-        std::string{":"} + 
-        std::to_string(grpc_server_port); 
-    spdlog::info("Using gRPC server {}", server_addr); 
+    uint32_t server_select = (client_index % (*::conf_data)["grpc-server-count"].template get<uint32_t>()) + 1;
+    uint32_t grpc_server_port = (*::conf_data)["grpc-server-port"].template get<uint32_t>() + server_select;
+    std::string server_addr =
+        (*::conf_data)["grpc-server-ip"].template get<std::string>() +
+        std::string{":"} +
+        std::to_string(grpc_server_port);
+    spdlog::info("Using gRPC server {}", server_addr);
     tomchain::TcClient tcClient(
         grpc::CreateChannel(
             // (*::conf_data)["grpc-server-addr"],
-            server_addr, 
+            server_addr,
             grpc::InsecureChannelCredentials()));
     tcClient.start();
 
