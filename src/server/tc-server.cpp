@@ -233,7 +233,7 @@ namespace tomchain
                 }
                 gen_flag = false; 
             },
-            (*::conf_data)["scheduler_freq"]
+            (*::conf_data)["pack_freq"]
         );
 
         // pack blocks
@@ -247,7 +247,7 @@ namespace tomchain
                 this->pack_block(tx_per_block, INT_MAX); 
                 pack_flag = false; 
             },
-            (*::conf_data)["scheduler_freq"]
+            (*::conf_data)["pack_freq"]
         );
 
         // count blocks
@@ -260,9 +260,10 @@ namespace tomchain
                     "tx:{} | pb:{} | cb:{}",
                     pending_txs.size(),
                     pending_blks.size(),
-                    committed_blks.size()); count_flag = false; 
+                    committed_blks.size()); 
+                count_flag = false; 
             },
-            (*::conf_data)["scheduler_freq"]
+            (*::conf_data)["count_freq"]
         );
 
         // peer relay vote
@@ -289,7 +290,7 @@ namespace tomchain
                 this->send_relay_blocks();
                 relay_block_flag = false;
             },
-            (*::conf_data)["scheduler_freq"]
+            (*::conf_data)["pack_freq"]
         ); 
 
         // peer bcast commit 
