@@ -514,7 +514,7 @@ namespace tomchain
             auto status = RelayBlock(target_server_id);
             if (!status.ok())
             {
-                spdlog::error("send relay block error"); 
+                spdlog::error("send relay block error: {}", status.error_message()); 
                 exit(1); 
             }
         }
@@ -553,7 +553,7 @@ namespace tomchain
             auto status = RelayBlockSync(block_id, target_server_id);
             if (!status.ok())
             {
-                spdlog::error("send relay block sync error"); 
+                spdlog::error("send relay block sync error: {}", status.error_message()); 
                 exit(1); 
             }
         }
