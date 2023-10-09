@@ -2,6 +2,8 @@
 #include <mutex>
 #include <memory>
 #include <fstream>
+#include <thread>
+#include <pthread.h>
 
 #include "timercpp/timercpp.h"
 #include "spdlog/spdlog.h"
@@ -49,14 +51,48 @@ namespace tomchain
         Timer t;
 
         bool heartbeat_flag = false;
-        t.setInterval(
+        // t.setInterval(
+        //     [&]() {
+        //         if (heartbeat_flag == true) { return; }
+        //         heartbeat_flag = true; 
+        //         this->Heartbeat(); 
+        //         heartbeat_flag = false; 
+        //     },
+        //     (*::conf_data)["heartbeat-interval"]
+        // );
+
+        std::thread heartbeat_thread_handle = std::thread(
             [&]() {
-                if (heartbeat_flag == true) { return; }
-                heartbeat_flag = true; 
-                this->Heartbeat(); 
-                heartbeat_flag = false; 
-            },
-            (*::conf_data)["heartbeat-interval"]
+                const auto processor_count = std::thread::hardware_concurrency();
+                const auto bind_core = (*::conf_data)["client-id"].template get<uint64_t>() % processor_count; 
+                cpu_set_t cpuset;
+                CPU_ZERO(&cpuset);
+                CPU_SET(bind_core, &cpuset);
+                int rc = pthread_setaffinity_np(
+                    heartbeat_thread_handle.native_handle(),
+                    sizeof(cpu_set_t), 
+                    &cpuset
+                );
+                if (rc != 0) {
+                    spdlog::error("Error calling pthread_setaffinity_np: {}", rc);
+                    exit(-1); 
+                }
+                                                
+                // sleep ms 
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                while (true)
+                {
+                    if (heartbeat_flag == true) { return; }
+                    heartbeat_flag = true; 
+                    this->Heartbeat(); 
+                    heartbeat_flag = false; 
+
+                    // sleep ms 
+                    std::this_thread::sleep_for(
+                        std::chrono::milliseconds(
+                            (*::conf_data)["heartbeat-interval"].template get<uint64_t>()));
+                }
+            }
         );
 
         // bool chain_flag = false;
