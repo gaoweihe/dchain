@@ -325,6 +325,16 @@ namespace tomchain
         }
     }
 
+    void TcServer::remove_died_blocks()
+    {
+        spdlog::trace("remove_died_blocks starts "); 
+
+        // TODO: not finished 
+        // TODO: check delay 
+
+        spdlog::trace("remove_died_blocks ends ");
+    }
+
     void TcServer::merge_votes()
     {
         spdlog::trace("merge_votes starts "); 

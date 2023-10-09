@@ -93,6 +93,7 @@ public:
     grpc::Status RelayBlockSync(uint64_t block_id, uint64_t target_server_id); 
     void send_relay_block_sync(uint64_t block_id);
     void merge_votes(); 
+    void remove_died_blocks(); 
 
 public: 
     uint64_t server_id;
