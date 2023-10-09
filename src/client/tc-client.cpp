@@ -216,6 +216,7 @@ namespace tomchain
         //     },
         //     (*::conf_data)["pull-pb-interval"]);
 
+        std::mutex vote_mutex;
         std::thread vote_thread_handle = std::thread(
             [&]()
             {
@@ -238,7 +239,7 @@ namespace tomchain
                 std::this_thread::sleep_for(std::chrono::milliseconds(20));
                 while (true)
                 {
-                    if (pull_flag == true)
+                    if (vote_flag == true)
                     {
                         return;
                     }
