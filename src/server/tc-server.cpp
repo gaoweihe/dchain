@@ -300,7 +300,7 @@ namespace tomchain
                 if (bcast_commit_flag == true) { return; }
                 bcast_commit_flag = true;
                 this->bcast_commits(); 
-                this->remove_dead_blocks();
+                // this->remove_dead_blocks();
                 bcast_commit_flag = false;
             },
             (*::conf_data)["scheduler_freq"]
