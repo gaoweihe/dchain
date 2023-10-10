@@ -330,9 +330,10 @@ namespace tomchain
     {
         spdlog::trace("remove_dead_blocks starts "); 
 
+        BlockCHM shadow_pb(pending_blks); 
         std::vector<uint64_t> block_id_list; 
         // loop for each block in pending block 
-        for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
+        for (auto iter = shadow_pb.begin(); iter != shadow_pb.end(); iter++)
         {
             block_id_list.push_back(iter->second->header_.id_); 
         }
@@ -360,6 +361,7 @@ namespace tomchain
                 }
             }
 
+            pb_accessor.release(); 
 
         }
         
