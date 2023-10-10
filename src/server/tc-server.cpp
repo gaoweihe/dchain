@@ -300,7 +300,7 @@ namespace tomchain
                 if (bcast_commit_flag == true) { return; }
                 bcast_commit_flag = true;
                 this->bcast_commits(); 
-                this->remove_died_blocks();
+                this->remove_dead_blocks();
                 bcast_commit_flag = false;
             },
             (*::conf_data)["scheduler_freq"]
@@ -326,29 +326,44 @@ namespace tomchain
         }
     }
 
-    void TcServer::remove_died_blocks()
+    void TcServer::remove_dead_blocks()
     {
-        spdlog::trace("remove_died_blocks starts "); 
+        spdlog::trace("remove_dead_blocks starts "); 
 
+        std::vector<uint64_t> block_id_list; 
         // loop for each block in pending block 
         for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
         {
-            // get current timestamp 
-            uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-            // get block proposal timestamp 
-            uint64_t proposal_ts = iter->second->header_.proposal_ts_;
-            // get delta 
-            uint64_t delta = now_ms - proposal_ts;
-            // if delta greater than threshold, remove block
-            if (delta > (*::conf_data)["block-die-threshold"])
+            block_id_list.push_back(iter->second->header_.id_); 
+        }
+
+        for (auto iter = block_id_list.begin(); iter != block_id_list.end(); iter++)
+        {
+            const uint64_t block_id = *iter; 
+            // TODO: find block by id 
+            BlockCHM::accessor pb_accessor; 
+            bool is_found = pending_blks.find(pb_accessor, block_id); 
+            if (is_found)
             {
-                spdlog::trace("remove block ({}) from pending", iter->second->header_.id_);
-                this->died_block.insert(iter->second->header_.id_); 
-                this->pending_blks.erase(iter->second->header_.id_);
+                // get current timestamp 
+                uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+                // get block proposal timestamp 
+                uint64_t proposal_ts = pb_accessor->second->header_.proposal_ts_;
+                // get delta 
+                uint64_t delta = now_ms - proposal_ts;
+                // if delta greater than threshold, remove block
+                if (delta > (*::conf_data)["block-die-threshold"])
+                {
+                    spdlog::trace("remove block ({}) from pending", block_id);
+                    this->dead_block.insert(block_id); 
+                    this->pending_blks.erase(pb_accessor);
+                }
             }
+
+
         }
         
-        spdlog::trace("remove_died_blocks ends ");
+        spdlog::trace("remove_dead_blocks ends ");
     }
 
     void TcServer::merge_votes()

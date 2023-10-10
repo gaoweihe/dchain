@@ -320,7 +320,7 @@ namespace tomchain
 
                 // check if died block 
                 EASY_BLOCK("check if died block");
-                bool is_died = tc_server_->died_block.contains(block->header_.id_);
+                bool is_died = tc_server_->dead_block.contains(block->header_.id_);
                 if (is_died)
                 {
                     spdlog::trace("{}:block is died", client_id);
