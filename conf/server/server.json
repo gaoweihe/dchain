@@ -29,7 +29,7 @@
     "count_freq": 1000, 
     "pack_freq": 50, 
     "generate-tx-rate": 5000, 
-    "pb-pool-limit": 16, 
+    "pb-pool-limit": 64, 
     "tx-per-block": 1000,   
     "log-level": "info", 
     "client-count": 128,
