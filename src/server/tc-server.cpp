@@ -34,7 +34,7 @@ namespace tomchain
     {
         spdlog::info("Initializing server");
         this->server_id = (*::conf_data)["server-id"];
-        this->blk_seq_generator = (*::conf_data)["server-id"].template get<uint64_t>() * 1000000UL; 
+        this->blk_seq_generator = (*::conf_data)["server-id"].template get<uint64_t>() * 1000000UL;
     }
 
     void TcServer::init_peer_stubs()
@@ -159,7 +159,7 @@ namespace tomchain
         grpc_peer_server_->Wait(); });
         grpc_peer_thread.detach();
 
-        // Wait all servers to get online 
+        // Wait all servers to get online
         std::this_thread::sleep_for(std::chrono::milliseconds(2000));
         this->init_peer_stubs();
 
@@ -218,106 +218,131 @@ namespace tomchain
     {
         Timer t;
 
-        // generate transactions
-        bool gen_flag = false;
-        t.setInterval(
-            [&]() {
-                if (gen_flag == true) { return; }
-                gen_flag = true; 
-                // number of generated transactions per second 
-                const uint64_t gen_tx_rate = (*::conf_data)["generate-tx-rate"]; 
-        
-                if (pending_blks.size() < (*::conf_data)["pb-pool-limit"]) 
-                {
-                    this->generate_tx(gen_tx_rate);
-                }
-                gen_flag = false; 
-            },
-            (*::conf_data)["pack_freq"]
-        );
+        if ((*::conf_data)["server-id"] == (*::conf_data)["server-count"])
+        {
 
-        // pack blocks
-        bool pack_flag = false;
-        t.setInterval(
-            [&]() {
-                if (pack_flag == true) { return; }
-                pack_flag = true; 
-                // number of generated transactions per second 
-                const uint64_t tx_per_block = (*::conf_data)["tx-per-block"]; 
-                this->pack_block(tx_per_block, INT_MAX); 
-                pack_flag = false; 
-            },
-            (*::conf_data)["pack_freq"]
-        );
+            // generate transactions
+            bool gen_flag = false;
+            t.setInterval(
+                [&]()
+                {
+                    if (gen_flag == true)
+                    {
+                        return;
+                    }
+                    gen_flag = true;
+                    // number of generated transactions per second
+                    const uint64_t gen_tx_rate = (*::conf_data)["generate-tx-rate"];
+
+                    if (pending_blks.size() < (*::conf_data)["pb-pool-limit"])
+                    {
+                        this->generate_tx(gen_tx_rate);
+                    }
+                    gen_flag = false;
+                },
+                (*::conf_data)["pack_freq"]);
+
+            // pack blocks
+            bool pack_flag = false;
+            t.setInterval(
+                [&]()
+                {
+                    if (pack_flag == true)
+                    {
+                        return;
+                    }
+                    pack_flag = true;
+                    // number of generated transactions per second
+                    const uint64_t tx_per_block = (*::conf_data)["tx-per-block"];
+                    this->pack_block(tx_per_block, INT_MAX);
+                    pack_flag = false;
+                },
+                (*::conf_data)["pack_freq"]);
+        }
 
         // count blocks
         bool count_flag = false;
         t.setInterval(
-            [&]() { 
-                if (count_flag == true) { return; }
-                count_flag = true; 
+            [&]()
+            {
+                if (count_flag == true)
+                {
+                    return;
+                }
+                count_flag = true;
                 spdlog::info(
                     "tx:{} | pb:{} | cb:{}",
                     pending_txs.size(),
                     pending_blks.size(),
-                    committed_blks.size()); 
-                count_flag = false; 
+                    committed_blks.size());
+                count_flag = false;
             },
-            (*::conf_data)["count_freq"]
-        );
+            (*::conf_data)["count_freq"]);
 
         // peer relay vote
         bool relay_vote_flag = false;
         t.setInterval(
-            [&]() { 
-                if (relay_vote_flag == true) { return; }
+            [&]()
+            {
+                if (relay_vote_flag == true)
+                {
+                    return;
+                }
                 relay_vote_flag = true;
-                this->send_heartbeats(); 
+                this->send_heartbeats();
                 // this->send_relay_blocks();
                 this->send_relay_votes();
-                // this->bcast_commits(); 
+                // this->bcast_commits();
                 relay_vote_flag = false;
             },
-            (*::conf_data)["scheduler_freq"]
-        ); 
+            (*::conf_data)["scheduler_freq"]);
 
-        // peer relay block 
-        bool relay_block_flag = false; 
+        // peer relay block
+        bool relay_block_flag = false;
         t.setInterval(
-            [&]() { 
-                if (relay_block_flag == true) { return; }
+            [&]()
+            {
+                if (relay_block_flag == true)
+                {
+                    return;
+                }
                 relay_block_flag = true;
                 this->send_relay_blocks();
                 relay_block_flag = false;
             },
-            (*::conf_data)["pack_freq"]
-        ); 
+            (*::conf_data)["pack_freq"]);
 
-        // peer bcast commit 
-        bool bcast_commit_flag = false; 
+        // peer bcast commit
+        bool bcast_commit_flag = false;
         t.setInterval(
-            [&]() { 
-                if (bcast_commit_flag == true) { return; }
+            [&]()
+            {
+                if (bcast_commit_flag == true)
+                {
+                    return;
+                }
                 bcast_commit_flag = true;
-                this->bcast_commits(); 
+                this->bcast_commits();
                 // this->remove_dead_blocks();
                 bcast_commit_flag = false;
             },
-            (*::conf_data)["scheduler_freq"]
-        ); 
+            (*::conf_data)["scheduler_freq"]);
 
         // merge votes
         bool merge_flag = false;
         t.setInterval(
-            [&]() { 
-                if (merge_flag == true) { return; }
-                merge_flag = true; 
-                spdlog::trace("merge_votes thread"); 
+            [&]()
+            {
+                if (merge_flag == true)
+                {
+                    return;
+                }
+                merge_flag = true;
+                spdlog::trace("merge_votes thread");
                 this->merge_votes();
                 merge_flag = false;
             },
-            (*::conf_data)["scheduler_freq"]
-        );
+            (*::conf_data)["scheduler_freq"]);
 
         // TODO: change to shutdown conditional variable
         while (true)
@@ -328,87 +353,86 @@ namespace tomchain
 
     void TcServer::remove_dead_blocks()
     {
-        spdlog::trace("remove_dead_blocks starts "); 
+        spdlog::trace("remove_dead_blocks starts ");
 
-        BlockCHM shadow_pb(pending_blks); 
-        std::vector<uint64_t> block_id_list; 
-        // loop for each block in pending block 
+        BlockCHM shadow_pb(pending_blks);
+        std::vector<uint64_t> block_id_list;
+        // loop for each block in pending block
         for (auto iter = shadow_pb.begin(); iter != shadow_pb.end(); iter++)
         {
-            block_id_list.push_back(iter->second->header_.id_); 
+            block_id_list.push_back(iter->second->header_.id_);
         }
 
         for (auto iter = block_id_list.begin(); iter != block_id_list.end(); iter++)
         {
-            const uint64_t block_id = *iter; 
-            // TODO: find block by id 
-            BlockCHM::accessor pb_accessor; 
-            bool is_found = pending_blks.find(pb_accessor, block_id); 
+            const uint64_t block_id = *iter;
+            // TODO: find block by id
+            BlockCHM::accessor pb_accessor;
+            bool is_found = pending_blks.find(pb_accessor, block_id);
             if (is_found)
             {
-                // get current timestamp 
+                // get current timestamp
                 uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-                // get block proposal timestamp 
+                // get block proposal timestamp
                 uint64_t proposal_ts = pb_accessor->second->header_.proposal_ts_;
-                // get delta 
+                // get delta
                 uint64_t delta = now_ms - proposal_ts;
                 // if delta greater than threshold, remove block
                 if (delta > (*::conf_data)["block-die-threshold"])
                 {
                     spdlog::trace("remove block ({}) from pending", block_id);
-                    this->dead_block.insert(block_id); 
+                    this->dead_block.insert(block_id);
                     this->pending_blks.erase(pb_accessor);
                 }
             }
 
-            pb_accessor.release(); 
-
+            pb_accessor.release();
         }
-        
+
         spdlog::trace("remove_dead_blocks ends ");
     }
 
     void TcServer::merge_votes()
     {
-        spdlog::trace("merge_votes starts "); 
+        spdlog::trace("merge_votes starts ");
 
-        std::shared_ptr<Block> sp_block; 
+        std::shared_ptr<Block> sp_block;
         while (pb_merge_queue.try_pop(sp_block))
         {
             sp_block->merge_votes((*::conf_data)["client-count"]);
 
-            // get latency in milliseconds 
-            uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(); 
-            uint64_t latency = now_ms - sp_block->header_.proposal_ts_; 
-            spdlog::debug("LocalCommit blockid={}, latency={}", sp_block->header_.id_, latency); 
+            // get latency in milliseconds
+            uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+            uint64_t latency = now_ms - sp_block->header_.proposal_ts_;
+            spdlog::debug("LocalCommit blockid={}, latency={}", sp_block->header_.id_, latency);
 
-            // record commit timestamp 
-            sp_block->header_.commit_ts_ = now_ms; 
+            // record commit timestamp
+            sp_block->header_.commit_ts_ = now_ms;
 
-            // record recv timestamp 
-            sp_block->header_.recv_ts_ = now_ms; 
+            // record recv timestamp
+            sp_block->header_.recv_ts_ = now_ms;
 
-            // print committed block info in log 
-            spdlog::debug("LocalCommit block={}, proposal_ts={}, dist_ts={}, commit_ts={}, recv_ts={}", 
-                sp_block->header_.id_, 
-                sp_block->header_.proposal_ts_, 
-                sp_block->header_.dist_ts_, 
-                sp_block->header_.commit_ts_, 
-                sp_block->header_.recv_ts_); 
+            // print committed block info in log
+            spdlog::debug("LocalCommit block={}, proposal_ts={}, dist_ts={}, commit_ts={}, recv_ts={}",
+                          sp_block->header_.id_,
+                          sp_block->header_.proposal_ts_,
+                          sp_block->header_.dist_ts_,
+                          sp_block->header_.commit_ts_,
+                          sp_block->header_.recv_ts_);
 
             // insert block to committed
             BlockCHM::accessor cb_accessor;
-                this->committed_blks.insert(
-                    cb_accessor,
-                    sp_block->header_.id_);
-                cb_accessor->second = sp_block;
+            this->committed_blks.insert(
+                cb_accessor,
+                sp_block->header_.id_);
+            cb_accessor->second = sp_block;
 
             // insert block to bcast commit
             for (
-                auto iter = this->bcast_commit_blocks.begin(); 
-                iter != this->bcast_commit_blocks.end(); 
-                iter++
-            ) {
+                auto iter = this->bcast_commit_blocks.begin();
+                iter != this->bcast_commit_blocks.end();
+                iter++)
+            {
                 iter->second->push(cb_accessor->second);
             }
 
@@ -421,7 +445,7 @@ namespace tomchain
             // this->bcast_commits();
         }
 
-        spdlog::trace("merge_votes ends "); 
+        spdlog::trace("merge_votes ends ");
     }
 
     void TcServer::generate_tx(uint64_t num_tx)
@@ -464,10 +488,10 @@ namespace tomchain
                 BlockCHM::accessor accessor;
 
                 // construct new block
-                // uint64_t block_id = distribution(rng); 
-                uint64_t block_id = this->blk_seq_generator.fetch_add(1, std::memory_order_seq_cst); 
+                // uint64_t block_id = distribution(rng);
+                uint64_t block_id = this->blk_seq_generator.fetch_add(1, std::memory_order_seq_cst);
                 // TODO: base id
-                uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(); 
+                uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
                 Block new_block(block_id, 0xDEADBEEF, timestamp);
                 for (it = pending_txs.begin(); it != pending_txs.end(); ++it)
                 {
@@ -481,7 +505,7 @@ namespace tomchain
                 {
                     iter->second->push(p_block);
                 }
-                // this->send_relay_blocks(); 
+                // this->send_relay_blocks();
 
                 // insert into pending blocks
                 pending_blks.insert(
@@ -547,15 +571,15 @@ namespace tomchain
             auto status = RelayBlock(target_server_id);
             if (!status.ok())
             {
-                spdlog::error("send relay block error: {}", status.error_message()); 
-                exit(1); 
+                spdlog::error("send relay block error: {}", status.error_message());
+                exit(1);
             }
         }
 
-        uint64_t block_id; 
+        uint64_t block_id;
         while (this->pb_sync_queue.try_pop(block_id))
         {
-            this->send_relay_block_sync(block_id); 
+            this->send_relay_block_sync(block_id);
         }
     }
 
@@ -586,8 +610,8 @@ namespace tomchain
             auto status = RelayBlockSync(block_id, target_server_id);
             if (!status.ok())
             {
-                spdlog::error("send relay block sync error: {}", status.error_message()); 
-                exit(1); 
+                spdlog::error("send relay block sync error: {}", status.error_message());
+                exit(1);
             }
         }
 
@@ -634,7 +658,7 @@ int main(const int argc, const char *argv[])
     }
 
     spdlog::flush_on(spdlog::level::from_str(
-            (*::conf_data)["log-level"])); 
+        (*::conf_data)["log-level"]));
     // set log level
     spdlog::info("Setting log level. ");
     spdlog::set_level(
@@ -648,15 +672,15 @@ int main(const int argc, const char *argv[])
     {
         EASY_PROFILER_ENABLE;
         t.setTimeout(
-            [&]() { 
-                std::string filename = 
-                    std::string{"profile-server-"} + 
-                    std::to_string((*::conf_data)["server-id"].template get<uint64_t>()) + 
-                    std::string{".prof"}; 
-                profiler::dumpBlocksToFile(filename.c_str()); 
+            [&]()
+            {
+                std::string filename =
+                    std::string{"profile-server-"} +
+                    std::to_string((*::conf_data)["server-id"].template get<uint64_t>()) +
+                    std::string{".prof"};
+                profiler::dumpBlocksToFile(filename.c_str());
             },
-            20000
-        );
+            20000);
     }
     if ((*::conf_data)["profiler-listen"])
     {
