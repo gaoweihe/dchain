@@ -5,8 +5,8 @@
     "grpc-server-port": 61000, 
     "grpc-server-count": 9, 
     "heartbeat-interval": 1000, 
-    "pull-pb-interval": 10, 
-    "log-level": "trace", 
+    "pull-pb-interval": 100, 
+    "log-level": "info", 
     "client-count": 128, 
     "profiler-enable": true,
     "profiler-listen": false
