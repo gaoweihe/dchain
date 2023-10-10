@@ -291,8 +291,7 @@ namespace tomchain
                           client_id,
                           voted_blocks.size());
 
-            // unsafe interations on concurrent hash map
-            // but it is serial
+            EASY_BLOCK("traverse");
             for (auto iter = voted_blocks.begin(); iter != voted_blocks.end(); iter++)
             {
                 // deserialize request
@@ -378,6 +377,7 @@ namespace tomchain
 
                 EASY_END_BLOCK;
             }
+            EASY_END_BLOCK; 
 
             grpc::ServerUnaryReactor *reactor = context->DefaultReactor();
             reactor->Finish(grpc::Status::OK);
