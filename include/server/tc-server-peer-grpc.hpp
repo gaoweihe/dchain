@@ -286,7 +286,8 @@ namespace tomchain
             uint32_t peer_id = request->id();
 
             uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(); 
-            spdlog::info("{} gRPC recv request from {} at {}, curr_time={}", tc_server_->server_id, peer_id, request->timestamp(), now_ms); 
+            uint64_t req_timestamp = request->timestamp(); 
+            spdlog::info("{} gRPC recv request from {} at {}, curr_time={}, gap={}", tc_server_->server_id, peer_id, req_timestamp, now_ms, now_ms - req_timestamp); 
 
             auto req_blocks = request->blocks();
             spdlog::trace("SPBcastCommit: req_blocks size: {}", req_blocks.size());
