@@ -140,7 +140,7 @@ namespace tomchain
         EASY_BLOCK("unpack response");
         for (int i = 0; i < response.pb_hdrs_size(); i++)
         {
-            auto iter = response.pb_hdrs(i); 
+            auto iter = response.pb_hdrs(i);
             // msgpack::sbuffer des_b = stringToSbuffer(response.pb_hdrs(i));
             // auto oh = msgpack::unpack(des_b.data(), des_b.size());
             // auto block_hdr = oh->as<BlockHeader>();
@@ -265,15 +265,16 @@ namespace tomchain
         EASY_BLOCK("VoteBlocks_req");
         spdlog::trace("gRPC(VoteBlocks): start");
 
-        VoteBlocksRequest request;
-        request.set_id(this->client_id);
+        grpc::Status status;
 
         std::shared_ptr<Block> sp_block;
-        if (pending_blks.try_pop(sp_block))
+        while (pending_blks.try_pop(sp_block))
         // for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
         {
-            auto block_hash_str = sp_block->get_sha256();
+            VoteBlocksRequest request;
+            request.set_id(this->client_id);
 
+            auto block_hash_str = sp_block->get_sha256();
             const uint64_t block_id = sp_block->header_.id_;
 
             // client_id starts from 1, so does signer_index
@@ -307,50 +308,49 @@ namespace tomchain
             EASY_BLOCK("add voted blocks");
             request.add_voted_blocks(block_ser);
             EASY_END_BLOCK;
-        }
 
-        VoteBlocksResponse response;
+            VoteBlocksResponse response;
 
-        grpc::ClientContext context;
-        std::mutex mu;
-        std::condition_variable cv;
-        bool done = false;
+            grpc::ClientContext context;
+            std::mutex mu;
+            std::condition_variable cv;
+            bool done = false;
 
-        EASY_BLOCK("waiting");
-        spdlog::trace("gRPC(VoteBlocks): send request");
-        grpc::Status status;
-        stub_->async()->VoteBlocks(
-            &context,
-            &request,
-            &response,
-            [&mu, &cv, &done, &status](grpc::Status s)
+            EASY_BLOCK("waiting");
+            spdlog::trace("gRPC(VoteBlocks): send request");
+            stub_->async()->VoteBlocks(
+                &context,
+                &request,
+                &response,
+                [&mu, &cv, &done, &status](grpc::Status s)
+                {
+                    status = std::move(s);
+                    std::lock_guard<std::mutex> lock(mu);
+                    done = true;
+                    cv.notify_one();
+                });
+
+            std::unique_lock<std::mutex> lock(mu);
+            while (!done)
             {
-                status = std::move(s);
-                std::lock_guard<std::mutex> lock(mu);
-                done = true;
-                cv.notify_one();
-            });
+                cv.wait(lock);
+            }
+            EASY_END_BLOCK;
 
-        std::unique_lock<std::mutex> lock(mu);
-        while (!done)
-        {
-            cv.wait(lock);
+            EASY_BLOCK("unpack response");
+            spdlog::trace("gRPC(VoteBlocks): recv response");
+            // for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
+            // {
+            //     voted_blks.insert(
+            //         std::make_pair(
+            //             iter->first,
+            //             iter->second
+            //         )
+            //     );
+            // }
+            // pending_blks.clear();
+            EASY_END_BLOCK;
         }
-        EASY_END_BLOCK;
-
-        EASY_BLOCK("unpack response");
-        spdlog::trace("gRPC(VoteBlocks): recv response");
-        // for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
-        // {
-        //     voted_blks.insert(
-        //         std::make_pair(
-        //             iter->first,
-        //             iter->second
-        //         )
-        //     );
-        // }
-        // pending_blks.clear();
-        EASY_END_BLOCK;
 
         spdlog::trace("gRPC(VoteBlocks): {}:{}",
                       status.error_code(),
