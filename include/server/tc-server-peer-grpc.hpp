@@ -284,6 +284,10 @@ namespace tomchain
             spdlog::trace("gRPC(SPBcastCommitResp) starts");
 
             uint32_t peer_id = request->id();
+
+            uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(); 
+            spdlog::info("{} gRPC recv request from {} at {}, curr_time={}", tc_server_->server_id, peer_id, request->timestamp(), now_ms); 
+
             auto req_blocks = request->blocks();
             spdlog::trace("SPBcastCommit: req_blocks size: {}", req_blocks.size());
 
@@ -626,6 +630,10 @@ namespace tomchain
         bool done = false;
 
         EASY_BLOCK("waiting");
+        // get current timestamp
+        uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        spdlog::info("{} gRPC(SPBcastCommit) send request to {} at {}", this->server_id, target_server_id, now_ms); 
+        request.set_timestamp(now_ms); 
         spdlog::trace("{} gRPC(SPBcastCommit) waiting", target_server_id);
         grpc::Status status;
         grpc_peer_client_stub_.find(target_server_id)->second->async()->SPBcastCommit(&context, &request, &response, [&mu, &cv, &done, &status](grpc::Status s)
