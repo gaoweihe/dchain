@@ -269,7 +269,7 @@ namespace tomchain
         request.set_id(this->client_id);
 
         std::shared_ptr<Block> sp_block;
-        while (pending_blks.try_pop(sp_block))
+        if (pending_blks.try_pop(sp_block))
         // for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
         {
             auto block_hash_str = sp_block->get_sha256();
