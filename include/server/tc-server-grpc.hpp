@@ -322,12 +322,12 @@ namespace tomchain
                 }
                 EASY_END_BLOCK;
 
-                // check if died block 
-                EASY_BLOCK("check if died block");
+                // check if dead block 
+                EASY_BLOCK("check if dead block");
                 bool is_died = tc_server_->dead_block.contains(block->header_.id_);
                 if (is_died)
                 {
-                    spdlog::trace("{}:block is died", client_id);
+                    spdlog::trace("{}:block is dead", client_id);
                     continue;
                 }
                 EASY_END_BLOCK; 
@@ -374,7 +374,7 @@ namespace tomchain
                 if (pb_accessor->second->is_vote_enough((*::conf_data)["client-count"]))
                 {
                     // pb_accessor.release();
-                    spdlog::trace("push into pb_merge_queue"); 
+                    spdlog::debug("push into pb_merge_queue"); 
                     tc_server_->pb_merge_queue.push(pb_accessor->second);
                     // pb_accessor.release(); 
                     std::shared_lock<std::shared_mutex> pb_sl_1(tc_server_->pb_sm_1);
