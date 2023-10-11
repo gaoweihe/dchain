@@ -387,6 +387,10 @@ namespace tomchain
                 uint64_t proposal_ts = pb_accessor->second->header_.proposal_ts_;
                 // get delta
                 uint64_t delta = now_ms - proposal_ts;
+                if (delta > 100000)
+                {
+                    continue; 
+                }
                 // if delta greater than threshold, remove block
                 if (delta > (*::conf_data)["block-die-threshold"])
                 {
