@@ -112,13 +112,15 @@ namespace tomchain
 
             // unsafe iterations on concurrent hash map
             std::unique_lock<std::shared_mutex> pb_ul_1(tc_server_->pb_sm_1);
-            for (auto iter = tc_server_->pending_blks.begin(); iter != tc_server_->pending_blks.end(); iter++)
+            BlockCHM shadow_pb(tc_server_->pending_blks); 
+            pb_ul_1.unlock(); 
+            for (auto iter = shadow_pb.begin(); iter != shadow_pb.end(); iter++)
             {
                 bool is_found = false;
                 try
                 {
                     EASY_BLOCK("find block");
-                    is_found = tc_server_->pending_blks.find(accessor, iter->first);
+                    is_found = shadow_pb.find(accessor, iter->first);
                     EASY_END_BLOCK;
 
                     if (is_found)
@@ -182,7 +184,6 @@ namespace tomchain
                     continue;
                 }
             }
-            pb_ul_1.unlock(); 
 
             spdlog::trace("gRPC(PullPendingBlocks) ends");
 
