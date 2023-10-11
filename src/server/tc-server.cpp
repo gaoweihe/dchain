@@ -234,9 +234,9 @@ namespace tomchain
                     // number of generated transactions per second
                     const uint64_t gen_tx_rate = (*::conf_data)["generate-tx-rate"];
 
-                    // std::shared_lock<std::shared_mutex> pb_sl_1(pb_sm_1);
+                    std::shared_lock<std::shared_mutex> pb_sl_1(pb_sm_1);
                     const uint64_t pb_size = pending_blks.size();
-                    // pb_sl_1.unlock(); 
+                    pb_sl_1.unlock(); 
                     if (pb_size < (*::conf_data)["pb-pool-limit"])
                     {
                         this->generate_tx(gen_tx_rate);
