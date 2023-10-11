@@ -234,7 +234,10 @@ namespace tomchain
                     // number of generated transactions per second
                     const uint64_t gen_tx_rate = (*::conf_data)["generate-tx-rate"];
 
-                    if (pending_blks.size() < (*::conf_data)["pb-pool-limit"])
+                    std::shared_lock<std::shared_mutex> pb_sl_1(pb_sm_1);
+                    const uint64_t pb_size = pending_blks.size();
+                    pb_sl_1.unlock(); 
+                    if (pb_size < (*::conf_data)["pb-pool-limit"])
                     {
                         this->generate_tx(gen_tx_rate);
                     }
@@ -270,10 +273,13 @@ namespace tomchain
                     return;
                 }
                 count_flag = true;
+                std::shared_lock<std::shared_mutex> pb_sl_1(pb_sm_1);
+                const uint64_t pb_size = pending_blks.size(); 
+                pb_sl_1.unlock(); 
                 spdlog::info(
                     "tx:{} | pb:{} | cb:{}",
                     pending_txs.size(),
-                    pending_blks.size(),
+                    pb_size,
                     committed_blks.size());
                 count_flag = false;
             },
@@ -355,7 +361,9 @@ namespace tomchain
     {
         spdlog::trace("remove_dead_blocks starts ");
 
+        std::unique_lock<std::shared_mutex> pb_ul_1(pb_sm_1);
         BlockCHM shadow_pb(pending_blks);
+        pb_ul_1.unlock(); 
         std::vector<uint64_t> block_id_list;
         // loop for each block in pending block
         for (auto iter = shadow_pb.begin(); iter != shadow_pb.end(); iter++)
@@ -368,7 +376,9 @@ namespace tomchain
             const uint64_t block_id = *iter;
             // TODO: find block by id
             BlockCHM::accessor pb_accessor;
+            std::shared_lock<std::shared_mutex> pb_sl_1(pb_sm_1);
             bool is_found = pending_blks.find(pb_accessor, block_id);
+            pb_sl_1.unlock(); 
             if (is_found)
             {
                 // get current timestamp
@@ -382,7 +392,10 @@ namespace tomchain
                 {
                     spdlog::trace("remove block ({}) from pending", block_id);
                     this->dead_block.insert(block_id);
+
+                    pb_sl_1.lock(); 
                     this->pending_blks.erase(pb_accessor);
+                    pb_sl_1.unlock(); 
                 }
             }
 

@@ -111,6 +111,7 @@ namespace tomchain
             BlockHeaderCHM::accessor seenblk_accessor;
 
             // unsafe iterations on concurrent hash map
+            std::unique_lock<std::shared_mutex> pb_ul_1(tc_server_->pb_sm_1);
             for (auto iter = tc_server_->pending_blks.begin(); iter != tc_server_->pending_blks.end(); iter++)
             {
                 bool is_found = false;
@@ -181,6 +182,7 @@ namespace tomchain
                     continue;
                 }
             }
+            pb_ul_1.unlock(); 
 
             spdlog::trace("gRPC(PullPendingBlocks) ends");
 
@@ -232,7 +234,9 @@ namespace tomchain
                 // find local blocks
                 EASY_BLOCK("find local block");
                 spdlog::trace("find local block");
+                std::shared_lock<std::shared_mutex> pb_sl_1(tc_server_->pb_sm_1);
                 bool is_found = tc_server_->pending_blks.find(accessor, blk_hdr->id_);
+                pb_sl_1.unlock();
                 if (!is_found)
                 {
                     spdlog::trace("block not found");
@@ -344,7 +348,9 @@ namespace tomchain
                 EASY_BLOCK("find local block storage");
                 spdlog::trace("{}:find local block storage", client_id);
                 BlockCHM::accessor pb_accessor;
+                std::shared_lock<std::shared_mutex> pb_sl_1(tc_server_->pb_sm_1);
                 bool block_is_found = tc_server_->pending_blks.find(pb_accessor, block->header_.id_);
+                pb_sl_1.unlock();
                 if (!block_is_found)
                 {
                     spdlog::trace("{}:block not found", client_id);
@@ -370,7 +376,9 @@ namespace tomchain
                     spdlog::trace("push into pb_merge_queue"); 
                     tc_server_->pb_merge_queue.push(pb_accessor->second);
                     // pb_accessor.release(); 
+                    std::shared_lock<std::shared_mutex> pb_sl_1(tc_server_->pb_sm_1);
                     tc_server_->pending_blks.erase(pb_accessor); 
+                    pb_sl_1.unlock();
                 }
 
                 pb_accessor.release();

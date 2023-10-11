@@ -3,6 +3,7 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 
 #include "spdlog/spdlog.h"
 #include "spdlog/fmt/bin_to_hex.h"
@@ -98,7 +99,13 @@ public:
 public: 
     uint64_t server_id;
     ClientCHM clients;
+
+    // used to lock traversal operations 
+    // traverse: write lock 
+    // other concurrent operations: read lock 
+    std::shared_mutex pb_sm_1; 
     BlockCHM pending_blks; 
+
     oneapi::tbb::concurrent_queue<
         uint64_t
     > pb_sync_queue;
