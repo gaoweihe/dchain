@@ -88,7 +88,7 @@ namespace tomchain
                         return;
                     }
                     heartbeat_flag = true;
-                    this->Heartbeat();
+                    this->Heartbeat(stub_);
                     heartbeat_flag = false;
 
                     // sleep ms
@@ -156,8 +156,8 @@ namespace tomchain
                         return;
                     }
                     pull_flag = true;
-                    this->PullPendingBlocks();
-                    this->GetBlocks();
+                    this->PullPendingBlocks(stub_);
+                    this->GetBlocks(stub_);
                     pull_flag = false;
 
                     // sleep ms
@@ -244,7 +244,7 @@ namespace tomchain
                         return;
                     }
                     vote_flag = true;
-                    this->VoteBlocks();
+                    this->VoteBlocks(stub_);
                     vote_flag = false;
 
                     // sleep ms

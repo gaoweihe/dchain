@@ -69,30 +69,35 @@ public:
      * 
      * @return grpc::Status RPC status. 
      */
-    grpc::Status Register(); 
+    grpc::Status Register(std::unique_ptr<tomchain::TcConsensus::Stub> stub); 
 
     /**
      * @brief Client heartbeats. 
      * 
      * @return grpc::Status RPC status. 
      */
-    grpc::Status Heartbeat(); 
+    grpc::Status Heartbeat(std::unique_ptr<tomchain::TcConsensus::Stub> stub); 
 
     /**
      * @brief Client pull pending blocks. 
      * 
      * @return grpc::Status RPC status. 
      */
-    grpc::Status PullPendingBlocks(); 
+    grpc::Status PullPendingBlocks(std::unique_ptr<tomchain::TcConsensus::Stub> stub); 
 
     /**
      * @brief Get the Blocks object
      * 
      * @return grpc::Status RPC status. 
      */
-    grpc::Status GetBlocks(); 
+    grpc::Status GetBlocks(std::unique_ptr<tomchain::TcConsensus::Stub> stub); 
 
-    grpc::Status VoteBlocks(); 
+    /**
+     * @brief Vote for blocks by sending signature shares 
+     * 
+     * @return grpc::Status RPC status. 
+     */
+    grpc::Status VoteBlocks(std::unique_ptr<tomchain::TcConsensus::Stub> stub); 
 
 public: 
     std::shared_ptr<ecdsa::Key> ecc_skey;
