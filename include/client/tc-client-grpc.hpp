@@ -335,6 +335,30 @@ namespace tomchain
             {
                 cv.wait(lock);
             }
+            lock.unlock(); 
+            EASY_END_BLOCK;
+
+            EASY_BLOCK("waiting");
+            spdlog::trace("gRPC(VoteBlocks): send request");
+            done = false; 
+            stub_shadow_->async()->VoteBlocks(
+                &context,
+                &request,
+                &response,
+                [&mu, &cv, &done, &status](grpc::Status s)
+                {
+                    status = std::move(s);
+                    std::lock_guard<std::mutex> lock(mu);
+                    done = true;
+                    cv.notify_one();
+                });
+
+            lock.lock();
+            while (!done)
+            {
+                cv.wait(lock);
+            }
+            lock.unlock(); 
             EASY_END_BLOCK;
 
             EASY_BLOCK("unpack response");
