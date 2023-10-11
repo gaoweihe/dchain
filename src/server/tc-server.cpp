@@ -590,7 +590,7 @@ namespace tomchain
             if (!status.ok())
             {
                 spdlog::error("send relay block error: {}", status.error_message());
-                exit(1);
+                // exit(1);
             }
         }
 
@@ -629,7 +629,7 @@ namespace tomchain
             if (!status.ok())
             {
                 spdlog::error("send relay block sync error: {}", status.error_message());
-                exit(1);
+                // exit(1);
             }
         }
 
