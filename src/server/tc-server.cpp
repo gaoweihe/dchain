@@ -372,36 +372,34 @@ namespace tomchain
             block_id_list.push_back(iter->second->header_.id_);
         }
 
-        // for (auto iter = block_id_list.begin(); iter != block_id_list.end(); iter++)
-        // {
-        //     const uint64_t block_id = *iter;
-        //     // TODO: find block by id
-        //     BlockCHM::accessor pb_accessor;
-        //     std::shared_lock<std::shared_mutex> pb_sl_1(pb_sm_1);
-        //     bool is_found = pending_blks.find(pb_accessor, block_id);
-        //     pb_sl_1.unlock(); 
-        //     if (is_found)
-        //     {
-        //         // get current timestamp
-        //         uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-        //         // get block proposal timestamp
-        //         uint64_t proposal_ts = pb_accessor->second->header_.proposal_ts_;
-        //         // get delta
-        //         uint64_t delta = now_ms - proposal_ts;
-        //         // if delta greater than threshold, remove block
-        //         if (delta > (*::conf_data)["block-die-threshold"])
-        //         {
-        //             spdlog::trace("remove block ({}) from pending", block_id);
-        //             this->dead_block.insert(block_id);
+        for (auto iter = block_id_list.begin(); iter != block_id_list.end(); iter++)
+        {
+            const uint64_t block_id = *iter;
+            // TODO: find block by id
+            std::shared_lock<std::shared_mutex> pb_sl_1(pb_sm_1);
+            BlockCHM::accessor pb_accessor;
+            bool is_found = pending_blks.find(pb_accessor, block_id);
+            if (is_found)
+            {
+                // get current timestamp
+                uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+                // get block proposal timestamp
+                uint64_t proposal_ts = pb_accessor->second->header_.proposal_ts_;
+                // get delta
+                uint64_t delta = now_ms - proposal_ts;
+                // if delta greater than threshold, remove block
+                if (delta > (*::conf_data)["block-die-threshold"])
+                {
+                    spdlog::trace("remove block ({}) from pending", block_id);
+                    this->dead_block.insert(block_id);
 
-        //             pb_sl_1.lock(); 
-        //             this->pending_blks.erase(pb_accessor);
-        //             pb_sl_1.unlock(); 
-        //         }
-        //     }
+                    this->pending_blks.erase(pb_accessor);
+                }
+            }
+            pb_accessor.release();
+            pb_sl_1.unlock(); 
 
-        //     pb_accessor.release();
-        // }
+        }
 
         spdlog::trace("remove_dead_blocks ends ");
     }
