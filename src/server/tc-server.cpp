@@ -521,9 +521,11 @@ namespace tomchain
                 // this->send_relay_blocks();
 
                 // insert into pending blocks
+                std::shared_lock<std::shared_mutex> pb_sl_1(pb_sm_1);
                 pending_blks.insert(
                     accessor,
                     block_id);
+                pb_sl_1.unlock(); 
                 accessor->second = p_block;
 
                 // this->send_relay_block_sync(block_id);
