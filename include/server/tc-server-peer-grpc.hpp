@@ -118,6 +118,11 @@ namespace tomchain
                     std::make_pair(
                         vote->voter_id_,
                         vote));
+                spdlog::debug("{}:push vote into {} relay queue, vote unsafe count={}", 
+                    vote->voter_id_, 
+                    block_id, 
+                    block_sp->votes_.size()
+                );
                 EASY_END_BLOCK;
 
                 // check if vote enough
