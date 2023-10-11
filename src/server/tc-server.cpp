@@ -234,9 +234,9 @@ namespace tomchain
                     // number of generated transactions per second
                     const uint64_t gen_tx_rate = (*::conf_data)["generate-tx-rate"];
 
-                    std::shared_lock<std::shared_mutex> pb_sl_1(pb_sm_1);
+                    // std::shared_lock<std::shared_mutex> pb_sl_1(pb_sm_1);
                     const uint64_t pb_size = pending_blks.size();
-                    pb_sl_1.unlock(); 
+                    // pb_sl_1.unlock(); 
                     if (pb_size < (*::conf_data)["pb-pool-limit"])
                     {
                         this->generate_tx(gen_tx_rate);
@@ -273,9 +273,9 @@ namespace tomchain
                     return;
                 }
                 count_flag = true;
-                std::shared_lock<std::shared_mutex> pb_sl_1(pb_sm_1);
+                // std::shared_lock<std::shared_mutex> pb_sl_1(pb_sm_1);
                 const uint64_t pb_size = pending_blks.size(); 
-                pb_sl_1.unlock(); 
+                // pb_sl_1.unlock(); 
                 spdlog::info(
                     "tx:{} | pb:{} | cb:{}",
                     pending_txs.size(),
@@ -521,11 +521,11 @@ namespace tomchain
                 // this->send_relay_blocks();
 
                 // insert into pending blocks
-                std::shared_lock<std::shared_mutex> pb_sl_1(pb_sm_1);
+                // std::shared_lock<std::shared_mutex> pb_sl_1(pb_sm_1);
                 pending_blks.insert(
                     accessor,
                     block_id);
-                pb_sl_1.unlock(); 
+                // pb_sl_1.unlock(); 
                 accessor->second = p_block;
 
                 // this->send_relay_block_sync(block_id);
