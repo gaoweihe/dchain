@@ -353,7 +353,12 @@ int main(const int argc, const char *argv[])
         std::to_string(grpc_server_port);
     spdlog::info("Using gRPC server {}", server_addr);
 
-    uint32_t shadow_server_select = ((client_index + 1) % (*::conf_data)["grpc-server-count"].template get<uint32_t>()) + 1;
+    uint32_t shadow_server_select = (client_index % (*::conf_data)["grpc-server-count"].template get<uint32_t>()) + 2;
+    // if last server, select first server as shadow
+    if (shadow_server_select > (*::conf_data)["grpc-server-count"].template get<uint32_t>())
+    {
+        shadow_server_select = 1;
+    }
     uint32_t grpc_shadow_server_port = (*::conf_data)["grpc-server-port"].template get<uint32_t>() + shadow_server_select;
     std::string shadow_server_addr =
         (*::conf_data)["grpc-server-ip"].template get<std::string>() +
