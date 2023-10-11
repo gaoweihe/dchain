@@ -23,8 +23,10 @@ namespace tomchain
 {
 
     TcClient::TcClient(std::shared_ptr<grpc::Channel> channel, std::shared_ptr<grpc::Channel> shadow_channel)
-        : stub_(TcConsensus::NewStub(channel)), stub_shadow_(TcConsensus::NewStub(shadow_channel))
     {
+        stubs.push_back(TcConsensus::NewStub(channel)); 
+        stubs.push_back(TcConsensus::NewStub(shadow_channel));
+
         this->init();
     }
 
@@ -42,7 +44,7 @@ namespace tomchain
 
     void TcClient::start()
     {
-        this->Register();
+        this->Register(0);
         this->schedule();
     }
 
@@ -88,7 +90,7 @@ namespace tomchain
                         return;
                     }
                     heartbeat_flag = true;
-                    this->Heartbeat(stub_);
+                    this->Heartbeat(0);
                     heartbeat_flag = false;
 
                     // sleep ms
@@ -156,8 +158,8 @@ namespace tomchain
                         return;
                     }
                     pull_flag = true;
-                    this->PullPendingBlocks(stub_);
-                    this->GetBlocks(stub_);
+                    this->PullPendingBlocks(0);
+                    this->GetBlocks(0);
                     pull_flag = false;
 
                     // sleep ms
@@ -244,7 +246,7 @@ namespace tomchain
                         return;
                     }
                     vote_flag = true;
-                    this->VoteBlocks(stub_);
+                    this->VoteBlocks(0);
                     vote_flag = false;
 
                     // sleep ms

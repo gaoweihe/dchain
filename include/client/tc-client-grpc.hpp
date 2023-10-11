@@ -6,7 +6,7 @@
 namespace tomchain
 {
 
-    grpc::Status TcClient::Register(std::unique_ptr<tomchain::TcConsensus::Stub> stub)
+    grpc::Status TcClient::Register(uint64_t stub_id)
     {
         RegisterRequest request;
         request.set_id(this->client_id);
@@ -20,7 +20,7 @@ namespace tomchain
         bool done = false;
 
         grpc::Status status;
-        stub->async()->Register(
+        stubs.at(stub_id)->async()->Register(
             &context,
             &request,
             &response,
@@ -64,7 +64,7 @@ namespace tomchain
         return status;
     }
 
-    grpc::Status TcClient::Heartbeat(std::unique_ptr<tomchain::TcConsensus::Stub> stub)
+    grpc::Status TcClient::Heartbeat(uint64_t stub_id)
     {
         HeartbeatRequest request;
         request.set_id(this->client_id);
@@ -76,7 +76,7 @@ namespace tomchain
         bool done = false;
 
         grpc::Status status;
-        stub->async()->Heartbeat(
+        stubs.at(stub_id)->async()->Heartbeat(
             &context,
             &request,
             &response,
@@ -101,7 +101,7 @@ namespace tomchain
         return status;
     }
 
-    grpc::Status TcClient::PullPendingBlocks(std::unique_ptr<tomchain::TcConsensus::Stub> stub)
+    grpc::Status TcClient::PullPendingBlocks(uint64_t stub_id)
     {
         EASY_BLOCK("PullPendingBlocks_req");
         spdlog::trace("gRPC(PullPendingBlocks) starts");
@@ -117,7 +117,7 @@ namespace tomchain
 
         EASY_BLOCK("waiting");
         grpc::Status status;
-        stub->async()->PullPendingBlocks(
+        stubs.at(stub_id)->async()->PullPendingBlocks(
             &context,
             &request,
             &response,
@@ -171,7 +171,7 @@ namespace tomchain
         return status;
     }
 
-    grpc::Status TcClient::GetBlocks(std::unique_ptr<tomchain::TcConsensus::Stub> stub)
+    grpc::Status TcClient::GetBlocks(uint64_t stub_id)
     {
         EASY_BLOCK("GetBlocks_req");
         spdlog::trace("gRPC(GetBlocks): start");
@@ -200,7 +200,7 @@ namespace tomchain
 
         EASY_BLOCK("waiting");
         grpc::Status status;
-        stub->async()->GetBlocks(
+        stubs.at(stub_id)->async()->GetBlocks(
             &context,
             &request,
             &response,
@@ -260,7 +260,7 @@ namespace tomchain
         return status;
     }
 
-    grpc::Status TcClient::VoteBlocks(std::unique_ptr<tomchain::TcConsensus::Stub> stub)
+    grpc::Status TcClient::VoteBlocks(uint64_t stub_id)
     {
         EASY_BLOCK("VoteBlocks_req");
         spdlog::trace("gRPC(VoteBlocks): start");
@@ -318,7 +318,7 @@ namespace tomchain
 
             EASY_BLOCK("waiting");
             spdlog::trace("gRPC(VoteBlocks): send request");
-            stub->async()->VoteBlocks(
+            stubs.at(stub_id)->async()->VoteBlocks(
                 &context,
                 &request,
                 &response,

@@ -69,35 +69,35 @@ public:
      * 
      * @return grpc::Status RPC status. 
      */
-    grpc::Status Register(std::unique_ptr<tomchain::TcConsensus::Stub> stub); 
+    grpc::Status Register(uint64_t stub_id); 
 
     /**
      * @brief Client heartbeats. 
      * 
      * @return grpc::Status RPC status. 
      */
-    grpc::Status Heartbeat(std::unique_ptr<tomchain::TcConsensus::Stub> stub); 
+    grpc::Status Heartbeat(uint64_t stub_id); 
 
     /**
      * @brief Client pull pending blocks. 
      * 
      * @return grpc::Status RPC status. 
      */
-    grpc::Status PullPendingBlocks(std::unique_ptr<tomchain::TcConsensus::Stub> stub); 
+    grpc::Status PullPendingBlocks(uint64_t stub_id); 
 
     /**
      * @brief Get the Blocks object
      * 
      * @return grpc::Status RPC status. 
      */
-    grpc::Status GetBlocks(std::unique_ptr<tomchain::TcConsensus::Stub> stub); 
+    grpc::Status GetBlocks(uint64_t stub_id); 
 
     /**
      * @brief Vote for blocks by sending signature shares 
      * 
      * @return grpc::Status RPC status. 
      */
-    grpc::Status VoteBlocks(std::unique_ptr<tomchain::TcConsensus::Stub> stub); 
+    grpc::Status VoteBlocks(uint64_t stub_id); 
 
 public: 
     std::shared_ptr<ecdsa::Key> ecc_skey;
@@ -120,8 +120,7 @@ private:
      * @brief gRPC service stub. 
      * 
      */
-    std::unique_ptr<TcConsensus::Stub> stub_;
-    std::unique_ptr<TcConsensus::Stub> stub_shadow_;
+    std::vector<std::unique_ptr<TcConsensus::Stub>> stubs; 
 
 };
 
