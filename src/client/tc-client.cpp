@@ -159,7 +159,9 @@ namespace tomchain
                     }
                     pull_flag = true;
                     this->PullPendingBlocks(0);
+                    this->PullPendingBlocks(1);
                     this->GetBlocks(0);
+                    this->GetBlocks(1);
                     pull_flag = false;
 
                     // sleep ms
@@ -247,6 +249,7 @@ namespace tomchain
                     }
                     vote_flag = true;
                     this->VoteBlocks(0);
+                    this->VoteBlocks(1);
                     vote_flag = false;
 
                     // sleep ms
