@@ -274,9 +274,9 @@ namespace tomchain
                 }
                 count_flag = true;
                 // FIXME: deadlock 
-                // std::unique_lock<std::shared_mutex> pb_ul_1(pb_sm_1);
+                std::unique_lock<std::shared_mutex> pb_ul_1(pb_sm_1);
                 const uint64_t pb_size = pending_blks.size(); 
-                // pb_ul_1.unlock(); 
+                pb_ul_1.unlock(); 
                 spdlog::info(
                     "tx:{} | pb:{} | cb:{}",
                     pending_txs.size(),
@@ -330,7 +330,7 @@ namespace tomchain
                 }
                 bcast_commit_flag = true;
                 this->bcast_commits();
-                this->remove_dead_blocks();
+                // this->remove_dead_blocks();
                 bcast_commit_flag = false;
             },
             (*::conf_data)["scheduler_freq"]);
