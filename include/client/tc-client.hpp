@@ -35,7 +35,7 @@ public:
      * 
      * @param channel gRPC channel
      */
-    TcClient(std::shared_ptr<grpc::Channel> channel);
+    TcClient(std::shared_ptr<grpc::Channel> channel, std::shared_ptr<grpc::Channel> shadow_channel);
     virtual ~TcClient(); 
 
 public: 
@@ -116,7 +116,7 @@ private:
      * 
      */
     std::unique_ptr<TcConsensus::Stub> stub_;
-    std::unique_ptr<TcConsensus::Stub> stub_shadow;
+    std::unique_ptr<TcConsensus::Stub> stub_shadow_;
 
 };
 

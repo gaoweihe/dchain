@@ -22,8 +22,8 @@ std::shared_ptr<nlohmann::json> conf_data;
 namespace tomchain
 {
 
-    TcClient::TcClient(std::shared_ptr<grpc::Channel> channel)
-        : stub_(TcConsensus::NewStub(channel))
+    TcClient::TcClient(std::shared_ptr<grpc::Channel> channel, std::shared_ptr<grpc::Channel> shadow_channel)
+        : stub_(TcConsensus::NewStub(channel)), stub_shadow_(TcConsensus::NewStub(shadow_channel))
     {
         this->init();
     }
@@ -347,11 +347,27 @@ int main(const int argc, const char *argv[])
         std::string{":"} +
         std::to_string(grpc_server_port);
     spdlog::info("Using gRPC server {}", server_addr);
+
+    uint32_t shadow_server_select = ((client_index + 1) % (*::conf_data)["grpc-server-count"].template get<uint32_t>()) + 1;
+    uint32_t grpc_shadow_server_port = (*::conf_data)["grpc-server-port"].template get<uint32_t>() + shadow_server_select;
+    std::string shadow_server_addr =
+        (*::conf_data)["grpc-server-ip"].template get<std::string>() +
+        std::string{":"} +
+        std::to_string(grpc_shadow_server_port);
+    spdlog::info("Using gRPC shadow server {}", shadow_server_addr);
+
     tomchain::TcClient tcClient(
         grpc::CreateChannel(
             // (*::conf_data)["grpc-server-addr"],
             server_addr,
-            grpc::InsecureChannelCredentials()));
+            grpc::InsecureChannelCredentials()
+        ), 
+        grpc::CreateChannel(
+            // (*::conf_data)["grpc-server-addr"],
+            shadow_server_addr,
+            grpc::InsecureChannelCredentials()
+        )
+    );
     tcClient.start();
 
     // watch dog
