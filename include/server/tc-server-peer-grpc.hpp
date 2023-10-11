@@ -97,9 +97,9 @@ namespace tomchain
 
                 EASY_BLOCK("find");
                 spdlog::trace("{} RelayVote: finding block in pb", peer_id);
-                // std::shared_lock<std::shared_mutex> pb_sl_1(tc_server_->pb_sm_1);
+                std::shared_lock<std::shared_mutex> pb_sl_1(tc_server_->pb_sm_1);
                 bool is_found = tc_server_->pending_blks.find(pb_accessor, block_id);
-                // pb_sl_1.unlock(); 
+                pb_sl_1.unlock(); 
                 if (!is_found)
                 {
                     spdlog::trace("{} RelayVote: block ({}) not found", peer_id, block_id);
@@ -179,9 +179,9 @@ namespace tomchain
                     // remove block from pending
                     EASY_BLOCK("remove from pb");
                     spdlog::trace("{} RelayVote: remove block from pending", peer_id);
-                    // std::shared_lock<std::shared_mutex> pb_sl_1(tc_server_->pb_sm_1);
+                    std::shared_lock<std::shared_mutex> pb_sl_1(tc_server_->pb_sm_1);
                     bool is_erased = tc_server_->pending_blks.erase(pb_accessor);
-                    // pb_sl_1.unlock(); 
+                    pb_sl_1.unlock(); 
                     if (is_erased)
                     {
                         spdlog::trace("{} RelayVote: block ({}) erased", peer_id, block_id);
@@ -251,9 +251,9 @@ namespace tomchain
                 EASY_BLOCK("store");
                 spdlog::trace("{} RelayBlock: store block ({}) locally", peer_id, block->header_.id_);
                 BlockCHM::accessor accessor;
-                // std::shared_lock<std::shared_mutex> pb_sl_1(tc_server_->pb_sm_1);
+                std::shared_lock<std::shared_mutex> pb_sl_1(tc_server_->pb_sm_1);
                 tc_server_->pending_blks.insert(accessor, block->header_.id_);
-                // pb_sl_1.unlock(); 
+                pb_sl_1.unlock(); 
                 accessor->second = block;
                 accessor.release();
                 EASY_END_BLOCK;
@@ -332,10 +332,10 @@ namespace tomchain
                 EASY_BLOCK("remove pb");
                 spdlog::trace("SPBcastCommit: remove pending block");
                 BlockCHM::accessor pb_accessor;
-                // std::shared_lock<std::shared_mutex> pb_sl_1(tc_server_->pb_sm_1);
+                std::shared_lock<std::shared_mutex> pb_sl_1(tc_server_->pb_sm_1);
                 bool is_found = tc_server_->pending_blks.find(
                     pb_accessor, block->header_.id_);
-                // pb_sl_1.unlock(); 
+                pb_sl_1.unlock(); 
                 if (!is_found)
                 {
                     spdlog::trace("SPBcastCommit: block not found");
@@ -353,9 +353,9 @@ namespace tomchain
                 EASY_END_BLOCK;
 
                 EASY_BLOCK("erase");
-                // pb_sl_1.lock(); 
+                pb_sl_1.lock(); 
                 tc_server_->pending_blks.erase(pb_accessor);
-                // pb_sl_1.unlock(); 
+                pb_sl_1.unlock(); 
                 EASY_END_BLOCK;
 
                 cb_accessor.release();
