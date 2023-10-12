@@ -115,7 +115,8 @@ namespace tomchain
         std::condition_variable cv;
         bool done = false;
 
-        EASY_BLOCK("waiting stub {}", stub_id);
+        EASY_BLOCK("waiting");
+        spdlog::debug("PullPendingBlocks waiting for stub {}", stub_id); 
         grpc::Status status;
         stubs.at(stub_id)->async()->PullPendingBlocks(
             &context,
@@ -198,7 +199,8 @@ namespace tomchain
         std::condition_variable cv;
         bool done = false;
 
-        EASY_BLOCK("waiting stub {}", stub_id);
+        EASY_BLOCK("waiting");
+        spdlog::debug("GetBlocks waiting for stub {}", stub_id); 
         grpc::Status status;
         stubs.at(stub_id)->async()->GetBlocks(
             &context,
@@ -316,8 +318,8 @@ namespace tomchain
             std::condition_variable cv;
             bool done = false;
 
-            EASY_BLOCK("waiting stub {}", stub_id);
-            spdlog::trace("gRPC(VoteBlocks): send request");
+            EASY_BLOCK("waiting");
+            spdlog::debug("VoteBlocks waiting for stub {}", stub_id); 
             stubs.at(stub_id)->async()->VoteBlocks(
                 &context,
                 &request,
