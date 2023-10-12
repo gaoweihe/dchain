@@ -38,8 +38,9 @@ namespace tomchain
 
         rocksdb::Options options;
         options.create_if_missing = true;
+        std::string rocksdb_filename = std::string{"/tmp/tomchain/tc-server"} + "-" + std::to_string((*::conf_data)["server-id"].template get<uint64_t>()); 
         rocksdb::Status status =
-            rocksdb::DB::Open(options, "/tmp/testdb", &db);
+            rocksdb::DB::Open(options, rocksdb_filename.c_str(), &db);
         assert(status.ok());
     }
 

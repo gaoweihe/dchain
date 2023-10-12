@@ -24,7 +24,7 @@ namespace tomchain
 
     TcClient::TcClient(std::shared_ptr<grpc::Channel> channel, std::shared_ptr<grpc::Channel> shadow_channel)
     {
-        stubs.push_back(TcConsensus::NewStub(channel)); 
+        stubs.push_back(TcConsensus::NewStub(channel));
         stubs.push_back(TcConsensus::NewStub(shadow_channel));
 
         this->init();
@@ -40,6 +40,13 @@ namespace tomchain
         this->ecc_skey = std::make_shared<ecdsa::Key>(ecdsa::Key());
         this->ecc_pkey = std::make_shared<ecdsa::PubKey>(
             this->ecc_skey->CreatePubKey());
+
+        rocksdb::Options options;
+        options.create_if_missing = true;
+        std::string rocksdb_filename = std::string{"/tmp/tomchain/tc-client"} + "-" + std::to_string((*::conf_data)["client-id"].template get<uint64_t>());
+        rocksdb::Status status =
+            rocksdb::DB::Open(options, rocksdb_filename.c_str(), &db);
+        assert(status.ok());
     }
 
     void TcClient::start()
@@ -367,16 +374,13 @@ int main(const int argc, const char *argv[])
 
     tomchain::TcClient tcClient(
         grpc::CreateChannel(
-            // (*::conf_data)["grpc-server-addr"],  
+            // (*::conf_data)["grpc-server-addr"],
             server_addr,
-            grpc::InsecureChannelCredentials()
-        ), 
+            grpc::InsecureChannelCredentials()),
         grpc::CreateChannel(
             // (*::conf_data)["grpc-server-addr"],
             shadow_server_addr,
-            grpc::InsecureChannelCredentials()
-        )
-    );
+            grpc::InsecureChannelCredentials()));
     tcClient.start();
 
     // watch dog
