@@ -26,7 +26,7 @@
         "10.0.0.15:2511"
     ], 
     "scheduler_freq": 50, 
-    "count_freq": 100, 
+    "count_freq": 500, 
     "pack_freq": 50, 
     "generate-tx-rate": 50000, 
     "pb-pool-limit": 16, 
