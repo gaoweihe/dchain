@@ -97,7 +97,7 @@ public:
      * 
      * @return grpc::Status RPC status. 
      */
-    grpc::Status VoteBlocks(uint64_t stub_id); 
+    grpc::Status VoteBlocks(); 
 
 public: 
     std::shared_ptr<ecdsa::Key> ecc_skey;

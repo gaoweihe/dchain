@@ -116,7 +116,7 @@ namespace tomchain
         bool done = false;
 
         EASY_BLOCK("waiting");
-        spdlog::debug("PullPendingBlocks waiting for stub {}", stub_id); 
+        spdlog::debug("PullPendingBlocks waiting for stub {}", stub_id);
         grpc::Status status;
         stubs.at(stub_id)->async()->PullPendingBlocks(
             &context,
@@ -200,7 +200,7 @@ namespace tomchain
         bool done = false;
 
         EASY_BLOCK("waiting");
-        spdlog::debug("GetBlocks waiting for stub {}", stub_id); 
+        spdlog::debug("GetBlocks waiting for stub {}", stub_id);
         grpc::Status status;
         stubs.at(stub_id)->async()->GetBlocks(
             &context,
@@ -262,7 +262,7 @@ namespace tomchain
         return status;
     }
 
-    grpc::Status TcClient::VoteBlocks(uint64_t stub_id)
+    grpc::Status TcClient::VoteBlocks()
     {
         EASY_BLOCK("VoteBlocks_req");
         spdlog::trace("gRPC(VoteBlocks): start");
@@ -273,86 +273,89 @@ namespace tomchain
         while (pending_blks.try_pop(sp_block))
         // for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
         {
-            VoteBlocksRequest request;
-            request.set_id(this->client_id);
-
-            auto block_hash_str = sp_block->get_sha256();
-            const uint64_t block_id = sp_block->header_.id_;
-
-            // client_id starts from 1, so does signer_index
-            EASY_BLOCK("sign");
-            auto signer_index = this->client_id;
-            std::shared_ptr<BLSSigShare> sig_share =
-                this->tss_key->first->sign(block_hash_str, this->client_id);
-            BlockVote bv;
-            bv.block_id_ = sp_block->header_.id_;
-            bv.sig_share_ = sig_share;
-            bv.voter_id_ = this->client_id;
-            EASY_END_BLOCK;
-
-            EASY_BLOCK("insert into votes");
-            sp_block->votes_.insert(
-                std::make_pair(
-                    this->client_id,
-                    std::make_shared<BlockVote>(bv)));
-            EASY_END_BLOCK;
-
-            EASY_BLOCK("serialize");
-            spdlog::trace("gRPC(VoteBlocks): serialize");
-            Block block = *(sp_block);
-            // msgpack::sbuffer b;
-            // msgpack::pack(b, iter->second);
-            // std::string block_ser = sbufferToString(b);
-            auto block_bv = flexbuffers_adapter<Block>::to_bytes(block);
-            std::string block_ser(block_bv->begin(), block_bv->end());
-            EASY_END_BLOCK;
-
-            EASY_BLOCK("add voted blocks");
-            request.add_voted_blocks(block_ser);
-            EASY_END_BLOCK;
-
-            VoteBlocksResponse response;
-
-            grpc::ClientContext context;
-            std::mutex mu;
-            std::condition_variable cv;
-            bool done = false;
-
-            EASY_BLOCK("waiting");
-            spdlog::debug("VoteBlocks waiting for stub {}", stub_id); 
-            stubs.at(stub_id)->async()->VoteBlocks(
-                &context,
-                &request,
-                &response,
-                [&mu, &cv, &done, &status](grpc::Status s)
-                {
-                    status = std::move(s);
-                    std::lock_guard<std::mutex> lock(mu);
-                    done = true;
-                    cv.notify_one();
-                });
-
-            std::unique_lock<std::mutex> lock(mu);
-            while (!done)
+            for (uint64_t stub_id = 0; stub_id < 2; stub_id++)
             {
-                cv.wait(lock);
-            }
-            lock.unlock(); 
-            EASY_END_BLOCK;
+                VoteBlocksRequest request;
+                request.set_id(this->client_id);
 
-            EASY_BLOCK("unpack response");
-            spdlog::trace("gRPC(VoteBlocks): recv response");
-            // for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
-            // {
-            //     voted_blks.insert(
-            //         std::make_pair(
-            //             iter->first,
-            //             iter->second
-            //         )
-            //     );
-            // }
-            // pending_blks.clear();
-            EASY_END_BLOCK;
+                auto block_hash_str = sp_block->get_sha256();
+                const uint64_t block_id = sp_block->header_.id_;
+
+                // client_id starts from 1, so does signer_index
+                EASY_BLOCK("sign");
+                auto signer_index = this->client_id;
+                std::shared_ptr<BLSSigShare> sig_share =
+                    this->tss_key->first->sign(block_hash_str, this->client_id);
+                BlockVote bv;
+                bv.block_id_ = sp_block->header_.id_;
+                bv.sig_share_ = sig_share;
+                bv.voter_id_ = this->client_id;
+                EASY_END_BLOCK;
+
+                EASY_BLOCK("insert into votes");
+                sp_block->votes_.insert(
+                    std::make_pair(
+                        this->client_id,
+                        std::make_shared<BlockVote>(bv)));
+                EASY_END_BLOCK;
+
+                EASY_BLOCK("serialize");
+                spdlog::trace("gRPC(VoteBlocks): serialize");
+                Block block = *(sp_block);
+                // msgpack::sbuffer b;
+                // msgpack::pack(b, iter->second);
+                // std::string block_ser = sbufferToString(b);
+                auto block_bv = flexbuffers_adapter<Block>::to_bytes(block);
+                std::string block_ser(block_bv->begin(), block_bv->end());
+                EASY_END_BLOCK;
+
+                EASY_BLOCK("add voted blocks");
+                request.add_voted_blocks(block_ser);
+                EASY_END_BLOCK;
+
+                VoteBlocksResponse response;
+
+                grpc::ClientContext context;
+                std::mutex mu;
+                std::condition_variable cv;
+                bool done = false;
+
+                EASY_BLOCK("waiting");
+                spdlog::debug("VoteBlocks waiting for stub {}", stub_id);
+                stubs.at(stub_id)->async()->VoteBlocks(
+                    &context,
+                    &request,
+                    &response,
+                    [&mu, &cv, &done, &status](grpc::Status s)
+                    {
+                        status = std::move(s);
+                        std::lock_guard<std::mutex> lock(mu);
+                        done = true;
+                        cv.notify_one();
+                    });
+
+                std::unique_lock<std::mutex> lock(mu);
+                while (!done)
+                {
+                    cv.wait(lock);
+                }
+                lock.unlock();
+                EASY_END_BLOCK;
+
+                EASY_BLOCK("unpack response");
+                spdlog::trace("gRPC(VoteBlocks): recv response");
+                // for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
+                // {
+                //     voted_blks.insert(
+                //         std::make_pair(
+                //             iter->first,
+                //             iter->second
+                //         )
+                //     );
+                // }
+                // pending_blks.clear();
+                EASY_END_BLOCK;
+            }
         }
 
         spdlog::trace("gRPC(VoteBlocks): {}:{}",

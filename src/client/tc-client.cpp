@@ -248,8 +248,7 @@ namespace tomchain
                         return;
                     }
                     vote_flag = true;
-                    this->VoteBlocks(0);
-                    this->VoteBlocks(1);
+                    this->VoteBlocks();
                     vote_flag = false;
 
                     // sleep ms
