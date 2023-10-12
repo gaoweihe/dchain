@@ -291,6 +291,10 @@ namespace tomchain
             response->set_status(0);
 
             auto client_id = request->id();
+            if (client_id == 1)
+            {
+                spdlog::debug("received client 1"); 
+            }
             auto voted_blocks = request->voted_blocks();
             spdlog::trace("{}:voted blocks count={}",
                           client_id,
