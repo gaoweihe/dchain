@@ -334,12 +334,15 @@ namespace tomchain
 
                 // check if target server is this server
                 EASY_BLOCK("calculate target server id");
-                const uint64_t target_server_id = block->get_server_id((*::conf_data)["server-count"]);
-                if (target_server_id != tc_server_->server_id)
+                std::set<uint64_t> target_server_id_set = block->get_server_id((*::conf_data)["server-count"]);
+                if (target_server_id_set.find(tc_server_->server_id) == target_server_id_set.end())
                 {
                     // if remote
                     // insert vote into relay queue and skip this iteration
-                    tc_server_->relay_votes.find(target_server_id)->second->push(vote->second);
+                    for (auto iter = target_server_id_set.begin(); iter != target_server_id_set.end(); iter++)
+                    {
+                        tc_server_->relay_votes.find(*iter)->second->push(vote->second);
+                    }
                     // tc_server_->send_relay_votes();
                     continue;
                 }

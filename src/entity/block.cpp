@@ -55,9 +55,18 @@ namespace tomchain
         return spHashArr;
     }
 
-    uint64_t Block::get_server_id(uint64_t server_count) const
+    std::set<uint64_t> Block::get_server_id(uint64_t server_count) const
     {
-        return (this->header_.id_ % server_count) + 1;
+        uint64_t primary_id = (this->header_.id_ % server_count) + 1;
+        uint64_t shadow_id = primary_id + 1; 
+        if (shadow_id > server_count)
+        {
+            shadow_id = 1; 
+        }
+        std::set<uint64_t> server_id_list; 
+        server_id_list.insert(primary_id); 
+        server_id_list.insert(shadow_id); 
+        return server_id_list;
     }
 
     bool Block::is_vote_enough(const uint64_t target_num) const

@@ -72,7 +72,7 @@ public:
     void merge_votes(const uint64_t target_num); 
 
     // server id starts from one 
-    uint64_t get_server_id(uint64_t server_count) const; 
+    std::set<uint64_t> get_server_id(uint64_t server_count) const; 
 
 public: 
     BlockHeader header_; 
