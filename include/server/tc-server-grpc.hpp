@@ -346,6 +346,17 @@ namespace tomchain
                     // tc_server_->send_relay_votes();
                     continue;
                 }
+                else
+                {
+                    for (auto iter = target_server_id_set.begin(); iter != target_server_id_set.end(); iter++)
+                    {
+                        if (*iter == tc_server_->server_id)
+                        {
+                            continue; 
+                        }
+                        tc_server_->relay_votes.find(*iter)->second->push(vote->second);
+                    }
+                }
                 EASY_END_BLOCK;
 
                 // find local block storage
