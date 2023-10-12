@@ -220,47 +220,68 @@ namespace tomchain
 
         if ((*::conf_data)["server-id"] == (*::conf_data)["server-count"])
         {
-
-            // generate transactions
-            bool gen_flag = false;
-            t.setInterval(
+            std::thread pack_thread(
                 [&]()
                 {
-                    if (gen_flag == true)
-                    {
-                        return;
-                    }
-                    gen_flag = true;
                     // number of generated transactions per second
                     const uint64_t gen_tx_rate = (*::conf_data)["generate-tx-rate"];
-
-                    std::shared_lock<std::shared_mutex> pb_sl_1(pb_sm_1);
-                    const uint64_t pb_size = pending_blks.size();
-                    pb_sl_1.unlock(); 
-                    if (pb_size < (*::conf_data)["pb-pool-limit"])
+                    const uint64_t tx_per_block = (*::conf_data)["tx-per-block"];
+                    while (true)
                     {
-                        this->generate_tx(gen_tx_rate);
+                        std::shared_lock<std::shared_mutex> pb_sl_1(pb_sm_1);
+                        const uint64_t pb_size = pending_blks.size();
+                        pb_sl_1.unlock();
+                        if (pb_size < (*::conf_data)["pb-pool-limit"])
+                        {
+                            this->generate_tx(gen_tx_rate);
+                        }
+
+                        // number of generated transactions per second
+                        this->pack_block(tx_per_block, INT_MAX);
                     }
-                    gen_flag = false;
-                },
-                (*::conf_data)["pack_freq"]);
+                });
+            pack_thread.detach();
+
+            // // generate transactions
+            // bool gen_flag = false;
+            // t.setInterval(
+            //     [&]()
+            //     {
+            //         if (gen_flag == true)
+            //         {
+            //             return;
+            //         }
+            //         gen_flag = true;
+            //         // number of generated transactions per second
+            //         const uint64_t gen_tx_rate = (*::conf_data)["generate-tx-rate"];
+
+            //         std::shared_lock<std::shared_mutex> pb_sl_1(pb_sm_1);
+            //         const uint64_t pb_size = pending_blks.size();
+            //         pb_sl_1.unlock();
+            //         if (pb_size < (*::conf_data)["pb-pool-limit"])
+            //         {
+            //             this->generate_tx(gen_tx_rate);
+            //         }
+            //         gen_flag = false;
+            //     },
+            //     (*::conf_data)["pack_freq"]);
 
             // pack blocks
-            bool pack_flag = false;
-            t.setInterval(
-                [&]()
-                {
-                    if (pack_flag == true)
-                    {
-                        return;
-                    }
-                    pack_flag = true;
-                    // number of generated transactions per second
-                    const uint64_t tx_per_block = (*::conf_data)["tx-per-block"];
-                    this->pack_block(tx_per_block, INT_MAX);
-                    pack_flag = false;
-                },
-                (*::conf_data)["pack_freq"]);
+            // bool pack_flag = false;
+            // t.setInterval(
+            //     [&]()
+            //     {
+            //         if (pack_flag == true)
+            //         {
+            //             return;
+            //         }
+            //         pack_flag = true;
+            //         // number of generated transactions per second
+            //         const uint64_t tx_per_block = (*::conf_data)["tx-per-block"];
+            //         this->pack_block(tx_per_block, INT_MAX);
+            //         pack_flag = false;
+            //     },
+            //     (*::conf_data)["pack_freq"]);
         }
 
         // count blocks
@@ -273,10 +294,10 @@ namespace tomchain
                     return;
                 }
                 count_flag = true;
-                // FIXME: deadlock 
+                // FIXME: deadlock
                 std::unique_lock<std::shared_mutex> pb_ul_1(pb_sm_1);
-                const uint64_t pb_size = pending_blks.size(); 
-                pb_ul_1.unlock(); 
+                const uint64_t pb_size = pending_blks.size();
+                pb_ul_1.unlock();
                 spdlog::info(
                     "tx:{} | pb:{} | cb:{}",
                     pending_txs.size(),
@@ -364,7 +385,7 @@ namespace tomchain
 
         std::unique_lock<std::shared_mutex> pb_ul_1(pb_sm_1);
         BlockCHM shadow_pb(pending_blks);
-        pb_ul_1.unlock(); 
+        pb_ul_1.unlock();
         std::vector<uint64_t> block_id_list;
         // loop for each block in pending block
         for (auto iter = shadow_pb.begin(); iter != shadow_pb.end(); iter++)
@@ -389,7 +410,7 @@ namespace tomchain
                 uint64_t delta = now_ms - proposal_ts;
                 if (delta > 100000)
                 {
-                    continue; 
+                    continue;
                 }
                 // if delta greater than threshold, remove block
                 if (delta > (*::conf_data)["block-die-threshold"])
@@ -401,8 +422,7 @@ namespace tomchain
                 }
             }
             pb_accessor.release();
-            pb_sl_1.unlock(); 
-
+            pb_sl_1.unlock();
         }
 
         spdlog::trace("remove_dead_blocks ends ");
@@ -528,7 +548,7 @@ namespace tomchain
                 pending_blks.insert(
                     accessor,
                     block_id);
-                pb_sl_1.unlock(); 
+                pb_sl_1.unlock();
                 accessor->second = p_block;
 
                 // this->send_relay_block_sync(block_id);
