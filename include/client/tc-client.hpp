@@ -14,6 +14,7 @@
 #include "oneapi/tbb/concurrent_queue.h"
 #include "libBLS/libBLS.h"
 #include <easy/profiler.h>
+#include "rocksdb/db.h"
 
 namespace tomchain {
 
@@ -114,6 +115,7 @@ public:
     >> tss_key;
     BlockCHM voted_blks; 
     BlockCHM committed_blks; 
+    rocksdb::DB* db;
 
 private: 
     /**

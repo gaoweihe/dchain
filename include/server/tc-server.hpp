@@ -24,6 +24,7 @@
 #include "block.hpp" 
 #include "transaction.hpp" 
 #include "msgpack_adapter.hpp"
+#include "rocksdb/db.h"
 
 extern std::shared_ptr<nlohmann::json> conf_data; 
 
@@ -143,6 +144,7 @@ public:
         >
     > bcast_commit_blocks; 
     oneapi::tbb::concurrent_set<uint64_t> dead_block; 
+    rocksdb::DB* db;
 
 
 private: 
