@@ -81,7 +81,7 @@ namespace tomchain
                 const uint64_t block_id = vote->block_id_;
                 EASY_END_BLOCK;
 
-                // check if died block 
+                // check if died block
                 EASY_BLOCK("check if died block");
                 bool is_died = tc_server_->dead_block.contains(block_id);
                 if (is_died)
@@ -89,7 +89,7 @@ namespace tomchain
                     spdlog::trace("{}:block is died", peer_id);
                     continue;
                 }
-                EASY_END_BLOCK; 
+                EASY_END_BLOCK;
 
                 // add to local block vote vector
                 spdlog::trace("{} RelayVote: add to local block vote vector", peer_id);
@@ -99,7 +99,7 @@ namespace tomchain
                 spdlog::trace("{} RelayVote: finding block in pb", peer_id);
                 std::shared_lock<std::shared_mutex> pb_sl_1(tc_server_->pb_sm_1);
                 bool is_found = tc_server_->pending_blks.find(pb_accessor, block_id);
-                pb_sl_1.unlock(); 
+                pb_sl_1.unlock();
                 if (!is_found)
                 {
                     spdlog::trace("{} RelayVote: block ({}) not found", peer_id, block_id);
@@ -118,11 +118,10 @@ namespace tomchain
                     std::make_pair(
                         vote->voter_id_,
                         vote));
-                spdlog::debug("{}:push vote into {} relay queue, vote unsafe count={}", 
-                    vote->voter_id_, 
-                    block_id, 
-                    block_sp->votes_.size()
-                );
+                spdlog::debug("{}:push vote into {} relay queue, vote unsafe count={}",
+                              vote->voter_id_,
+                              block_id,
+                              block_sp->votes_.size());
                 EASY_END_BLOCK;
 
                 // check if vote enough
@@ -173,10 +172,10 @@ namespace tomchain
                     // EASY_END_BLOCK;
                     // spdlog::trace("{} RelayVote: bcast commits", peer_id);
 
-                    spdlog::trace("push into pb_merge_queue"); 
+                    spdlog::trace("push into pb_merge_queue");
                     tc_server_->pb_merge_queue.push(block_sp);
                     // pb_accessor.release();
-                    
+
                     // EASY_BLOCK("bcast commits");
                     // tc_server_->bcast_commits();
                     // EASY_END_BLOCK;
@@ -186,7 +185,7 @@ namespace tomchain
                     spdlog::trace("{} RelayVote: remove block from pending", peer_id);
                     std::shared_lock<std::shared_mutex> pb_sl_1(tc_server_->pb_sm_1);
                     bool is_erased = tc_server_->pending_blks.erase(pb_accessor);
-                    pb_sl_1.unlock(); 
+                    pb_sl_1.unlock();
                     if (is_erased)
                     {
                         spdlog::trace("{} RelayVote: block ({}) erased", peer_id, block_id);
@@ -258,7 +257,7 @@ namespace tomchain
                 BlockCHM::accessor accessor;
                 std::shared_lock<std::shared_mutex> pb_sl_1(tc_server_->pb_sm_1);
                 tc_server_->pending_blks.insert(accessor, block->header_.id_);
-                pb_sl_1.unlock(); 
+                pb_sl_1.unlock();
                 accessor->second = block;
                 accessor.release();
                 EASY_END_BLOCK;
@@ -296,9 +295,9 @@ namespace tomchain
 
             uint32_t peer_id = request->id();
 
-            uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(); 
-            uint64_t req_timestamp = request->timestamp(); 
-            spdlog::info("{} gRPC recv request from {} at {}, curr_time={}, gap={}", tc_server_->server_id, peer_id, req_timestamp, now_ms, now_ms - req_timestamp); 
+            uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+            uint64_t req_timestamp = request->timestamp();
+            spdlog::info("{} gRPC recv request from {} at {}, curr_time={}, gap={}", tc_server_->server_id, peer_id, req_timestamp, now_ms, now_ms - req_timestamp);
 
             auto req_blocks = request->blocks();
             spdlog::trace("SPBcastCommit: req_blocks size: {}", req_blocks.size());
@@ -317,21 +316,21 @@ namespace tomchain
                         std::make_shared<std::vector<uint8_t>>(blkhdr_ser));
                 EASY_END_BLOCK;
 
-                // get latency by milliseconds 
-                uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(); 
-                uint64_t latency = now_ms - block->header_.proposal_ts_; 
-                spdlog::debug("SPBcastCommit blockid={}, latency={}", block->header_.id_, latency); 
-                
-                // record recv timestamp 
-                block->header_.recv_ts_ = now_ms; 
+                // get latency by milliseconds
+                uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+                uint64_t latency = now_ms - block->header_.proposal_ts_;
+                spdlog::debug("SPBcastCommit blockid={}, latency={}", block->header_.id_, latency);
 
-                // print committed block info in log 
-                spdlog::debug("SPBcastCommit block={}, proposal_ts={}, dist_ts={}, commit_ts={}, recv_ts={}", 
-                    block->header_.id_, 
-                    block->header_.proposal_ts_, 
-                    block->header_.dist_ts_, 
-                    block->header_.commit_ts_, 
-                    block->header_.recv_ts_); 
+                // record recv timestamp
+                block->header_.recv_ts_ = now_ms;
+
+                // print committed block info in log
+                spdlog::debug("SPBcastCommit block={}, proposal_ts={}, dist_ts={}, commit_ts={}, recv_ts={}",
+                              block->header_.id_,
+                              block->header_.proposal_ts_,
+                              block->header_.dist_ts_,
+                              block->header_.commit_ts_,
+                              block->header_.recv_ts_);
 
                 // remove pending block
                 EASY_BLOCK("remove pb");
@@ -340,10 +339,12 @@ namespace tomchain
                 std::shared_lock<std::shared_mutex> pb_sl_1(tc_server_->pb_sm_1);
                 bool is_found = tc_server_->pending_blks.find(
                     pb_accessor, block->header_.id_);
-                pb_sl_1.unlock(); 
+                pb_sl_1.unlock();
                 if (!is_found)
                 {
                     spdlog::trace("SPBcastCommit: block not found");
+                    pb_accessor.release();
+                    continue; 
                 }
                 EASY_END_BLOCK;
 
@@ -358,9 +359,9 @@ namespace tomchain
                 EASY_END_BLOCK;
 
                 EASY_BLOCK("erase");
-                pb_sl_1.lock(); 
+                pb_sl_1.lock();
                 tc_server_->pending_blks.erase(pb_accessor);
-                pb_sl_1.unlock(); 
+                pb_sl_1.unlock();
                 EASY_END_BLOCK;
 
                 cb_accessor.release();
@@ -648,8 +649,8 @@ namespace tomchain
         EASY_BLOCK("waiting");
         // get current timestamp
         uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-        spdlog::info("{} gRPC(SPBcastCommit) send request to {} at {}", this->server_id, target_server_id, now_ms); 
-        request.set_timestamp(now_ms); 
+        spdlog::info("{} gRPC(SPBcastCommit) send request to {} at {}", this->server_id, target_server_id, now_ms);
+        request.set_timestamp(now_ms);
         spdlog::trace("{} gRPC(SPBcastCommit) waiting", target_server_id);
         grpc::Status status;
         grpc_peer_client_stub_.find(target_server_id)->second->async()->SPBcastCommit(&context, &request, &response, [&mu, &cv, &done, &status](grpc::Status s)
