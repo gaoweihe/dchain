@@ -27,7 +27,7 @@
     ], 
     "scheduler_freq": 50, 
     "count_freq": 1000, 
-    "pack_freq": 200, 
+    "pack_freq": 50, 
     "generate-tx-rate": 50000, 
     "pb-pool-limit": 16, 
     "tx-per-block": 50000,   
