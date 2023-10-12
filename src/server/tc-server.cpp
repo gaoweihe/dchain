@@ -35,6 +35,12 @@ namespace tomchain
         spdlog::info("Initializing server");
         this->server_id = (*::conf_data)["server-id"];
         this->blk_seq_generator = (*::conf_data)["server-id"].template get<uint64_t>() * 1000000UL;
+
+        rocksdb::Options options;
+        options.create_if_missing = true;
+        rocksdb::Status status =
+            rocksdb::DB::Open(options, "/tmp/testdb", &db);
+        assert(status.ok());
     }
 
     void TcServer::init_peer_stubs()

@@ -230,6 +230,7 @@ target_link_libraries(tc-client
     easy_profiler
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     TBB::tbb
+    rocksdb dl
     )
 
 # TomChain server 
@@ -250,6 +251,7 @@ target_link_libraries(tc-server
     easy_profiler
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
     TBB::tbb
+    rocksdb dl
     )
 
 # tests
