@@ -234,12 +234,12 @@ std::shared_ptr<std::vector<uint8_t>> flexbuffers_adapter<Block>::to_bytes(const
 
     fbb.Map([&]() {
         fbb.Blob("header", *bh_bv);
-        // fbb.Vector("tx_vec", [&]() {
-        //     for (auto tx : block.tx_vec_) {
-        //         auto tx_bv = flexbuffers_adapter<Transaction>::to_bytes(*tx);
-        //         fbb.Blob(*tx_bv);
-        //     }
-        // });
+        fbb.Vector("tx_vec", [&]() {
+            for (auto tx : block.tx_vec_) {
+                auto tx_bv = flexbuffers_adapter<Transaction>::to_bytes(*tx);
+                fbb.Blob(*tx_bv);
+            }
+        });
         fbb.Map("votes", [&]() {
             for (auto iter : block.votes_) {
                 auto vote_bv = flexbuffers_adapter<BlockVote>::to_bytes(*(iter.second));
@@ -271,15 +271,15 @@ std::shared_ptr<Block> flexbuffers_adapter<Block>::from_bytes(std::shared_ptr<st
     std::vector<uint8_t> bh_bv(bh_blob.data(), bh_blob.data() + bh_blob.size()); 
     auto bh = flexbuffers_adapter<BlockHeader>::from_bytes(std::make_shared<std::vector<uint8_t>>(bh_bv));
 
-    // std::vector<std::shared_ptr<Transaction>> tx_vec;
-    // auto tx_vec_fb = map["tx_vec"].AsVector();
-    // for (size_t i = 0; i < tx_vec_fb.size(); i++)
-    // {
-    //     auto tx_blob = tx_vec_fb[i].AsBlob();
-    //     auto tx_bv = std::vector<uint8_t>(tx_blob.data(), tx_blob.data() + tx_blob.size());
-    //     auto tx = flexbuffers_adapter<Transaction>::from_bytes(std::make_shared<std::vector<uint8_t>>(tx_bv));
-    //     tx_vec.push_back(tx);
-    // }
+    std::vector<std::shared_ptr<Transaction>> tx_vec;
+    auto tx_vec_fb = map["tx_vec"].AsVector();
+    for (size_t i = 0; i < tx_vec_fb.size(); i++)
+    {
+        auto tx_blob = tx_vec_fb[i].AsBlob();
+        auto tx_bv = std::vector<uint8_t>(tx_blob.data(), tx_blob.data() + tx_blob.size());
+        auto tx = flexbuffers_adapter<Transaction>::from_bytes(std::make_shared<std::vector<uint8_t>>(tx_bv));
+        tx_vec.push_back(tx);
+    }
 
     std::map<uint64_t, std::shared_ptr<BlockVote>> votes;
     auto votes_fb = map["votes"].AsMap();
@@ -295,7 +295,7 @@ std::shared_ptr<Block> flexbuffers_adapter<Block>::from_bytes(std::shared_ptr<st
 
     auto block = std::make_shared<Block>();
     block->header_ = *bh;
-    // block->tx_vec_ = tx_vec;
+    block->tx_vec_ = tx_vec;
     block->votes_ = votes;
 
     // auto tss_sig_ref = map["tss_sig"];

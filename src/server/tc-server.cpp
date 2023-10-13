@@ -552,6 +552,8 @@ namespace tomchain
                 }
                 auto p_block = std::make_shared<Block>(new_block);
 
+                spdlog::info("pack vote count={}", p_block->tx_vec_.size()); 
+
                 // add to relay blocks list
                 for (auto iter = relay_blocks.begin(); iter != relay_blocks.end(); iter++)
                 {

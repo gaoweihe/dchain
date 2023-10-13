@@ -246,6 +246,7 @@ namespace tomchain
                 EASY_END_BLOCK;
 
                 std::shared_ptr<Block> block = accessor->second;
+                spdlog::info("pb vote count={}", block->tx_vec_.size()); 
 
                 // serialize block
                 EASY_BLOCK("serialize response");
