@@ -8,6 +8,8 @@
     "pull-pb-interval": 100, 
     "log-level": "info", 
     "client-count": 128, 
+    "account-count": 20000, 
+    "clear-rocksdb": "true", 
     "profiler-enable": true,
     "profiler-listen": false
 }

@@ -41,12 +41,27 @@ namespace tomchain
         this->ecc_pkey = std::make_shared<ecdsa::PubKey>(
             this->ecc_skey->CreatePubKey());
 
+        spdlog::info("Init RocksDB starts");
+        // create database
         rocksdb::Options options;
         options.create_if_missing = true;
         std::string rocksdb_filename = std::string{"/tmp/tomchain/tc-client"} + "-" + std::to_string((*::conf_data)["client-id"].template get<uint64_t>());
         rocksdb::Status status =
             rocksdb::DB::Open(options, rocksdb_filename.c_str(), &db);
         assert(status.ok());
+
+        // populate global states
+        if ((*::conf_data)["clear-rocksdb"].template get<std::string>() == std::string{"true"})
+        {
+            const uint64_t account_count = (*::conf_data)["account-count"];
+            std::lock_guard<std::mutex> db_lg_1(db_mutex); 
+            for (size_t i = 0; i < account_count; i++)
+            {
+                db->Put(rocksdb::WriteOptions(), std::to_string(i), std::to_string(i));
+            }
+        }
+
+        spdlog::info("Init RocksDB finished");
     }
 
     void TcClient::start()

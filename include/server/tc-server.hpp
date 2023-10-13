@@ -144,6 +144,7 @@ public:
         >
     > bcast_commit_blocks; 
     oneapi::tbb::concurrent_set<uint64_t> dead_block; 
+    std::mutex db_mutex; 
     rocksdb::DB* db;
 
 

@@ -470,6 +470,8 @@ namespace tomchain
                 sp_block->header_.id_);
             cb_accessor->second = sp_block;
 
+            // TODO: insert into rocksdb
+
             // insert block to bcast commit
             for (
                 auto iter = this->bcast_commit_blocks.begin();
@@ -493,21 +495,26 @@ namespace tomchain
 
     void TcServer::generate_tx(uint64_t num_tx)
     {
+        const uint64_t account_count = (*::conf_data)["account_count"]; 
         std::random_device dev;
         std::mt19937 rng(dev());
         std::uniform_int_distribution<
             std::mt19937::result_type>
-            distribution(1, INT_MAX);
+            distribution(1, account_count);
 
         for (size_t i = 0; i < num_tx; i++)
         {
             uint64_t tx_id = distribution(rng);
+            uint64_t sender = distribution(rng); 
+            uint64_t receiver = distribution(rng); 
+            uint64_t value = distribution(rng); 
+            uint64_t fee = distribution(rng); 
             Transaction tx(
                 tx_id,
-                0xDEADBEEF,
-                0xDEADBEEF,
-                0xDEADBEEF,
-                0xDEADBEEF);
+                sender,
+                receiver,
+                value,
+                fee);
             pending_txs.insert(
                 std::make_pair(tx_id, std::make_shared<Transaction>(tx)));
         }

@@ -115,6 +115,7 @@ public:
     >> tss_key;
     BlockCHM voted_blks; 
     BlockCHM committed_blks; 
+    std::mutex db_mutex; 
     rocksdb::DB* db;
 
 private: 

@@ -356,6 +356,9 @@ namespace tomchain
                     cb_accessor,
                     block->header_.id_);
                 cb_accessor->second = block;
+
+                // TODO: insert into rocksdb 
+                
                 EASY_END_BLOCK;
 
                 EASY_BLOCK("erase");
