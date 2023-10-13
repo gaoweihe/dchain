@@ -302,6 +302,9 @@ namespace tomchain
             auto block_hash_str = sp_block->get_sha256();
             const uint64_t block_id = sp_block->header_.id_;
 
+            // no need to transmit transactions in vote 
+            sp_block->tx_vec_.clear(); 
+
             // client_id starts from 1, so does signer_index
             EASY_BLOCK("sign");
             auto signer_index = this->client_id;
