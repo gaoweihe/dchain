@@ -358,7 +358,9 @@ namespace tomchain
                 cb_accessor->second = block;
 
                 // TODO: insert into rocksdb 
-                
+                // serialize 
+                // put 
+
                 EASY_END_BLOCK;
 
                 EASY_BLOCK("erase");

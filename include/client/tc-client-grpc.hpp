@@ -278,6 +278,25 @@ namespace tomchain
                 VoteBlocksRequest request;
                 request.set_id(this->client_id);
 
+                // TODO: check transactions 
+                std::unique_lock<std::mutex> db_lg_1(db_mutex); 
+                for (auto iter = sp_block->tx_vec_.begin(); iter != sp_block->tx_vec_.end(); iter++)
+                {
+                    const uint64_t sender = (*iter)->sender_; 
+                    const uint64_t receiver = (*iter)->receiver_; 
+
+                    // retrieve balance of sender from rocksdb 
+                    std::string sender_balance; 
+                    std::string receiver_balance; 
+                    db->Get(rocksdb::ReadOptions(), std::to_string(sender), &sender_balance); 
+                    db->Get(rocksdb::ReadOptions(), std::to_string(receiver), &receiver_balance);
+
+                    // update balance of receiver to rocksdb 
+                    db->Put(rocksdb::WriteOptions(), std::to_string(sender), std::to_string(sender));  
+                    db->Put(rocksdb::WriteOptions(), std::to_string(receiver), std::to_string(receiver));  
+                }
+                db_lg_1.unlock(); 
+
                 auto block_hash_str = sp_block->get_sha256();
                 const uint64_t block_id = sp_block->header_.id_;
 

@@ -54,11 +54,12 @@ namespace tomchain
         if ((*::conf_data)["clear-rocksdb"].template get<std::string>() == std::string{"true"})
         {
             const uint64_t account_count = (*::conf_data)["account-count"];
-            std::lock_guard<std::mutex> db_lg_1(db_mutex); 
+            std::unique_lock<std::mutex> db_lg_1(db_mutex); 
             for (size_t i = 0; i < account_count; i++)
             {
                 db->Put(rocksdb::WriteOptions(), std::to_string(i), std::to_string(i));
             }
+            db_lg_1.unlock(); 
         }
 
         spdlog::info("Init RocksDB finished");

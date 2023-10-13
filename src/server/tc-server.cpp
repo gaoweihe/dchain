@@ -471,6 +471,8 @@ namespace tomchain
             cb_accessor->second = sp_block;
 
             // TODO: insert into rocksdb
+            // serialize
+            // put 
 
             // insert block to bcast commit
             for (
