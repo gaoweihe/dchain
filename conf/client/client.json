@@ -9,7 +9,7 @@
     "log-level": "info", 
     "client-count": 128, 
     "account-count": 2000000, 
-    "clear-rocksdb": "true", 
+    "clear-rocksdb": "false", 
     "profiler-enable": true,
     "profiler-listen": false
 }
