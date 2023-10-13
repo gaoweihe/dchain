@@ -310,10 +310,10 @@ namespace tomchain
                 // msgpack::sbuffer des_b = stringToSbuffer(*iter);
                 // auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 // auto block = oh->as<std::shared_ptr<Block>>();
-                std::vector<uint8_t> blkhdr_ser((*iter).begin(), (*iter).end());
+                std::vector<uint8_t> blk_ser((*iter).begin(), (*iter).end());
                 auto block =
                     flexbuffers_adapter<Block>::from_bytes(
-                        std::make_shared<std::vector<uint8_t>>(blkhdr_ser));
+                        std::make_shared<std::vector<uint8_t>>(blk_ser));
                 EASY_END_BLOCK;
 
                 // get latency by milliseconds
@@ -356,11 +356,18 @@ namespace tomchain
                     cb_accessor,
                     block->header_.id_);
                 cb_accessor->second = block;
+                EASY_END_BLOCK;
 
                 // TODO: insert into rocksdb 
+                EASY_BLOCK("rocksdb"); 
                 // serialize 
+                auto blk_bv = flexbuffers_adapter<Block>::to_bytes(*block);
+                std::string ser_blk(blk_bv->begin(), blk_bv->end());
                 // put 
-
+                std::unique_lock<std::mutex> db_ul_1(tc_server_->db_mutex); 
+                std::string block_name = std::string{"block-"} + std::to_string(block->header_.id_); 
+                tc_server_->db->Put(rocksdb::WriteOptions(), block_name.c_str(), ser_blk); 
+                db_ul_1.unlock(); 
                 EASY_END_BLOCK;
 
                 EASY_BLOCK("erase");

@@ -38,7 +38,7 @@ namespace tomchain
 
         rocksdb::Options options;
         options.create_if_missing = true;
-        std::string rocksdb_filename = std::string{"/tmp/tomchain/tc-server"} + "-" + std::to_string((*::conf_data)["server-id"].template get<uint64_t>()); 
+        std::string rocksdb_filename = std::string{"/tmp/tomchain/tc-server"} + "-" + std::to_string((*::conf_data)["server-id"].template get<uint64_t>());
         rocksdb::Status status =
             rocksdb::DB::Open(options, rocksdb_filename.c_str(), &db);
         assert(status.ok());
@@ -471,8 +471,16 @@ namespace tomchain
             cb_accessor->second = sp_block;
 
             // TODO: insert into rocksdb
+            EASY_BLOCK("rocksdb");
             // serialize
-            // put 
+            auto blk_bv = flexbuffers_adapter<Block>::to_bytes(*sp_block);
+            std::string ser_blk(blk_bv->begin(), blk_bv->end());
+            // put
+            std::unique_lock<std::mutex> db_ul_1(this->db_mutex);
+            std::string block_name = std::string{"block-"} + std::to_string(sp_block->header_.id_);
+            this->db->Put(rocksdb::WriteOptions(), block_name.c_str(), ser_blk);
+            db_ul_1.unlock();
+            EASY_END_BLOCK;
 
             // insert block to bcast commit
             for (
@@ -497,7 +505,7 @@ namespace tomchain
 
     void TcServer::generate_tx(uint64_t num_tx)
     {
-        const uint64_t account_count = (*::conf_data)["account-count"]; 
+        const uint64_t account_count = (*::conf_data)["account-count"];
         std::random_device dev;
         std::mt19937 rng(dev());
         std::uniform_int_distribution<
@@ -507,10 +515,10 @@ namespace tomchain
         for (size_t i = 0; i < num_tx; i++)
         {
             uint64_t tx_id = distribution(rng);
-            uint64_t sender = distribution(rng); 
-            uint64_t receiver = distribution(rng); 
-            uint64_t value = distribution(rng); 
-            uint64_t fee = distribution(rng); 
+            uint64_t sender = distribution(rng);
+            uint64_t receiver = distribution(rng);
+            uint64_t value = distribution(rng);
+            uint64_t fee = distribution(rng);
             Transaction tx(
                 tx_id,
                 sender,
@@ -545,14 +553,22 @@ namespace tomchain
                 // TODO: base id
                 uint64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
                 Block new_block(block_id, 0xDEADBEEF, timestamp);
+
+                uint64_t tx_count = 0; 
                 for (it = pending_txs.begin(); it != pending_txs.end(); ++it)
                 {
                     extracted_tx.push_back(it->first);
                     new_block.tx_vec_.push_back(it->second);
+                    
+                    tx_count++; 
+                    if (tx_count >= num_tx) 
+                    {
+                        break; 
+                    }
                 }
                 auto p_block = std::make_shared<Block>(new_block);
 
-                spdlog::info("pack vote count={}", p_block->tx_vec_.size()); 
+                spdlog::info("pack vote count={}", p_block->tx_vec_.size());
 
                 // add to relay blocks list
                 for (auto iter = relay_blocks.begin(); iter != relay_blocks.end(); iter++)
