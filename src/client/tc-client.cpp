@@ -60,6 +60,8 @@ namespace tomchain
                 db->Put(rocksdb::WriteOptions(), std::to_string(i), std::to_string(i));
             }
             db_lg_1.unlock(); 
+            spdlog::info("rocksdb initialized");
+            exit(0); 
         }
 
         spdlog::info("Init RocksDB finished");
