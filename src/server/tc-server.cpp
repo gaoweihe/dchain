@@ -497,7 +497,7 @@ namespace tomchain
 
     void TcServer::generate_tx(uint64_t num_tx)
     {
-        const uint64_t account_count = (*::conf_data)["account_count"]; 
+        const uint64_t account_count = (*::conf_data)["account-count"]; 
         std::random_device dev;
         std::mt19937 rng(dev());
         std::uniform_int_distribution<
