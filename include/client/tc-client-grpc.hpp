@@ -271,67 +271,68 @@ namespace tomchain
 
         std::shared_ptr<Block> sp_block;
         while (pending_blks.try_pop(sp_block))
-        // for (auto iter = pending_blks.begin(); iter != pending_blks.end(); iter++)
         {
+            VoteBlocksRequest request;
+            request.set_id(this->client_id);
+
+            // check transactions
+            EASY_BLOCK("check tx");
+            std::unique_lock<std::mutex> db_lg_1(db_mutex);
+            for (auto iter = sp_block->tx_vec_.begin(); iter != sp_block->tx_vec_.end(); iter++)
+            {
+                const uint64_t sender = (*iter)->sender_;
+                const uint64_t receiver = (*iter)->receiver_;
+
+                // retrieve balance of sender from rocksdb
+                std::string sender_balance;
+                std::string receiver_balance;
+                db->Get(rocksdb::ReadOptions(), std::to_string(sender), &sender_balance);
+                db->Get(rocksdb::ReadOptions(), std::to_string(receiver), &receiver_balance);
+
+                // update balance of receiver to rocksdb
+                db->Put(rocksdb::WriteOptions(), std::to_string(sender), std::to_string(sender));
+                db->Put(rocksdb::WriteOptions(), std::to_string(receiver), std::to_string(receiver));
+            }
+            db_lg_1.unlock();
+            EASY_END_BLOCK;
+
+            auto block_hash_str = sp_block->get_sha256();
+            const uint64_t block_id = sp_block->header_.id_;
+
+            // client_id starts from 1, so does signer_index
+            EASY_BLOCK("sign");
+            auto signer_index = this->client_id;
+            std::shared_ptr<BLSSigShare> sig_share =
+                this->tss_key->first->sign(block_hash_str, this->client_id);
+            BlockVote bv;
+            bv.block_id_ = sp_block->header_.id_;
+            bv.sig_share_ = sig_share;
+            bv.voter_id_ = this->client_id;
+            EASY_END_BLOCK;
+
+            EASY_BLOCK("insert into votes");
+            sp_block->votes_.insert(
+                std::make_pair(
+                    this->client_id,
+                    std::make_shared<BlockVote>(bv)));
+            EASY_END_BLOCK;
+
+            EASY_BLOCK("serialize");
+            spdlog::trace("gRPC(VoteBlocks): serialize");
+            Block block = *(sp_block);
+            // msgpack::sbuffer b;
+            // msgpack::pack(b, iter->second);
+            // std::string block_ser = sbufferToString(b);
+            auto block_bv = flexbuffers_adapter<Block>::to_bytes(block);
+            std::string block_ser(block_bv->begin(), block_bv->end());
+            EASY_END_BLOCK;
+
+            EASY_BLOCK("add voted blocks");
+            request.add_voted_blocks(block_ser);
+            EASY_END_BLOCK;
+
             for (uint64_t stub_id = 0; stub_id < 2; stub_id++)
             {
-                VoteBlocksRequest request;
-                request.set_id(this->client_id);
-
-                // TODO: check transactions 
-                std::unique_lock<std::mutex> db_lg_1(db_mutex); 
-                for (auto iter = sp_block->tx_vec_.begin(); iter != sp_block->tx_vec_.end(); iter++)
-                {
-                    const uint64_t sender = (*iter)->sender_; 
-                    const uint64_t receiver = (*iter)->receiver_; 
-
-                    // retrieve balance of sender from rocksdb 
-                    std::string sender_balance; 
-                    std::string receiver_balance; 
-                    db->Get(rocksdb::ReadOptions(), std::to_string(sender), &sender_balance); 
-                    db->Get(rocksdb::ReadOptions(), std::to_string(receiver), &receiver_balance);
-
-                    // update balance of receiver to rocksdb 
-                    db->Put(rocksdb::WriteOptions(), std::to_string(sender), std::to_string(sender));  
-                    db->Put(rocksdb::WriteOptions(), std::to_string(receiver), std::to_string(receiver));  
-                }
-                db_lg_1.unlock(); 
-
-                auto block_hash_str = sp_block->get_sha256();
-                const uint64_t block_id = sp_block->header_.id_;
-
-                // client_id starts from 1, so does signer_index
-                EASY_BLOCK("sign");
-                auto signer_index = this->client_id;
-                std::shared_ptr<BLSSigShare> sig_share =
-                    this->tss_key->first->sign(block_hash_str, this->client_id);
-                BlockVote bv;
-                bv.block_id_ = sp_block->header_.id_;
-                bv.sig_share_ = sig_share;
-                bv.voter_id_ = this->client_id;
-                EASY_END_BLOCK;
-
-                EASY_BLOCK("insert into votes");
-                sp_block->votes_.insert(
-                    std::make_pair(
-                        this->client_id,
-                        std::make_shared<BlockVote>(bv)));
-                EASY_END_BLOCK;
-
-                EASY_BLOCK("serialize");
-                spdlog::trace("gRPC(VoteBlocks): serialize");
-                Block block = *(sp_block);
-                // msgpack::sbuffer b;
-                // msgpack::pack(b, iter->second);
-                // std::string block_ser = sbufferToString(b);
-                auto block_bv = flexbuffers_adapter<Block>::to_bytes(block);
-                std::string block_ser(block_bv->begin(), block_bv->end());
-                EASY_END_BLOCK;
-
-                EASY_BLOCK("add voted blocks");
-                request.add_voted_blocks(block_ser);
-                EASY_END_BLOCK;
-
                 VoteBlocksResponse response;
 
                 grpc::ClientContext context;
