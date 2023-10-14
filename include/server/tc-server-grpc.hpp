@@ -340,6 +340,7 @@ namespace tomchain
                 // check if target server is this server
                 EASY_BLOCK("calculate target server id");
                 std::set<uint64_t> target_server_id_set = block->get_server_id((*::conf_data)["server-count"]);
+                // if this server is not BPS 
                 if (target_server_id_set.find(tc_server_->server_id) == target_server_id_set.end())
                 {
                     // if remote
@@ -351,7 +352,7 @@ namespace tomchain
                     // tc_server_->send_relay_votes();
                     continue;
                 }
-                else
+                else // relay to peer shadow server 
                 {
                     for (auto iter = target_server_id_set.begin(); iter != target_server_id_set.end(); iter++)
                     {
@@ -391,6 +392,16 @@ namespace tomchain
                     pb_accessor->second->votes_.size()
                 );
                 EASY_END_BLOCK;
+
+                // TODO: if peer is not down and current server is not BPS, continue 
+                const uint64_t peer_shadow_server_id = tc_server_->get_shadow_peer_server_id(); 
+                const uint64_t peer_shadow_server_index = peer_shadow_server_id - 1; 
+                if (tc_server_->peer_status.at(peer_shadow_server_index).load() == true && 
+                    target_server_id_set.find(tc_server_->server_id) == target_server_id_set.end())
+                {
+                    pb_accessor.release();
+                    continue; 
+                }
 
                 // if votes count enough
                 EASY_BLOCK("count votes");

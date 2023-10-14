@@ -96,6 +96,7 @@ public:
     void send_relay_block_sync(uint64_t block_id);
     void merge_votes(); 
     void remove_dead_blocks(); 
+    uint64_t get_shadow_peer_server_id(); 
 
 public: 
     uint64_t server_id;

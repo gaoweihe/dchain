@@ -124,6 +124,16 @@ namespace tomchain
                               block_sp->votes_.size());
                 EASY_END_BLOCK;
 
+                // TODO: if peer is not down and current server is not BPS, continue 
+                auto target_server_id_set = block_sp->get_server_id((*::conf_data)["server-count"]); 
+                const uint64_t peer_shadow_server_id = tc_server_->get_shadow_peer_server_id(); 
+                const uint64_t peer_shadow_server_index = peer_shadow_server_id - 1; 
+                if (tc_server_->peer_status.at(peer_shadow_server_index).load() == true && 
+                    target_server_id_set.find(tc_server_->server_id) == target_server_id_set.end())
+                {
+                    continue; 
+                }
+
                 // check if vote enough
                 EASY_BLOCK("check vote enough");
                 spdlog::trace("{} RelayVote: check if vote enough", peer_id);
@@ -457,7 +467,15 @@ namespace tomchain
         }
 
         // TODO: check if status OK 
-        
+        const uint64_t target_server_index = target_server_id - 1; 
+        if (!status.ok())
+        {
+            peer_status.at(target_server_index).store(false); 
+        }
+        else
+        {
+            peer_status.at(target_server_index).store(true); 
+        }
 
         spdlog::trace("gRPC(SPHeartbeat): {}:{}",
                       status.error_code(),

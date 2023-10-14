@@ -390,6 +390,21 @@ namespace tomchain
         }
     }
 
+    uint64_t TcServer::get_shadow_peer_server_id() 
+    {
+        uint64_t shadow_id; 
+        if (this->server_id == (*::conf_data)["server-count"].template get<uint64_t>())
+        {
+            shadow_id = 1; 
+        }
+        else
+        {
+            shadow_id = this->server_id + 1; 
+        }
+
+        return shadow_id; 
+    }
+
     void TcServer::remove_dead_blocks()
     {
         spdlog::trace("remove_dead_blocks starts ");
@@ -474,7 +489,7 @@ namespace tomchain
                 sp_block->header_.id_);
             cb_accessor->second = sp_block;
 
-            // TODO: insert into rocksdb
+            // insert into rocksdb
             EASY_BLOCK("rocksdb");
             // serialize
             auto blk_bv = flexbuffers_adapter<Block>::to_bytes(*sp_block);
