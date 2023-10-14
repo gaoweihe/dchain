@@ -281,39 +281,39 @@ namespace tomchain
             EASY_BLOCK("check tx");
             const uint64_t tx_count = sp_block->tx_vec_.size();
             spdlog::info("VoteBlocks tx count: {}", tx_count);
-            const uint64_t string_buffer_size = 10;
-            // sender keys
-            std::vector<std::string> sender_strvec(sp_block->tx_vec_.size());
-            for (std::string &str : sender_strvec)
-            {
-                str.reserve(string_buffer_size);
-            }
-            // receiver keys
-            std::vector<std::string> receiver_strvec(sp_block->tx_vec_.size());
-            for (std::string &str : receiver_strvec)
-            {
-                str.reserve(string_buffer_size);
-            }
-            // sender balance
-            std::vector<std::string> sender_bal_strvec(sp_block->tx_vec_.size());
-            for (std::string &str : sender_bal_strvec)
-            {
-                str.reserve(string_buffer_size);
-            }
-            // receiver balance
-            std::vector<std::string> receiver_bal_strvec(sp_block->tx_vec_.size());
-            for (std::string &str : receiver_bal_strvec)
-            {
-                str.reserve(string_buffer_size);
-            }
+            // const uint64_t string_buffer_size = 10;
+            // // sender keys
+            // std::vector<std::string> sender_strvec(sp_block->tx_vec_.size());
+            // for (std::string &str : sender_strvec)
+            // {
+            //     str.reserve(string_buffer_size);
+            // }
+            // // receiver keys
+            // std::vector<std::string> receiver_strvec(sp_block->tx_vec_.size());
+            // for (std::string &str : receiver_strvec)
+            // {
+            //     str.reserve(string_buffer_size);
+            // }
+            // // sender balance
+            // std::vector<std::string> sender_bal_strvec(sp_block->tx_vec_.size());
+            // for (std::string &str : sender_bal_strvec)
+            // {
+            //     str.reserve(string_buffer_size);
+            // }
+            // // receiver balance
+            // std::vector<std::string> receiver_bal_strvec(sp_block->tx_vec_.size());
+            // for (std::string &str : receiver_bal_strvec)
+            // {
+            //     str.reserve(string_buffer_size);
+            // }
 
             for (uint64_t i = 0; i < tx_count; i++)
             {
                 std::shared_ptr<tomchain::Transaction> curr_tx = sp_block->tx_vec_.at(i);
                 const uint64_t sender = curr_tx->sender_;
                 const uint64_t receiver = curr_tx->receiver_;
-                std::string &sender_str = sender_strvec.at(i);
-                std::string &receiver_str = receiver_strvec.at(i);
+                std::string &sender_str = this->sender_strvec.at(i);
+                std::string &receiver_str = this->receiver_strvec.at(i);
                 snprintf(sender_str.data(), sender_str.size(), "%ld", sender);
                 snprintf(receiver_str.data(), receiver_str.size(), "%ld", receiver);
             }

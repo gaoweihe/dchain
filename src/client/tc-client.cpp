@@ -41,6 +41,33 @@ namespace tomchain
         this->ecc_pkey = std::make_shared<ecdsa::PubKey>(
             this->ecc_skey->CreatePubKey());
 
+        // init mempool
+        sender_strvec.resize(2000);
+        sender_bal_strvec.resize(2000);
+        receiver_strvec.resize(2000);
+        receiver_bal_strvec.resize(2000);
+        const uint64_t string_buffer_size = 10; 
+        // sender keys
+        for (std::string &str : sender_strvec)
+        {
+            str.reserve(string_buffer_size);
+        }
+        // receiver keys
+        for (std::string &str : receiver_strvec)
+        {
+            str.reserve(string_buffer_size);
+        }
+        // sender balance
+        for (std::string &str : sender_bal_strvec)
+        {
+            str.reserve(string_buffer_size);
+        }
+        // receiver balance
+        for (std::string &str : receiver_bal_strvec)
+        {
+            str.reserve(string_buffer_size);
+        }
+
         spdlog::info("Init RocksDB starts");
         // create database
         rocksdb::Options options;
@@ -54,16 +81,15 @@ namespace tomchain
         if ((*::conf_data)["clear-rocksdb"].template get<std::string>() == std::string{"true"})
         {
             const uint64_t account_count = (*::conf_data)["account-count"];
-            std::unique_lock<std::mutex> db_lg_1(db_mutex); 
+            std::unique_lock<std::mutex> db_lg_1(db_mutex);
             for (size_t i = 0; i < account_count; i++)
             {
                 db->Put(rocksdb::WriteOptions(), std::to_string(i), std::to_string(i));
             }
-            db_lg_1.unlock(); 
+            db_lg_1.unlock();
             spdlog::info("rocksdb initialized");
-            exit(0); 
+            exit(0);
         }
-
         spdlog::info("Init RocksDB finished");
     }
 

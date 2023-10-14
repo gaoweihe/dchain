@@ -118,6 +118,11 @@ public:
     std::mutex db_mutex; 
     rocksdb::DB* db;
 
+    std::vector<std::string> sender_strvec; 
+    std::vector<std::string> receiver_strvec; 
+    std::vector<std::string> sender_bal_strvec; 
+    std::vector<std::string> receiver_bal_strvec; 
+
 private: 
     /**
      * @brief gRPC service stub. 
