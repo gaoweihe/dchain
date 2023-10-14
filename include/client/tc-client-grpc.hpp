@@ -235,7 +235,7 @@ namespace tomchain
                     std::make_shared<std::vector<uint8_t>>(blk_ser));
             EASY_END_BLOCK;
 
-            spdlog::trace("pb tx count = {}", block->tx_vec_.size()); 
+            spdlog::trace("pb tx count = {}", block->tx_vec_.size());
 
             EASY_BLOCK("insert into pb");
             pending_blks.push(
@@ -279,31 +279,65 @@ namespace tomchain
 
             // check transactions
             EASY_BLOCK("check tx");
-            std::unique_lock<std::mutex> db_lg_1(db_mutex);
-            spdlog::trace("tx count: {}", sp_block->tx_vec_.size()); 
-            for (auto iter = sp_block->tx_vec_.begin(); iter != sp_block->tx_vec_.end(); iter++)
+            const uint64_t tx_count = sp_block->tx_vec_.size();
+            spdlog::trace("tx count: {}", tx_count);
+            const uint64_t string_buffer_size = 10;
+            // sender keys
+            std::vector<std::string> sender_strvec(sp_block->tx_vec_.size());
+            for (std::string &str : sender_strvec)
             {
-                const uint64_t sender = (*iter)->sender_;
-                const uint64_t receiver = (*iter)->receiver_;
-
-                // retrieve balance of sender from rocksdb
-                std::string sender_balance;
-                std::string receiver_balance;
-                db->Get(rocksdb::ReadOptions(), std::to_string(sender), &sender_balance);
-                db->Get(rocksdb::ReadOptions(), std::to_string(receiver), &receiver_balance);
-
-                // update balance of receiver to rocksdb
-                db->Put(rocksdb::WriteOptions(), std::to_string(sender), std::to_string(sender));
-                db->Put(rocksdb::WriteOptions(), std::to_string(receiver), std::to_string(receiver));
+                str.reserve(string_buffer_size);
             }
-            db_lg_1.unlock();
+            // receiver keys
+            std::vector<std::string> receiver_strvec(sp_block->tx_vec_.size());
+            for (std::string &str : receiver_strvec)
+            {
+                str.reserve(string_buffer_size);
+            }
+            // sender balance
+            std::vector<std::string> sender_bal_strvec(sp_block->tx_vec_.size());
+            for (std::string &str : sender_bal_strvec)
+            {
+                str.reserve(string_buffer_size);
+            }
+            // receiver balance
+            std::vector<std::string> receiver_bal_strvec(sp_block->tx_vec_.size());
+            for (std::string &str : receiver_bal_strvec)
+            {
+                str.reserve(string_buffer_size);
+            }
+
+            for (uint64_t i = 0; i < tx_count; i++)
+            {
+                std::shared_ptr<tomchain::Transaction> curr_tx = sp_block->tx_vec_.at(i);
+                const uint64_t sender = curr_tx->sender_;
+                const uint64_t receiver = curr_tx->receiver_;
+                std::string &sender_str = sender_strvec.at(i);
+                std::string &receiver_str = receiver_strvec.at(i);
+                snprintf(sender_str.data(), sender_str.size(), "%ld", sender);
+                snprintf(receiver_str.data(), receiver_str.size(), "%ld", receiver);
+            }
+
+            std::unique_lock<std::mutex> db_ul_1(db_mutex);
+            for (uint64_t i = 0; i < tx_count; i++)
+            {
+                db->Get(rocksdb::ReadOptions(), sender_strvec[i], &sender_bal_strvec[i]);
+                db->Get(rocksdb::ReadOptions(), receiver_strvec[i], &receiver_bal_strvec[i]);
+
+                // calculations
+                // assert(sender_bal >= curr_tx->value);
+
+                db->Put(rocksdb::WriteOptions(), sender_strvec[i], sender_bal_strvec[i]);
+                db->Put(rocksdb::WriteOptions(), receiver_strvec[i], receiver_bal_strvec[i]);
+            }
+            db_ul_1.unlock();
             EASY_END_BLOCK;
 
             auto block_hash_str = sp_block->get_sha256();
             const uint64_t block_id = sp_block->header_.id_;
 
-            // no need to transmit transactions in vote 
-            sp_block->tx_vec_.clear(); 
+            // no need to transmit transactions in vote
+            sp_block->tx_vec_.clear();
 
             // client_id starts from 1, so does signer_index
             EASY_BLOCK("sign");

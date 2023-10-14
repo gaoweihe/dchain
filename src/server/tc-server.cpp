@@ -536,7 +536,8 @@ namespace tomchain
             uint64_t tx_id = distribution(rng);
             uint64_t sender = distribution(rng);
             uint64_t receiver = distribution(rng);
-            uint64_t value = distribution(rng);
+            // uint64_t value = distribution(rng); 
+            uint64_t value = 0; 
             uint64_t fee = distribution(rng);
             Transaction tx(
                 tx_id,
