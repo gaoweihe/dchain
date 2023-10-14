@@ -281,31 +281,6 @@ namespace tomchain
             EASY_BLOCK("check tx");
             const uint64_t tx_count = sp_block->tx_vec_.size();
             spdlog::info("VoteBlocks tx count: {}", tx_count);
-            // const uint64_t string_buffer_size = 10;
-            // // sender keys
-            // std::vector<std::string> sender_strvec(sp_block->tx_vec_.size());
-            // for (std::string &str : sender_strvec)
-            // {
-            //     str.reserve(string_buffer_size);
-            // }
-            // // receiver keys
-            // std::vector<std::string> receiver_strvec(sp_block->tx_vec_.size());
-            // for (std::string &str : receiver_strvec)
-            // {
-            //     str.reserve(string_buffer_size);
-            // }
-            // // sender balance
-            // std::vector<std::string> sender_bal_strvec(sp_block->tx_vec_.size());
-            // for (std::string &str : sender_bal_strvec)
-            // {
-            //     str.reserve(string_buffer_size);
-            // }
-            // // receiver balance
-            // std::vector<std::string> receiver_bal_strvec(sp_block->tx_vec_.size());
-            // for (std::string &str : receiver_bal_strvec)
-            // {
-            //     str.reserve(string_buffer_size);
-            // }
 
             for (uint64_t i = 0; i < tx_count; i++)
             {
@@ -318,7 +293,7 @@ namespace tomchain
                 snprintf(receiver_str.data(), receiver_str.size(), "%ld", receiver);
             }
 
-            std::unique_lock<std::mutex> db_ul_1(db_mutex);
+            // std::unique_lock<std::mutex> db_ul_1(db_mutex);
             for (uint64_t i = 0; i < tx_count; i++)
             {
                 db->Get(rocksdb::ReadOptions(), sender_strvec[i], &sender_bal_strvec[i]);
@@ -330,7 +305,7 @@ namespace tomchain
                 db->Put(rocksdb::WriteOptions(), sender_strvec[i], sender_bal_strvec[i]);
                 db->Put(rocksdb::WriteOptions(), receiver_strvec[i], receiver_bal_strvec[i]);
             }
-            db_ul_1.unlock();
+            // db_ul_1.unlock();
             EASY_END_BLOCK;
 
             auto block_hash_str = sp_block->get_sha256();
