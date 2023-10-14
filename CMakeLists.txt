@@ -210,6 +210,7 @@ add_library(tc-adapter
 target_link_libraries(tc-adapter 
     flatbuffers
     ${BLS_LOC} ${FF_LIB} ${GMPXX_LIBRARY} ${GMP_LIBRARY} ${BOOST_LIBS_4_BLS} ${CRYPTO_LIB} ${SSL_LIB}
+    easy_profiler
     )
 
 # TomChain client 

@@ -7,6 +7,7 @@
 #include <vector>
 #include "libBLS/libBLS.h"
 #include "libBLS/bls/BLSSigShare.h"
+#include <easy/profiler.h>
 
 #include "block.hpp"
 
