@@ -2,6 +2,7 @@
 
 #include <string>
 #include "spdlog/spdlog.h"
+#include <easy/profiler.h>
 
 namespace tomchain {
 
@@ -233,19 +234,25 @@ std::shared_ptr<std::vector<uint8_t>> flexbuffers_adapter<Block>::to_bytes(const
     auto bh_bv = flexbuffers_adapter<BlockHeader>::to_bytes(block.header_);
 
     fbb.Map([&]() {
+        EASY_BLOCK("header"); 
         fbb.Blob("header", *bh_bv);
+        EASY_END_BLOCK; 
+        EASY_BLOCK("tx_vec"); 
         fbb.Vector("tx_vec", [&]() {
             for (auto tx : block.tx_vec_) {
                 auto tx_bv = flexbuffers_adapter<Transaction>::to_bytes(*tx);
                 fbb.Blob(*tx_bv);
             }
         });
+        EASY_END_BLOCK; 
+        EASY_BLOCK("votes"); 
         fbb.Map("votes", [&]() {
             for (auto iter : block.votes_) {
                 auto vote_bv = flexbuffers_adapter<BlockVote>::to_bytes(*(iter.second));
                 fbb.Blob(std::to_string(iter.first).c_str(), *vote_bv);
             }
         });
+        EASY_END_BLOCK; 
         // if (block.tss_sig_ == nullptr)
         // {
         //     fbb.Null("tss_sig");
