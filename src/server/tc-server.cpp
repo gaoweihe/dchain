@@ -65,6 +65,10 @@ namespace tomchain
                         std::shared_ptr<BlockVote>>>()));
         }
 
+        // populate peer status 
+        peer_status = std::vector<std::atomic<bool>>(server_count); 
+        
+
         relay_blocks.clear();
         for (uint64_t i = 0; i < server_count; i++)
         {

@@ -456,6 +456,9 @@ namespace tomchain
             cv.wait(lock);
         }
 
+        // TODO: check if status OK 
+        
+
         spdlog::trace("gRPC(SPHeartbeat): {}:{}",
                       status.error_code(),
                       status.error_message());

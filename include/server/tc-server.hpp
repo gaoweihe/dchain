@@ -146,6 +146,7 @@ public:
     oneapi::tbb::concurrent_set<uint64_t> dead_block; 
     std::mutex db_mutex; 
     rocksdb::DB* db;
+    std::vector<std::atomic<bool>> peer_status; 
 
 
 private: 
