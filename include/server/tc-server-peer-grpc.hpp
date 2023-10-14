@@ -255,10 +255,14 @@ namespace tomchain
                 // msgpack::sbuffer des_b = stringToSbuffer(*iter);
                 // auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 // auto block = oh->as<std::shared_ptr<Block>>();
+                EASY_BLOCK("blk_ser"); 
                 std::vector<uint8_t> blk_ser((*iter).begin(), (*iter).end());
+                EASY_END_BLOCK;
+                EASY_BLOCK("flexbuffers"); 
                 auto block =
                     flexbuffers_adapter<Block>::from_bytes(
                         std::make_shared<std::vector<uint8_t>>(blk_ser));
+                EASY_END_BLOCK;
                 EASY_END_BLOCK;
 
                 // store block locally
@@ -568,8 +572,12 @@ namespace tomchain
             // msgpack::sbuffer b;
             // msgpack::pack(b, block);
             // std::string ser_block = sbufferToString(b);
+            EASY_BLOCK("flexbuffers");
             auto blk_bv = flexbuffers_adapter<Block>::to_bytes(*block);
+            EASY_END_BLOCK;
+            EASY_BLOCK("ser_blk");
             std::string ser_block(blk_bv->begin(), blk_bv->end());
+            EASY_END_BLOCK; 
             EASY_END_BLOCK;
 
             // add to relayed block vector
