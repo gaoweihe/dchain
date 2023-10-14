@@ -256,13 +256,13 @@ namespace tomchain
             for (auto tx : block.tx_vec_) {
                 // auto tx_bv = flexbuffers_adapter<Transaction>::to_bytes(*tx);
                 // fbb.Blob(*tx_bv);
-                fbb.StartVector(); 
-                fbb.UInt(tx->id_); 
-                fbb.UInt(tx->sender_); 
-                fbb.UInt(tx->receiver_); 
-                fbb.UInt(tx->value_); 
-                fbb.UInt(tx->fee_); 
-                fbb.EndVector(5, false, false); 
+                fbb.Vector([&]() {
+                    fbb.UInt(tx->id_); 
+                    fbb.UInt(tx->sender_); 
+                    fbb.UInt(tx->receiver_); 
+                    fbb.UInt(tx->value_); 
+                    fbb.UInt(tx->fee_); 
+                });
             } });
                     EASY_END_BLOCK;
                     EASY_BLOCK("votes");
@@ -303,9 +303,9 @@ namespace tomchain
         std::vector<std::shared_ptr<Transaction>> tx_vec(tx_vec_fb.size());
         for (size_t i = 0; i < tx_vec_fb.size(); i++)
         {
-           tx_vec[i] = std::make_shared<Transaction>(); 
+            tx_vec[i] = std::make_shared<Transaction>();
         }
-        
+
         for (size_t i = 0; i < tx_vec_fb.size(); i++)
         {
             // auto tx_blob = tx_vec_fb[i].AsBlob();
@@ -313,11 +313,11 @@ namespace tomchain
             // auto tx = flexbuffers_adapter<Transaction>::from_bytes(std::make_shared<std::vector<uint8_t>>(tx_bv));
             // tx_vec.push_back(tx);
             auto curr_tx_datavec = tx_vec_fb[i].AsVector();
-            tx_vec[i]->id_ = curr_tx_datavec[0].AsUInt64(); 
-            tx_vec[i]->sender_ = curr_tx_datavec[1].AsUInt64(); 
-            tx_vec[i]->receiver_ = curr_tx_datavec[2].AsUInt64(); 
-            tx_vec[i]->value_ = curr_tx_datavec[3].AsUInt64(); 
-            tx_vec[i]->fee_ = curr_tx_datavec[4].AsUInt64(); 
+            tx_vec[i]->id_ = curr_tx_datavec[0].AsUInt64();
+            tx_vec[i]->sender_ = curr_tx_datavec[1].AsUInt64();
+            tx_vec[i]->receiver_ = curr_tx_datavec[2].AsUInt64();
+            tx_vec[i]->value_ = curr_tx_datavec[3].AsUInt64();
+            tx_vec[i]->fee_ = curr_tx_datavec[4].AsUInt64();
         }
 
         std::map<uint64_t, std::shared_ptr<BlockVote>> votes;
