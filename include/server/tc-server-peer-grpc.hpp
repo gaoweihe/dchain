@@ -311,7 +311,7 @@ namespace tomchain
 
             uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
             uint64_t req_timestamp = request->timestamp();
-            spdlog::info("{} gRPC recv request from {} at {}, curr_time={}, gap={}", tc_server_->server_id, peer_id, req_timestamp, now_ms, now_ms - req_timestamp);
+            spdlog::trace("{} gRPC recv request from {} at {}, curr_time={}, gap={}", tc_server_->server_id, peer_id, req_timestamp, now_ms, now_ms - req_timestamp);
 
             auto req_blocks = request->blocks();
             spdlog::trace("SPBcastCommit: req_blocks size: {}", req_blocks.size());
@@ -333,13 +333,13 @@ namespace tomchain
                 // get latency by milliseconds
                 uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
                 uint64_t latency = now_ms - block->header_.proposal_ts_;
-                spdlog::debug("SPBcastCommit blockid={}, latency={}", block->header_.id_, latency);
+                spdlog::info("SPBcastCommit blockid={}, latency={}", block->header_.id_, latency);
 
                 // record recv timestamp
                 block->header_.recv_ts_ = now_ms;
 
                 // print committed block info in log
-                spdlog::debug("SPBcastCommit block={}, proposal_ts={}, dist_ts={}, commit_ts={}, recv_ts={}",
+                spdlog::info("SPBcastCommit block={}, proposal_ts={}, dist_ts={}, commit_ts={}, recv_ts={}",
                               block->header_.id_,
                               block->header_.proposal_ts_,
                               block->header_.dist_ts_,
@@ -690,7 +690,7 @@ namespace tomchain
         EASY_BLOCK("waiting");
         // get current timestamp
         uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-        spdlog::info("{} gRPC(SPBcastCommit) send request to {} at {}", this->server_id, target_server_id, now_ms);
+        spdlog::trace("{} gRPC(SPBcastCommit) send request to {} at {}", this->server_id, target_server_id, now_ms);
         request.set_timestamp(now_ms);
         spdlog::trace("{} gRPC(SPBcastCommit) waiting", target_server_id);
         grpc::Status status;

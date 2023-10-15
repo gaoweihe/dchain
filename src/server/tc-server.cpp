@@ -466,7 +466,7 @@ namespace tomchain
             // get latency in milliseconds
             uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
             uint64_t latency = now_ms - sp_block->header_.proposal_ts_;
-            spdlog::debug("LocalCommit blockid={}, latency={}", sp_block->header_.id_, latency);
+            spdlog::info("LocalCommit blockid={}, latency={}", sp_block->header_.id_, latency);
 
             // record commit timestamp
             sp_block->header_.commit_ts_ = now_ms;
