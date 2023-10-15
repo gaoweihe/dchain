@@ -248,7 +248,7 @@ namespace tomchain
                 EASY_END_BLOCK;
 
                 std::shared_ptr<Block> block = accessor->second;
-                spdlog::trace("pb vote count={}", block->tx_vec_.size()); 
+                spdlog::trace("pb tx count={}", block->tx_vec_.size()); 
 
                 // serialize block
                 EASY_BLOCK("serialize response");
@@ -388,7 +388,7 @@ namespace tomchain
                     std::make_pair(
                         request->id(),
                         vote->second));
-                spdlog::debug("{}:push vote into {} relay queue, vote unsafe count={}", 
+                spdlog::debug("{}:push vote into {} relay queue, vote count={}", 
                     client_id, 
                     block->header_.id_, 
                     pb_accessor->second->votes_.size()

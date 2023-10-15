@@ -118,7 +118,7 @@ namespace tomchain
                     std::make_pair(
                         vote->voter_id_,
                         vote));
-                spdlog::debug("{}:push vote into {} relay queue, vote unsafe count={}",
+                spdlog::debug("{}:push vote into {} relay queue, vote count={}",
                               vote->voter_id_,
                               block_id,
                               block_sp->votes_.size());

@@ -31,7 +31,7 @@
     "generate-tx-rate": 2000, 
     "pb-pool-limit": 8, 
     "tx-per-block": 2000,   
-    "log-level": "info", 
+    "log-level": "debug", 
     "client-count": 128,
     "merge-threads": 8, 
     "profiler-enable": true,
