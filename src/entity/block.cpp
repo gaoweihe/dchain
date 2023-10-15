@@ -108,7 +108,10 @@ namespace tomchain
         }
     }
 
-    BlockVote::BlockVote() {}
+    BlockVote::BlockVote() {
+        block_id_ = 0;
+        voter_id_ = 0; 
+    }
 
     BlockVote::BlockVote(const BlockVote& bv)
     {
@@ -117,11 +120,21 @@ namespace tomchain
         this->sig_share_ = bv.sig_share_;
     }
 
-    BlockHeader::BlockHeader() {}
+    BlockHeader::BlockHeader() {
+        id_ = 0; 
+        base_id_ = 0; 
+        proposal_ts_ = 0; 
+        dist_ts_ = 0;
+        commit_ts_ = 0;
+        recv_ts_ = 0;
+    }
 
     BlockHeader::BlockHeader(uint64_t id, uint64_t base_id, uint64_t proposal_ts)
         : id_(id), base_id_(base_id), proposal_ts_(proposal_ts)
     {
+        this->dist_ts_ = 0; 
+        this->commit_ts_ = 0; 
+        this->recv_ts_ = 0; 
     }
 
     BlockHeader::BlockHeader(const BlockHeader& bh)
