@@ -161,7 +161,7 @@ namespace tomchain
                             // record distribution timestamp 
                             const uint64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                                 std::chrono::system_clock::now().time_since_epoch()).count(); 
-                            spdlog::info("now_ms: {}", now_ms); 
+                            // spdlog::trace("now_ms: {}", now_ms); 
                             if (blk->header_.dist_ts_ == 0)
                             {
                                 blk->header_.dist_ts_ = now_ms; 

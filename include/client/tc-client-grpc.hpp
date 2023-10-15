@@ -235,7 +235,7 @@ namespace tomchain
                     std::make_shared<std::vector<uint8_t>>(blk_ser));
             EASY_END_BLOCK;
 
-            spdlog::info("GetBlocks tx count = {}", block->tx_vec_.size());
+            spdlog::trace("GetBlocks tx count = {}", block->tx_vec_.size());
 
             EASY_BLOCK("insert into pb");
             pending_blks.push(
@@ -280,7 +280,7 @@ namespace tomchain
             // check transactions
             EASY_BLOCK("check tx");
             const uint64_t tx_count = sp_block->tx_vec_.size();
-            spdlog::info("VoteBlocks tx count: {}", tx_count);
+            spdlog::trace("VoteBlocks tx count: {}", tx_count);
 
             for (uint64_t i = 0; i < tx_count; i++)
             {
