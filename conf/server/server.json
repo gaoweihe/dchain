@@ -38,5 +38,5 @@
     "profiler-listen": true, 
     "block-die-threshold": 10000, 
     "account-count": 2000000, 
-    "use-rocksdb": false
+    "use-rocksdb": true
 }
