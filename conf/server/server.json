@@ -1,6 +1,6 @@
 {
     "server-id": 0, 
-    "server-count": 9, 
+    "server-count": 2, 
     "grpc-listen-addr": "0.0.0.0:2510", 
     "grpc-peer-listen-addr": "0.0.0.0:2511", 
     "peer-addr-shadow": [
@@ -14,7 +14,7 @@
         "192.168.100.214:2511", 
         "192.168.100.215:2511"
     ], 
-    "peer-addr": [
+    "peer-addr-full": [
         "10.0.0.6:2511", 
         "10.0.0.7:2511", 
         "10.0.0.8:2511", 
@@ -25,12 +25,16 @@
         "10.0.0.14:2511", 
         "10.0.0.15:2511"
     ], 
+    "peer-addr": [
+        "10.0.0.6:2511", 
+        "10.0.0.7:2511"
+    ], 
     "scheduler_freq": 10, 
     "count_freq": 4000, 
     "pack_freq": 10, 
-    "generate-tx-rate": 1500, 
+    "generate-tx-rate": 2000, 
     "pb-pool-limit": 8, 
-    "tx-per-block": 1500,   
+    "tx-per-block": 2000,   
     "log-level": "info", 
     "client-count": 128,
     "merge-threads": 8, 
