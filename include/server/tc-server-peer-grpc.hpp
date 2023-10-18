@@ -124,14 +124,14 @@ namespace tomchain
                               block_sp->votes_.size());
                 EASY_END_BLOCK;
 
-                // // TODO: if peer is not down and current server is not BPS, continue 
-                // auto target_server_id_set = block_sp->get_server_id((*::conf_data)["server-count"]); 
-                // const uint64_t peer_shadow_server_id = tc_server_->get_shadow_peer_server_id(); 
-                // const uint64_t peer_shadow_server_index = peer_shadow_server_id - 1; 
-                // if (tc_server_->peer_status.at(peer_shadow_server_index).load() == true && 
+                // // TODO: if peer is not down and current server is not BPS, continue
+                // auto target_server_id_set = block_sp->get_server_id((*::conf_data)["server-count"]);
+                // const uint64_t peer_shadow_server_id = tc_server_->get_shadow_peer_server_id();
+                // const uint64_t peer_shadow_server_index = peer_shadow_server_id - 1;
+                // if (tc_server_->peer_status.at(peer_shadow_server_index).load() == true &&
                 //     target_server_id_set.find(tc_server_->server_id) == target_server_id_set.end())
                 // {
-                //     continue; 
+                //     continue;
                 // }
 
                 // check if vote enough
@@ -255,10 +255,10 @@ namespace tomchain
                 // msgpack::sbuffer des_b = stringToSbuffer(*iter);
                 // auto oh = msgpack::unpack(des_b.data(), des_b.size());
                 // auto block = oh->as<std::shared_ptr<Block>>();
-                EASY_BLOCK("blk_ser"); 
+                EASY_BLOCK("blk_ser");
                 std::vector<uint8_t> blk_ser((*iter).begin(), (*iter).end());
                 EASY_END_BLOCK;
-                EASY_BLOCK("flexbuffers"); 
+                EASY_BLOCK("flexbuffers");
                 auto block =
                     flexbuffers_adapter<Block>::from_bytes(
                         std::make_shared<std::vector<uint8_t>>(blk_ser));
@@ -340,11 +340,11 @@ namespace tomchain
 
                 // print committed block info in log
                 spdlog::info("SPBcastCommit block={}, proposal_ts={}, dist_ts={}, commit_ts={}, recv_ts={}",
-                              block->header_.id_,
-                              block->header_.proposal_ts_,
-                              block->header_.dist_ts_,
-                              block->header_.commit_ts_,
-                              block->header_.recv_ts_);
+                             block->header_.id_,
+                             block->header_.proposal_ts_,
+                             block->header_.dist_ts_,
+                             block->header_.commit_ts_,
+                             block->header_.recv_ts_);
 
                 // remove pending block
                 EASY_BLOCK("remove pb");
@@ -358,7 +358,7 @@ namespace tomchain
                 {
                     spdlog::trace("SPBcastCommit: block not found");
                     pb_accessor.release();
-                    continue; 
+                    continue;
                 }
                 EASY_END_BLOCK;
 
@@ -372,17 +372,20 @@ namespace tomchain
                 cb_accessor->second = block;
                 EASY_END_BLOCK;
 
-                // insert into rocksdb 
-                EASY_BLOCK("rocksdb"); 
-                // serialize 
-                auto blk_bv = flexbuffers_adapter<Block>::to_bytes(*block);
-                std::string ser_blk(blk_bv->begin(), blk_bv->end());
-                // put 
-                std::unique_lock<std::mutex> db_ul_1(tc_server_->db_mutex); 
-                std::string block_name = std::string{"block-"} + std::to_string(block->header_.id_); 
-                tc_server_->db->Put(rocksdb::WriteOptions(), block_name.c_str(), ser_blk); 
-                db_ul_1.unlock(); 
-                EASY_END_BLOCK;
+                // insert into rocksdb
+                EASY_BLOCK("rocksdb");
+                if ((*::conf_data)["use-rocksdb"])
+                {
+                    // serialize
+                    auto blk_bv = flexbuffers_adapter<Block>::to_bytes(*block);
+                    std::string ser_blk(blk_bv->begin(), blk_bv->end());
+                    // put
+                    std::unique_lock<std::mutex> db_ul_1(tc_server_->db_mutex);
+                    std::string block_name = std::string{"block-"} + std::to_string(block->header_.id_);
+                    tc_server_->db->Put(rocksdb::WriteOptions(), block_name.c_str(), ser_blk);
+                    db_ul_1.unlock();
+                    EASY_END_BLOCK;
+                }
 
                 EASY_BLOCK("erase");
                 pb_sl_1.lock();
@@ -470,15 +473,15 @@ namespace tomchain
             cv.wait(lock);
         }
 
-        // TODO: check if status OK 
-        const uint64_t target_server_index = target_server_id - 1; 
+        // TODO: check if status OK
+        const uint64_t target_server_index = target_server_id - 1;
         if (!status.ok())
         {
-            peer_status.at(target_server_index).store(false); 
+            peer_status.at(target_server_index).store(false);
         }
         else
         {
-            peer_status.at(target_server_index).store(true); 
+            peer_status.at(target_server_index).store(true);
         }
 
         spdlog::trace("gRPC(SPHeartbeat): {}:{}",
@@ -577,7 +580,7 @@ namespace tomchain
             EASY_END_BLOCK;
             EASY_BLOCK("ser_blk");
             std::string ser_block(blk_bv->begin(), blk_bv->end());
-            EASY_END_BLOCK; 
+            EASY_END_BLOCK;
             EASY_END_BLOCK;
 
             // add to relayed block vector

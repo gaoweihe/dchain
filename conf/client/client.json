@@ -6,7 +6,7 @@
     "grpc-server-count": 9, 
     "heartbeat-interval": 1000, 
     "pull-pb-interval": 100, 
-    "log-level": "info", 
+    "log-level": "trace", 
     "client-count": 128, 
     "account-count": 2000000, 
     "clear-rocksdb": "false", 
