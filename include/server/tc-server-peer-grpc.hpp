@@ -267,7 +267,7 @@ namespace tomchain
 
                 // store block locally
                 EASY_BLOCK("store");
-                spdlog::trace("{} RelayBlock: store block ({}) locally", peer_id, block->header_.id_);
+                spdlog::info("{} RelayBlock: store block ({}) locally", peer_id, block->header_.id_);
                 BlockCHM::accessor accessor;
                 std::shared_lock<std::shared_mutex> pb_sl_1(tc_server_->pb_sm_1);
                 tc_server_->pending_blks.insert(accessor, block->header_.id_);
