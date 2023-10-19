@@ -1,6 +1,6 @@
 {
     "server-id": 0, 
-    "server-count": 3, 
+    "server-count": 2, 
     "grpc-listen-addr": "0.0.0.0:2510", 
     "grpc-peer-listen-addr": "0.0.0.0:2511", 
     "peer-addr-shadow": [
@@ -27,8 +27,7 @@
     ], 
     "peer-addr": [
         "10.0.0.6:2511", 
-        "10.0.0.7:2511", 
-        "10.0.0.8:2511"
+        "10.0.0.7:2511"
     ], 
     "scheduler_freq": 10, 
     "count_freq": 4000, 
