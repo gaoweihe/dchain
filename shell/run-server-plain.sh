@@ -9,4 +9,4 @@ rm -rf /tmp/tomchain/*
 cpulimit --limit 200 -- ../build/tc-server \
     --cf ../conf/server/server.json \
     --id $node_label \
-#    >../log/server-$node_label.out 2>&1 &
+    >../log/server-$node_label.out 2>&1 &
