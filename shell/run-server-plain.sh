@@ -6,7 +6,7 @@ rm -rf ../log/*
 rm -f ./*.prof
 rm -rf /tmp/tomchain/* 
 
-../build/tc-server \
+cpulimit --limit 5 ../build/tc-server \
     --cf ../conf/server/server.json \
     --id $node_label \
     >../log/server-$node_label.out 2>&1 &
